@@ -26,12 +26,12 @@
 
 /* Data structures */
 struct _MassifgSnapshot {
-	gint32 snapshot_no;
+	gint snapshot_no;
 
-	gint32 time;
-	gint32 mem_heap_B;
-	gint32 mem_heap_extra_B;
-	gint32 mem_stacks_B;
+	gint time;
+	gint mem_heap_B;
+	gint mem_heap_extra_B;
+	gint mem_stacks_B;
 };
 typedef struct _MassifgSnapshot MassifgSnapshot;
 
