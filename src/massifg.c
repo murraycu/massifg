@@ -30,6 +30,12 @@
 #define MAIN_WINDOW_MENU "mainmenu"
 
 
+void massifg_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
+			const gchar *message,
+			gpointer user_data) {
+	;
+}
+
 int
 main (int argc, char **argv) {
 
@@ -42,6 +48,7 @@ main (int argc, char **argv) {
 	GError *error = NULL;
 
 	gtk_init (&argc, &argv);
+	g_log_set_handler (NULL, G_LOG_LEVEL_DEBUG, massifg_log_ignore, NULL);
 
 	/* GTK builder */
 	builder = gtk_builder_new();
