@@ -19,6 +19,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __MASSIFG_PARSER_H__
+#define __MASSIFG_PARSER_H__
+
 #include <glib.h>
 
 /* Data structures */
@@ -44,4 +47,5 @@ typedef struct _MassifgOutputData MassifgOutputData;
 /* Public functions */
 MassifgOutputData *massifg_parse_file(gchar *filename);
 
+#endif /* __MASSIFG_PARSER_H__ */
 
