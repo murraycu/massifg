@@ -1,0 +1,30 @@
+desc: --detailed-freq=1
+cmd: glom
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=detailed
+n0: 0 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+#-----------
+snapshot=1
+#-----------
+time=46630998
+mem_heap_B=352
+mem_heap_extra_B=8
+mem_stacks_B=0
+heap_tree=detailed
+n1: 352 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 352 0x5A22DDD: __fopen_internal (iofopen.c:76)
+  n1: 352 0x5A2542A: fopen64 (iofopen64.c:39)
+   n1: 352 0x54A26EE: ??? (in /lib/libselinux.so.1)
+    n1: 352 0x54ABBFB: ??? (in /lib/libselinux.so.1)
+     n1: 352 0x549A0C6: ??? (in /lib/libselinux.so.1)
+      n1: 352 0x400D8BA: call_init (dl-init.c:70)
+       n1: 352 0x400DA1F: _dl_init (dl-init.c:134)
+        n0: 352 0x400088D: ??? (in /lib/ld-2.10.1.so)
+
