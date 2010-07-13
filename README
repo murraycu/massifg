@@ -1,0 +1,10 @@
+
+To compile and run the program, do:
+gcc src/massifg.c -o massifg `pkg-config --cflags --libs gtk+-2.0` && ./massifg
+from the top-level directory of the source code
+
+To compile and run the unit tests, do:
+gcc tests/parser.c -o test_parser `pkg-config --cflags --libs glib-2.0` && gtester test_parser --verbose
+from the top-level directory of the source code
+
+
