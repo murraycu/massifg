@@ -21,9 +21,8 @@
 
 #include <gtk/gtk.h>
 
-/* FIXME: include headers instead */
-#include "massifg_parser.c"
-#include "massifg_graph.c"
+#include "massifg_parser.h"
+#include "massifg_graph.h"
 
 #define GLADE_FILE "ui/massifg.glade"
 #define UI_FILE "menu.ui"
