@@ -11,7 +11,13 @@
           <placeholder/>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkImage" id="image">
+            <property name="visible">True</property>
+            <property name="stock">gtk-missing-image</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
     </child>

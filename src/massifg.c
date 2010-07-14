@@ -21,9 +21,12 @@
 
 #include <gtk/gtk.h>
 
+/* FIXME: include headers instead */
+#include "massifg_parser.c"
+#include "massifg_graph.c"
+
 #define GLADE_FILE "ui/massifg.glade"
 #define UI_FILE "menu.ui"
-
 
 #define MAIN_WINDOW "mainwindow"
 #define MAIN_WINDOW_VBOX "mainvbox"
@@ -38,11 +41,15 @@ void massifg_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 
 int
 main (int argc, char **argv) {
+	MassifgOutputData *data = NULL;
+	gchar *filename = NULL;
 
 	GtkBuilder *builder = NULL;
 	GtkWidget *window = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *menubar = NULL;
+	GtkWidget *graph_widget = NULL;
+
 	GtkActionGroup *def_group = NULL;
 	GtkUIManager *uimanager = NULL;
 	GError *error = NULL;
@@ -62,9 +69,27 @@ main (int argc, char **argv) {
 
 	window = GTK_WIDGET (gtk_builder_get_object (builder, MAIN_WINDOW));
 	vbox = GTK_WIDGET (gtk_builder_get_object (builder, MAIN_WINDOW_VBOX));
+	graph_widget = GTK_WIDGET (gtk_builder_get_object(builder, "image"));
 
 	gtk_builder_connect_signals (builder,NULL);
 	g_object_unref (G_OBJECT(builder));
+
+	/* Parse massif output file */
+	if (argc == 2) { 
+		filename = argv[1];
+		data = massifg_parse_file(filename);
+	}
+	else {
+		g_message("Usage: massifg FILE");
+		return 1;
+	}
+
+	/* Draw and add the graph */
+	massifg_draw_graph(data);
+	gtk_image_set_from_file(GTK_IMAGE(graph_widget), "massifg-graph-test.png");
+
+	massifg_output_data_free(data);
+
 
 	/* UI manager */
 /*	def_group = gtk_action_group_new (ACTION_GROUP);
