@@ -67,6 +67,38 @@ massifg_tokenify_line(const gchar *line, const gchar *delim) {
 	return tokens;
 }
 
+/* Parse a header element, setting element to the value parsed
+ * If line does not start with prefix, this function does nothing */
+static void
+massifg_parse_header_element(MassifgParser *parser, const gchar *line,
+				const gchar *prefix, GString *element,
+				MassifgParserState next_state) {
+	gchar **kv_tokens;
+	if (g_str_has_prefix(line, prefix)) {
+		kv_tokens = massifg_tokenify_line(line, ": ");
+		g_string_printf(element, "%s", kv_tokens[1]);
+		g_strfreev(kv_tokens);
+		parser->current_state = next_state;
+	}
+
+}
+
+/* Parse a snapshot element, setting element to the value parsed
+ * If line does not start with prefix, this function does nothing */
+static void
+massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
+				const gchar *prefix, gint *element,
+				MassifgParserState next_state) {
+	gchar **kv_tokens;
+	if (g_str_has_prefix(line, prefix)) {
+		kv_tokens = massifg_tokenify_line(line, "=");
+		*element = atoi(kv_tokens[1]);
+		g_strfreev(kv_tokens);
+		parser->current_state = next_state;
+	}
+
+}
+
 /* TODO: implement */
 static void 
 massifg_parse_heap_tree_leaf(MassifgParser *parser, gchar *line) {
@@ -89,29 +121,17 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 
 	/* Header entries
 	 * Format: "key: value", where value is a string */
-	case STATE_DESC: 
-		if (g_str_has_prefix(line, "desc: ")) {
-			kv_tokens = massifg_tokenify_line(line, ": ");
-			g_string_printf(parser->output_data->desc, "%s", kv_tokens[1]);
-			g_strfreev(kv_tokens);
-			parser->current_state = STATE_CMD;
-		}
+	case STATE_DESC:
+		massifg_parse_header_element(parser, line, "desc: ", 
+			parser->output_data->desc, STATE_CMD);
 		break;
-	case STATE_CMD: 
-		if (g_str_has_prefix(line, "cmd: ")) {
-			kv_tokens = massifg_tokenify_line(line, ": ");
-			g_string_printf(parser->output_data->cmd, "%s", kv_tokens[1]);
-			g_strfreev(kv_tokens);
-			parser->current_state = STATE_TIME_UNIT;
-		}
+	case STATE_CMD:
+		massifg_parse_header_element(parser, line, "cmd: ", 
+			parser->output_data->cmd, STATE_TIME_UNIT);
 		break;
-	case STATE_TIME_UNIT: 
-		if (g_str_has_prefix(line, "time_unit: ")) {
-			kv_tokens = massifg_tokenify_line(line, ": ");
-			g_string_printf(parser->output_data->time_unit, "%s", kv_tokens[1]);
-			g_strfreev(kv_tokens);
-			parser->current_state = STATE_SNAPSHOT;
-		}
+	case STATE_TIME_UNIT:
+		massifg_parse_header_element(parser, line, "time_unit: ",
+				parser->output_data->time_unit, STATE_SNAPSHOT);
 		break;
 
 	/* Snapshot identifier
@@ -147,37 +167,21 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 	/* Snapshot entries
 	 * Format: "key=value", where value is, most often, a number */
 	case STATE_SNAPSHOT_TIME:
-		if (g_str_has_prefix(line, "time=")) {
-			kv_tokens = massifg_tokenify_line(line, "=");
-			parser->current_snapshot->time = atoi(kv_tokens[1]);
-			g_strfreev(kv_tokens);
-			parser->current_state = STATE_SNAPSHOT_MEM_HEAP;
-		}
-		break;
+		massifg_parse_snapshot_element(parser, line, "time=",
+				&parser->current_snapshot->time, STATE_SNAPSHOT_MEM_HEAP);
+		break;	
 	case STATE_SNAPSHOT_MEM_HEAP:
-		if (g_str_has_prefix(line, "mem_heap_B=")) {
-			kv_tokens = massifg_tokenify_line(line, "=");
-			parser->current_snapshot->mem_heap_B = atoi(kv_tokens[1]);
-			g_strfreev(kv_tokens);
-			parser->current_state = STATE_SNAPSHOT_MEM_HEAP_EXTRA;
-		}
+		massifg_parse_snapshot_element(parser, line, "mem_heap_B=",
+				&parser->current_snapshot->mem_heap_B, STATE_SNAPSHOT_MEM_HEAP_EXTRA);
 		break;
 	case STATE_SNAPSHOT_MEM_HEAP_EXTRA:
-		if (g_str_has_prefix(line, "mem_heap_extra_B=")) {
-			kv_tokens = massifg_tokenify_line(line, "=");
-			parser->current_snapshot->mem_heap_extra_B = atoi(kv_tokens[1]);
-			g_strfreev(kv_tokens);
-			parser->current_state = STATE_SNAPSHOT_MEM_STACKS;
-		}
+		massifg_parse_snapshot_element(parser, line, "mem_heap_extra_B=",
+				&parser->current_snapshot->mem_heap_extra_B, STATE_SNAPSHOT_MEM_STACKS);
 		break;
 	case STATE_SNAPSHOT_MEM_STACKS:
-		if (g_str_has_prefix(line, "mem_stacks_B=")) {
-			kv_tokens = massifg_tokenify_line(line, "=");
-			parser->current_snapshot->mem_stacks_B = atoi(kv_tokens[1]);
-			g_strfreev(kv_tokens);
-			/* XXX: look for next snapshot, heap tree parsing not implemented yet */
-			parser->current_state = STATE_SNAPSHOT;
-		}
+		massifg_parse_snapshot_element(parser, line, "mem_stacks_B=",
+				&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT);
+		/* XXX: looks for next snapshot, heap tree parsing not implemented yet */
 		break;
 	/* TODO: implement */
 	case STATE_SNAPSHOT_HEAP_TREE:
