@@ -31,7 +31,7 @@
 #define MAIN_WINDOW_VBOX "mainvbox"
 #define MAIN_WINDOW_MENU "mainmenu"
 
-
+/* Log function for use with glib logging facilities that just ignores input */
 void massifg_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 			const gchar *message,
 			gpointer user_data) {

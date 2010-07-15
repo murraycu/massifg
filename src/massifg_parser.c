@@ -24,6 +24,8 @@
 #include "massifg_parser.h"
 
 /* Private datastructures */
+
+/* Enum for the different possible states the parser state-machine can be in */
 typedef enum {
 	STATE_DESC,
 	STATE_CMD,
@@ -39,6 +41,8 @@ typedef enum {
 	STATE_SNAPSHOT_HEAP_TREE_LEAF,
 } MassifgParserState;
 
+/* Data strucure for the parser, which is passed around to
+ * the central functions that implement the parser */
 struct _MassifgParser {
 	MassifgParserState current_state;
 	MassifgSnapshot *current_snapshot;
@@ -49,7 +53,8 @@ typedef struct _MassifgParser MassifgParser;
 
 /* Private functions */
 
-/* Caller is responsible for freeing return value with g_strfreev () */
+/* Turn the line into tokens, splitting on delim
+ * Caller is responsible for freeing return value with g_strfreev () */
 static gchar **
 massifg_tokenify_line(const gchar *line, const gchar *delim) {
 	gchar **tokens;
@@ -61,14 +66,17 @@ massifg_tokenify_line(const gchar *line, const gchar *delim) {
 	return tokens;
 }
 
-/* */
+/* TODO: implement */
 static void 
 massifg_parse_heap_tree_leaf(MassifgParser *parser, gchar *line) {
 	;
 }
 
 
-/* */
+/* TODO: Make this function smaller, preferably by factoring code used
+ * in each case out into one or more reusable functions */
+/* Parse a single line, based on the current state of the parser
+ * NOTE: function assumes that the line does not contain any trailing newline character */
 static void 
 massifg_parse_line(MassifgParser *parser, gchar *line) {
 	gchar **kv_tokens;
@@ -78,7 +86,8 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 
 	switch (parser->current_state) {
 
-	/* Header entries */
+	/* Header entries
+	 * Format: "key: value", where value is a string */
 	case STATE_DESC: 
 		if (g_str_has_prefix(line, "desc: ")) {
 			kv_tokens = massifg_tokenify_line(line, ": ");
@@ -134,7 +143,8 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 		}
 		break;
 
-	/* Snapshot entries */ 
+	/* Snapshot entries
+	 * Format: "key=value", where value is, most often, a number */
 	case STATE_SNAPSHOT_TIME:
 		if (g_str_has_prefix(line, "time=")) {
 			kv_tokens = massifg_tokenify_line(line, "=");
@@ -179,12 +189,15 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 
 }
 
-/* */
+/* Function for freeing each element in a GList.
+ * Elements freed using this function should have been allocated using g_alloc and derivatives
+ * Meant to be used as a parameter to a g_(s)list_foreach call */
 static void massifg_free_foreach_func(gpointer data, gpointer user_data) {
 	g_free(data);
 }
 
-/* */
+/* Allocate and initialize a MassifgOutputData structure, returning a pointer to it
+ * Use massifg_output_data_free() to free */
 MassifgOutputData *massifg_output_data_new() {
 	MassifgOutputData *data;
 	data = (MassifgOutputData*) g_malloc(sizeof(MassifgOutputData));
@@ -199,7 +212,9 @@ MassifgOutputData *massifg_output_data_new() {
 }
 
 /* Public functions */
-/* */
+
+/* Free a MassifgOutputData structure, for instance as returned by
+ * massifg_output_data_new() */
 massifg_output_data_free(MassifgOutputData *data) {
 
 	g_list_foreach(data->snapshots, massifg_free_foreach_func, NULL);
@@ -213,7 +228,9 @@ massifg_output_data_free(MassifgOutputData *data) {
 }
 
 
-/* */
+/* Parse the data in the given GIOChannel, returning a pointer to
+ * the MassifgOutputData structure that represents this data
+ * Use massifg_output_data_free() to free the return value */
 MassifgOutputData
 *massifg_parse_iochannel(GIOChannel *io_channel) {
 	MassifgParser *parser = NULL;
@@ -246,7 +263,7 @@ MassifgOutputData
 
 }
 
-/* Utility function.
+/* Utility function for parsing a file, see massifg_parse_iochannel() for details
  * Returns NULL on failure */
 MassifgOutputData
 *massifg_parse_file(gchar *filename) {
@@ -255,6 +272,7 @@ MassifgOutputData
 	GError *error = NULL;
 
 	g_debug("Parsing file: %s", filename);
+
 	io_channel = g_io_channel_new_file(filename, "r", &error);
 	if (io_channel == NULL) {
 		g_message("Cannot open file %s: %s", filename, error->message);

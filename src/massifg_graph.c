@@ -37,7 +37,7 @@ typedef struct {
 	gint y;
 } MaxValues;
 
-/* */
+/* Enum that represents the different possible data series */
 typedef enum {
 	GRAPH_SERIES_HEAP,
 	GRAPH_SERIES_HEAP_EXTRA,
@@ -51,7 +51,10 @@ typedef struct {
 } MassifgGraphDrawSeries;
 
 /* Private functions */
-/* */
+
+/* Get the maximum x and y values, and put them in the MaxValues struct
+ * passed in via user_data
+ * Meant to be used as a parameter to a g_(s)list_foreach call */
 static void
 get_max_values(gpointer data, gpointer user_data) {
 	MassifgSnapshot *s = (MassifgSnapshot *)data;
@@ -66,7 +69,8 @@ get_max_values(gpointer data, gpointer user_data) {
 		max->x = s->time;
 }
 
-/* Draw a single data point of a data series */
+/* Draw a single data point of a data series 
+ * Meant to be used as a parameter to a g_(s)list_foreach call */
 static void
 draw_snapshot_point(gpointer data, gpointer user_data) {
 	MassifgSnapshot *snapshot = (MassifgSnapshot *)data;
@@ -112,6 +116,7 @@ draw_snapshot_serie(cairo_t *context, MassifgOutputData *data, MassifgGraphSerie
 	ds.cr = context;
 	ds.series = serie;
 
+	/* Create the path for the serie */
 	g_list_foreach(data->snapshots, draw_snapshot_point, &ds);
 	cairo_line_to(context, (double)last_snapshot->time, 0.);
 	cairo_close_path(context);
@@ -154,16 +159,15 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data) {
 
 
 /* Public functions */
-/* TODO: use another way to return the graph than writing a png to disk */
-/* */
+
+/* FIXME: use another way to return the graph than writing a png to disk */
+/* Draw a graph of data using Cairo */
 void massifg_draw_graph(MassifgOutputData *data) {
 	cairo_surface_t *surface = NULL;
 	cairo_t *context = NULL;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, SURF_SIZE_W, SURF_SIZE_H);
 	context = cairo_create(surface);
-
-	/* Set up cairo transform. Need to find the max values for the data for this */
 
 	/* Draw each data series; heap, heap_extra, stack */
 	draw_snapshot_series(context, data);
