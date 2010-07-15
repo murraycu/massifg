@@ -13,6 +13,9 @@ configure
 depcomp
 install-sh
 missing
-src/.deps
-src/.dirstamp
-
+*/.deps
+*/.dirstamp
+*-report.xml
+*-report.html
+INSTALL
+COPYING
