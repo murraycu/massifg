@@ -14,6 +14,10 @@ parser_functest_short(void) {
 	GList *list;
 	MassifgSnapshot *s;
 
+	/* Silence DEBUG messages */
+	g_log_set_handler(NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
+
+	/* Run the parser */
 	data = massifg_parse_file(PARSER_TEST_INPUT_SHORT);
 
 	/* Header values */
