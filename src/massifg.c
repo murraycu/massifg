@@ -23,6 +23,7 @@
 
 #include "massifg_parser.h"
 #include "massifg_graph.h"
+#include "massifg_utils.h"
 
 #define GLADE_FILE "ui/massifg.glade"
 #define UI_FILE "menu.ui"
@@ -31,12 +32,6 @@
 #define MAIN_WINDOW_VBOX "mainvbox"
 #define MAIN_WINDOW_MENU "mainmenu"
 
-/* Log function for use with glib logging facilities that just ignores input */
-void massifg_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
-			const gchar *message,
-			gpointer user_data) {
-	;
-}
 
 int
 main (int argc, char **argv) {
@@ -54,7 +49,7 @@ main (int argc, char **argv) {
 	GError *error = NULL;
 
 	gtk_init (&argc, &argv);
-	g_log_set_handler (NULL, G_LOG_LEVEL_DEBUG, massifg_log_ignore, NULL);
+	g_log_set_handler (NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
 
 	/* GTK builder */
 	builder = gtk_builder_new();

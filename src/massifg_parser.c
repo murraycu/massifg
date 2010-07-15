@@ -22,6 +22,7 @@
 #include <glib.h>
 
 #include "massifg_parser.h"
+#include "massifg_utils.h"
 
 /* Private datastructures */
 
@@ -189,13 +190,6 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 
 }
 
-/* Function for freeing each element in a GList.
- * Elements freed using this function should have been allocated using g_alloc and derivatives
- * Meant to be used as a parameter to a g_(s)list_foreach call */
-static void massifg_free_foreach_func(gpointer data, gpointer user_data) {
-	g_free(data);
-}
-
 /* Allocate and initialize a MassifgOutputData structure, returning a pointer to it
  * Use massifg_output_data_free() to free */
 MassifgOutputData *massifg_output_data_new() {
@@ -217,7 +211,7 @@ MassifgOutputData *massifg_output_data_new() {
  * massifg_output_data_new() */
 massifg_output_data_free(MassifgOutputData *data) {
 
-	g_list_foreach(data->snapshots, massifg_free_foreach_func, NULL);
+	g_list_foreach(data->snapshots, massifg_utils_free_foreach, NULL);
 	g_list_free(data->snapshots);
 
 	g_string_free(data->time_unit, TRUE);

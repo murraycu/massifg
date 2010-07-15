@@ -7,7 +7,8 @@ AM_CPPFLAGS = $(DEPS_CFLAGS)
 bin_PROGRAMS = bin/massifg
 bin_massifg_SOURCES = src/massifg.c \
 		src/massifg_parser.c src/massifg_parser.h \
-                src/massifg_graph.c src/massifg_graph.h
+                src/massifg_graph.c src/massifg_graph.h \
+		src/massifg_utils.c src/massifg_utils.h
 
 bin_massifg_LDADD = $(DEPS_LIBS)
 

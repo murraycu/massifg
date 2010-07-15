@@ -1,7 +1,8 @@
 
 #include <glib.h>
 
-/* FIXME: import header instead */
+/* FIXME: import headers instead */
+#include "../src/massifg_utils.c"
 #include "../src/massifg_parser.c"
 
 #define PARSER_TEST_INPUT_SHORT "tests/massif-output-2snapshots.txt"
