@@ -23,6 +23,69 @@
  * in a single component */
 
 #include <glib.h>
+
+/* Private functions */
+
+/* Search system directories for given filename, as given by the glib function g_get_system_data_dirs()
+ * Caller is responsible for freeing the returned array
+ * Returns an absolute path, or NULL on */
+static gchar *
+get_system_file(const gchar *progam_name, const gchar *filename)
+{
+   gchar *pathname = NULL;
+   const gchar* const *system_data_dirs;
+
+   /* Iterate over array of strings to find system data files. */
+   for (system_data_dirs = g_get_system_data_dirs (); *system_data_dirs != NULL; system_data_dirs++)
+   {
+      pathname = g_build_filename(*system_data_dirs, progam_name, filename, NULL);
+      if (g_file_test(pathname, G_FILE_TEST_EXISTS))
+      {
+         break;
+      }
+      else
+      {
+         g_free (pathname);
+         pathname = NULL;
+      }
+   }
+   return pathname;
+}
+
+/* Find a resource file
+ * First checks INSTALL_PREFIX/data/ in case the program is running from the build dir
+ * Second, INSTALL_PREFIX/share in case of running from a non-system prefix
+ * Then, checks the system folders as given by g_get_system_data_dirs()
+ * Returns the path to the file, or NULL on failing to find a matching file */
+gchar *
+massifg_utils_get_resource_file(const gchar *argv0, const gchar *filename) {
+	gchar *pathname = NULL;
+	const gchar *application_name = "massifg";
+	const gchar *install_prefix = NULL;
+	install_prefix = g_path_get_dirname(argv0);
+	install_prefix = g_path_get_dirname(install_prefix);
+
+	pathname = g_build_filename(install_prefix, "data", filename, NULL);
+	g_debug("Looking for resource file \"%s\" in %s", filename, pathname);
+	if (pathname != NULL && g_file_test(pathname, G_FILE_TEST_EXISTS)) {
+		g_debug("Found resource file \"%s\": %s", filename, pathname);
+		return pathname;
+	}
+
+	pathname = g_build_filename(install_prefix, "share", application_name, filename, NULL);
+	g_debug("Looking for resource file \"%s\" in %s", filename, pathname);
+	if (pathname != NULL && g_file_test(pathname, G_FILE_TEST_EXISTS)) {
+		g_debug("Found resource file \"%s\": %s", filename, pathname);
+		return pathname;
+	}
+
+	pathname = get_system_file(application_name, filename);
+	if (pathname != NULL) {
+		g_debug("Found resource file \"%s\": %s", filename, pathname);
+	}
+	return pathname;
+}
+
 /* Log function for use with glib logging facilities that just ignores input */
 void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 			const gchar *message,

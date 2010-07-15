@@ -16,6 +16,10 @@ bin_massifg_LDADD = $(DEPS_LIBS)
 # Distribution
 dist_noinst_SCRIPTS = autogen.sh
 
+uidir = $(pkgdatadir)
+dist_ui_DATA = data/massifg.glade \
+               data/menu.ui
+
 # Unit/Functional tests setup
 check_PROGRAMS = tests/parser
 tests_parser_SOURCES = tests/parser.c

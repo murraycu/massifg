@@ -133,9 +133,8 @@ open_file_action(GtkAction *action, gpointer data) {
 /* Public functions */
 gint
 massifg_gtkui_init(MassifgApplication *app) {
-	/* TODO: look up these at runtime, to support not running from the build dir */
-	gchar *gladefile_path = "ui/massifg.glade";
-	gchar *uifile_path = "ui/menu.ui";
+	gchar *gladefile_path = NULL;
+	gchar *uifile_path = NULL;
 
 	GtkUIManager *uimanager = NULL;
 	GtkWidget *window = NULL;
@@ -152,8 +151,15 @@ massifg_gtkui_init(MassifgApplication *app) {
 	};
 	const int num_actions = G_N_ELEMENTS(actions);
 
+	/* Initialize gtk */
 	gtk_init (app->argc_ptr, app->argv_ptr);
+
+	/* Ignore debug output */
+	/* TODO: allow the user to chose this at runtime, with an envvar or cli option */
 	g_log_set_handler (NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
+
+	gladefile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "massifg.glade");
+	uifile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "menu.ui");
 
 	/* GTK builder */
 	app->gtk_builder = gtk_builder_new();
