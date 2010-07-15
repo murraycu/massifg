@@ -37,6 +37,18 @@ typedef struct {
 	gint y;
 } MaxValues;
 
+/* */
+typedef enum {
+	GRAPH_SERIES_HEAP,
+	GRAPH_SERIES_HEAP_EXTRA,
+	GRAPH_SERIES_STACKS,
+} MassifgGraphSeries;
+
+/* Used as an argument to the draw_snapshot_point () foreach function */
+typedef struct {
+	cairo_t *cr;
+	MassifgGraphSeries series;
+} MassifgGraphDrawSeries;
 
 /* Private functions */
 /* */
@@ -54,33 +66,53 @@ get_max_values(gpointer data, gpointer user_data) {
 		max->x = s->time;
 }
 
-/* */
+/* Draw a single data point of a data series */
 static void
 draw_snapshot_point(gpointer data, gpointer user_data) {
 	MassifgSnapshot *snapshot = (MassifgSnapshot *)data;
-	cairo_t *cr = (cairo_t *)user_data;
+	MassifgGraphDrawSeries *draw_series = (MassifgGraphDrawSeries *)user_data;
+	double x, x_dev;
+	double y, y_dev;
 
-	double x = (double)snapshot->time;
-	double y = (double)snapshot->mem_heap_B; /* FIXME */
-	double x_dev = x;
-	double y_dev = y;
+	/* Get the x, y values for the point */
+	x = (double)snapshot->time;
+	switch (draw_series->series) {
+	case GRAPH_SERIES_HEAP:
+		y = (double)snapshot->mem_heap_B;
+		break;
+	case GRAPH_SERIES_HEAP_EXTRA:
+		y = (double)snapshot->mem_heap_B +
+		    (double)snapshot->mem_heap_extra_B;
+		break;
+	case GRAPH_SERIES_STACKS:
+		y = (double)snapshot->mem_heap_B +
+		    (double)snapshot->mem_heap_extra_B +
+		    (double)snapshot->mem_stacks_B;
+		break;
+	}
 
-	cairo_line_to(cr, x, y);
+	/* Draw the data point */
+	cairo_line_to(draw_series->cr, x, y);
 
-	cairo_user_to_device(cr, &x_dev, &y_dev);
+	/* Print debugging information */ 
+	x_dev = x;
+	y_dev = y;
+	cairo_user_to_device(draw_series->cr, &x_dev, &y_dev);
 	g_debug("Drawing snapshot point: x=%e, y=%e <=> x_dev=%f, y_dev=%f",
 			x, y, x_dev, y_dev);
 
 }
 
-/* TODO: make generic, so we can draw the different series */
 /* Draw a single data series */
 static void
-draw_snapshot_serie(cairo_t *context, MassifgOutputData *data) {
+draw_snapshot_serie(cairo_t *context, MassifgOutputData *data, MassifgGraphSeries serie) {
 	GList *last_elem = g_list_last(data->snapshots);
 	MassifgSnapshot *last_snapshot = (MassifgSnapshot *)last_elem->data;
+	MassifgGraphDrawSeries ds;
+	ds.cr = context;
+	ds.series = serie;
 
-	g_list_foreach(data->snapshots, draw_snapshot_point, context);
+	g_list_foreach(data->snapshots, draw_snapshot_point, &ds);
 	cairo_line_to(context, (double)last_snapshot->time, 0.);
 	cairo_close_path(context);
 
@@ -107,7 +139,17 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data) {
 	g_debug("Scaling by factor: x=%e, y=%e", SURF_SIZE_W/(double)max.x, SURF_SIZE_H/(double)max.y);
 
 	/* Draw the path */
-	draw_snapshot_serie(context, data);
+	/* NOTE: order here matters, because the series that are drawn later
+	 * are composited over the previous ones. Thus, for correct operation,
+	 * the graph with the largest y values must be drawn first.
+	 * The code deciding which series that is can found in draw_snapshot_point ()
+	 */
+	cairo_set_source_rgba(context, 0.0, 0.0, 1.0, 1.0);
+	draw_snapshot_serie(context, data, GRAPH_SERIES_STACKS);
+	cairo_set_source_rgba(context, 0.0, 1.0, 0.0, 1.0);
+	draw_snapshot_serie(context, data, GRAPH_SERIES_HEAP_EXTRA);
+	cairo_set_source_rgba(context, 1.0, 0.0, 0.0, 1.0);
+	draw_snapshot_serie(context, data, GRAPH_SERIES_HEAP);
 }
 
 
