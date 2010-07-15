@@ -79,7 +79,11 @@ main (int argc, char **argv) {
 		data = massifg_parse_file(filename);
 	}
 	else {
-		g_message("Usage: massifg FILE");
+		g_message("Usage: massifg FILE"); /* Wrong program invokation */
+		return 1;
+	}
+	if (data == NULL) {
+		g_message("Unable to parse file %s", filename); /* Parsing failed */
 		return 1;
 	}
 

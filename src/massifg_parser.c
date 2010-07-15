@@ -212,22 +212,18 @@ massifg_output_data_free(MassifgOutputData *data) {
 	g_free(data);
 }
 
-/* TODO: write functional/unit tests */
-/* */
-MassifgOutputData 
-*massifg_parse_file(gchar *filename) {
 
+/* */
+MassifgOutputData
+*massifg_parse_iochannel(GIOChannel *io_channel) {
 	MassifgParser *parser = NULL;
 	MassifgOutputData *output_data = NULL;
 
-	GIOChannel *io_channel = NULL;
 	GError *error = NULL;
 	GString *line_string = NULL;
 	GIOStatus io_status = G_IO_STATUS_NORMAL;
 
 	/* Initialize */
-	/* TODO: error checking */
-	io_channel = g_io_channel_new_file(filename, "r", &error);
 	output_data = massifg_output_data_new();
 
 	MassifgParser parser_onstack;
@@ -236,7 +232,6 @@ MassifgOutputData
 	parser->output_data = output_data;
 
 	/* Parse file */
-	g_debug("Parsing file: %s", filename);
 	line_string = g_string_new("initial string");
 
 	while (io_status == G_IO_STATUS_NORMAL) {
@@ -246,10 +241,29 @@ MassifgOutputData
 	}
 
 	g_string_free(line_string, TRUE);
-	g_io_channel_unref(io_channel);
 
 	return output_data;
 
+}
+
+/* Utility function.
+ * Returns NULL on failure */
+MassifgOutputData
+*massifg_parse_file(gchar *filename) {
+	MassifgOutputData *output_data = NULL;
+	GIOChannel *io_channel = NULL;
+	GError *error = NULL;
+
+	g_debug("Parsing file: %s", filename);
+	io_channel = g_io_channel_new_file(filename, "r", &error);
+	if (io_channel == NULL) {
+		g_message("Cannot open file %s: %s", filename, error->message);
+		return NULL;
+	}
+
+	output_data = massifg_parse_iochannel(io_channel);
+	g_io_channel_unref(io_channel);
+	return output_data;
 }
 
 
