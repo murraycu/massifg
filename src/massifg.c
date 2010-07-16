@@ -25,12 +25,20 @@
 #include "massifg_graph.h"
 #include "massifg_utils.h"
 
-#define GLADE_FILE "ui/massifg.glade"
-#define UI_FILE "menu.ui"
-
 #define MAIN_WINDOW "mainwindow"
 #define MAIN_WINDOW_VBOX "mainvbox"
-#define MAIN_WINDOW_MENU "mainmenu"
+
+#define MAIN_WINDOW_MENU "/MainMenu"
+
+/* Destroy event handler for the main window, hooked up though glade/gtkbuilder */
+void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
+	gtk_main_quit();
+}
+
+void
+quit_action(GtkAction *action, gpointer data) {
+	mainwindow_destroy(NULL, NULL);
+}
 
 
 int
@@ -38,15 +46,25 @@ main (int argc, char **argv) {
 	MassifgOutputData *data = NULL;
 	gchar *filename = NULL;
 
+	/* TODO: look up these at runtime, to support not running from the build dir */
+	gchar *gladefile_path = "ui/massifg.glade";
+	gchar *uifile_path = "ui/menu.ui";
+
 	GtkBuilder *builder = NULL;
 	GtkWidget *window = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *menubar = NULL;
 	GtkWidget *graph_widget = NULL;
 
-	GtkActionGroup *def_group = NULL;
 	GtkUIManager *uimanager = NULL;
 	GError *error = NULL;
+	GtkActionGroup *action_group = NULL;
+	GtkActionEntry actions[] =
+	{ /* action name, stock id, label, accelerator, tooltip, action (callback) */
+	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
+	  { "QuitAction", NULL, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
+	};
+	const int num_actions = G_N_ELEMENTS(actions);
 
 	gtk_init (&argc, &argv);
 	g_log_set_handler (NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
@@ -54,7 +72,7 @@ main (int argc, char **argv) {
 	/* GTK builder */
 	builder = gtk_builder_new();
 
-	if (!gtk_builder_add_from_file (builder, GLADE_FILE, &error))
+	if (!gtk_builder_add_from_file (builder, gladefile_path, &error))
 	{
 		g_message ("%s", error->message);
 		g_error_free (error);
@@ -67,6 +85,29 @@ main (int argc, char **argv) {
 
 	gtk_builder_connect_signals (builder,NULL);
 	g_object_unref (G_OBJECT(builder));
+
+	/* UI manager */
+	action_group = gtk_action_group_new ("action group");
+	gtk_action_group_add_actions (action_group, actions, num_actions, NULL);
+
+	uimanager = gtk_ui_manager_new ();
+	gtk_ui_manager_insert_action_group (uimanager, action_group, 0);
+
+	if (!gtk_ui_manager_add_ui_from_file (uimanager, uifile_path, &error))
+	{
+		g_message ("Building menus failed: %s", error->message);
+		g_error_free (error);
+		return 1;
+	}
+
+	/* Menubar */
+	menubar = gtk_ui_manager_get_widget (uimanager, MAIN_WINDOW_MENU);
+	gtk_window_add_accel_group (GTK_WINDOW (window),
+		               gtk_ui_manager_get_accel_group (uimanager));
+
+	gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, FALSE, 1);
+	gtk_box_reorder_child (GTK_BOX (vbox), menubar, 0);
+
 
 	/* Parse massif output file */
 	if (argc == 2) { 
@@ -87,31 +128,6 @@ main (int argc, char **argv) {
 	gtk_image_set_from_file(GTK_IMAGE(graph_widget), "massifg-graph-test.png");
 
 	massifg_output_data_free(data);
-
-
-	/* UI manager */
-/*	def_group = gtk_action_group_new (ACTION_GROUP);
-	gtk_action_group_add_actions (def_group, actions, NUM_ACTIONS, NULL);
-	gtk_action_group_add_radio_actions (def_group, radio_actions, NUM_RACTIONS,
-		                       -1, G_CALLBACK (get_sentence_action), NULL);
-
-	uimanager = gtk_ui_manager_new ();
-	gtk_ui_manager_insert_action_group (uimanager, def_group, 0);
-
-	if (!gtk_ui_manager_add_ui_from_file (uimanager, UI_FILE, &error))
-	{
-		g_message ("Building menus failed: %s", error->message);
-		g_error_free (error);
-		return 1;
-	}
-
-	/* Menubar */
-/*	menubar = gtk_ui_manager_get_widget (uimanager, MENU);
-	gtk_window_add_accel_group (GTK_WINDOW (window),
-		               gtk_ui_manager_get_accel_group (uimanager));
-
-	gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, FALSE, 1);
-	gtk_box_reorder_child (GTK_BOX (vbox), menubar, 0);
 
 
 	/* Present window, and start the gtk mainloop */
