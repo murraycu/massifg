@@ -46,7 +46,7 @@ typedef struct _MassifgOutputData MassifgOutputData;
 
 /* Public functions */
 MassifgOutputData *massifg_parse_file(gchar *filename);
-MassifgOutputData *massifg_parse_iochannel(GIOChannel *io_channel);
+MassifgOutputData *massifg_parse_iochannel(GIOChannel *io_channel, GError *error);
 void massifg_output_data_free(MassifgOutputData *data);
 
 #endif /* __MASSIFG_PARSER_H__ */

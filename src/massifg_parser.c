@@ -228,13 +228,13 @@ void massifg_output_data_free(MassifgOutputData *data) {
 
 /* Parse the data in the given GIOChannel, returning a pointer to
  * the MassifgOutputData structure that represents this data
+ * Returns NULL on failure
  * Use massifg_output_data_free() to free the return value */
 MassifgOutputData
-*massifg_parse_iochannel(GIOChannel *io_channel) {
+*massifg_parse_iochannel(GIOChannel *io_channel, GError *error) {
 	MassifgParser *parser = NULL;
 	MassifgOutputData *output_data = NULL;
 
-	GError *error = NULL;
 	GString *line_string = NULL;
 	GIOStatus io_status = G_IO_STATUS_NORMAL;
 
@@ -246,13 +246,16 @@ MassifgOutputData
 	parser->current_state = STATE_DESC;
 	parser->output_data = output_data;
 
-	/* Parse file */
 	line_string = g_string_new("initial string");
 
+	/* Parse file */
 	while (io_status == G_IO_STATUS_NORMAL) {
 		io_status = g_io_channel_read_line_string(io_channel, line_string, NULL, &error);
 		line_string->str = g_strchomp(line_string->str); /* Remove newline */
 		massifg_parse_line(parser, line_string->str);
+	}
+	if (io_status == G_IO_STATUS_ERROR) {
+		output_data = NULL;
 	}
 
 	g_string_free(line_string, TRUE);
@@ -277,7 +280,7 @@ MassifgOutputData
 		return NULL;
 	}
 
-	output_data = massifg_parse_iochannel(io_channel);
+	output_data = massifg_parse_iochannel(io_channel, error);
 	g_io_channel_unref(io_channel);
 	return output_data;
 }
