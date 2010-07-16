@@ -213,7 +213,7 @@ MassifgOutputData *massifg_output_data_new() {
 
 /* Free a MassifgOutputData structure, for instance as returned by
  * massifg_output_data_new() */
-massifg_output_data_free(MassifgOutputData *data) {
+void massifg_output_data_free(MassifgOutputData *data) {
 
 	g_list_foreach(data->snapshots, massifg_utils_free_foreach, NULL);
 	g_list_free(data->snapshots);
