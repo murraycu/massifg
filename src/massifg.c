@@ -44,23 +44,9 @@ main (int argc, char **argv) {
 		return 1;
 	}
 
-	/* Parse massif output file */
 	if (argc == 2) { 
 		app.filename = argv[1];
-		app.output_data = massifg_parse_file(app.filename);
 	}
-	else {
-		g_message("Usage: massifg FILE"); /* Wrong program invokation */
-		return 1;
-	}
-	if (app.output_data == NULL) {
-		g_message("Unable to parse file %s", app.filename); /* Parsing failed */
-		return 1;
-	}
-
-	/* Draw the graph */
-	massifg_draw_graph(app.output_data);
-	massifg_output_data_free(app.output_data);
 
 	/* Present the UI and hand over control to the gtk mainloop */
 	massifg_gtkui_start(&app);
