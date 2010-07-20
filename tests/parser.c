@@ -60,6 +60,13 @@ parser_return_null_on_nonexisting_file(void) {
 	g_assert(data == NULL);
 }
 
+void
+parser_return_null_on_bogus_data(void) {
+	MassifgOutputData *data;
+
+	data = massifg_parse_file("tests/parser.c");
+	g_assert(data == NULL);
+}
 
 int
 main (int argc, char **argv) {
@@ -67,6 +74,7 @@ main (int argc, char **argv) {
 
 	g_test_add_func("/parser/functest", parser_functest_short);
 	g_test_add_func("/parser/nonexisting-file", parser_return_null_on_nonexisting_file);
+	g_test_add_func("/parser/bogus-data", parser_return_null_on_bogus_data);
 
 	return g_test_run();
 }

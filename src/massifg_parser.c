@@ -106,8 +106,6 @@ massifg_parse_heap_tree_leaf(MassifgParser *parser, gchar *line) {
 }
 
 
-/* TODO: Make this function smaller, preferably by factoring code used
- * in each case out into one or more reusable functions */
 /* Parse a single line, based on the current state of the parser
  * NOTE: function assumes that the line does not contain any trailing newline character */
 static void 
@@ -255,6 +253,10 @@ MassifgOutputData
 		massifg_parse_line(parser, line_string->str);
 	}
 	if (io_status == G_IO_STATUS_ERROR) {
+		output_data = NULL;
+	}
+	if (g_list_length(output_data->snapshots) < 1 ) {
+		g_debug("Parser was unable to retrieve any snapshots");
 		output_data = NULL;
 	}
 
