@@ -22,6 +22,7 @@
 /* */
 
 #include <gtk/gtk.h>
+#include <stdarg.h>
 
 #include "massifg.h"
 #include "massifg_gtkui.h"
@@ -35,6 +36,37 @@
 
 
 /* Private functions */
+/* Present a dialog to the user with the message given by msg_format and the following arguments
+ * These arguments follow the same conventions as printf() and friends.
+ * Note that the message can be formatted with Pango markup language, if wanted */
+void
+massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
+	GtkMessageDialog *error_dialog = NULL;
+	GString *markup_string = NULL;
+	GtkWindow *main_window = NULL;
+	va_list argp;
+
+	/* Initialize */
+	main_window = GTK_WINDOW(gtk_builder_get_object(app->gtk_builder, MAIN_WINDOW));
+	error_dialog = gtk_message_dialog_new(main_window,
+                                 GTK_DIALOG_DESTROY_WITH_PARENT,
+                                 GTK_MESSAGE_ERROR,
+                                 GTK_BUTTONS_CLOSE,
+                                 "");
+	markup_string = g_string_new("");
+
+	/* Prepare markup string, */
+	va_start(argp, msg_format);
+	g_string_vprintf(markup_string, msg_format, argp);
+	va_end(argp);
+
+	/* Present the dialog to the user */
+	gtk_message_dialog_set_markup(error_dialog, markup_string->str);
+	gtk_dialog_run(GTK_DIALOG(error_dialog));
+
+	gtk_widget_destroy(error_dialog);
+}
+
 void
 massifg_gtkui_file_changed(MassifgApplication *app) {
 	GtkImage *graph_image = NULL;
@@ -45,8 +77,7 @@ massifg_gtkui_file_changed(MassifgApplication *app) {
 	/* FIXME: currently does not return NULL on invalid input, but segfaults later */
 	app->output_data = massifg_parse_file(app->filename);
 	if (app->output_data == NULL) {
-		/* FIXME: !! this must give user feedback in the GUI, not on the cli */
-		g_message("Unable to parse file %s", app->filename); /* Parsing failed */
+		massifg_gtkui_errormsg(app, "Unable to parse file %s", app->filename); /* Parsing failed */
 		return;
 	}
 
