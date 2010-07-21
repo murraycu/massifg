@@ -70,14 +70,15 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 void
 massifg_gtkui_file_changed(MassifgApplication *app) {
 	GtkImage *graph_image = NULL;
+	GError *error = NULL;
 
 	graph_image = GTK_IMAGE(gtk_builder_get_object (app->gtk_builder, "image"));
 
 	/* Parse the file */
-	/* FIXME: currently does not return NULL on invalid input, but segfaults later */
-	app->output_data = massifg_parse_file(app->filename);
+	app->output_data = massifg_parse_file(app->filename, &error);
 	if (app->output_data == NULL) {
-		massifg_gtkui_errormsg(app, "Unable to parse file %s", app->filename); /* Parsing failed */
+		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
+				app->filename, error->message); /* Parsing failed */
 		return;
 	}
 

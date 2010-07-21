@@ -25,6 +25,8 @@
 #include "massifg_utils.h"
 
 /* Private datastructures */
+#define MASSIFG_PARSE_ERROR g_quark_from_string("MASSIFG_PARSE_ERROR")
+#define MASSIFG_PARSE_ERROR_NOSNAPSHOTS 1
 
 /* Enum for the different possible states the parser state-machine can be in */
 typedef enum {
@@ -229,7 +231,7 @@ void massifg_output_data_free(MassifgOutputData *data) {
  * Returns NULL on failure
  * Use massifg_output_data_free() to free the return value */
 MassifgOutputData
-*massifg_parse_iochannel(GIOChannel *io_channel, GError *error) {
+*massifg_parse_iochannel(GIOChannel *io_channel, GError **error) {
 	MassifgParser *parser = NULL;
 	MassifgOutputData *output_data = NULL;
 
@@ -248,7 +250,7 @@ MassifgOutputData
 
 	/* Parse file */
 	while (io_status == G_IO_STATUS_NORMAL) {
-		io_status = g_io_channel_read_line_string(io_channel, line_string, NULL, &error);
+		io_status = g_io_channel_read_line_string(io_channel, line_string, NULL, error);
 		line_string->str = g_strchomp(line_string->str); /* Remove newline */
 		massifg_parse_line(parser, line_string->str);
 	}
@@ -256,8 +258,8 @@ MassifgOutputData
 		output_data = NULL;
 	}
 	if (g_list_length(output_data->snapshots) < 1 ) {
-		g_debug("Parser was unable to retrieve any snapshots");
 		output_data = NULL;
+		g_set_error_literal(error, MASSIFG_PARSE_ERROR, MASSIFG_PARSE_ERROR_NOSNAPSHOTS, "Could not parse any snapshots");
 	}
 
 	g_string_free(line_string, TRUE);
@@ -269,16 +271,14 @@ MassifgOutputData
 /* Utility function for parsing a file, see massifg_parse_iochannel() for details
  * Returns NULL on failure */
 MassifgOutputData
-*massifg_parse_file(gchar *filename) {
+*massifg_parse_file(gchar *filename, GError **error) {
 	MassifgOutputData *output_data = NULL;
 	GIOChannel *io_channel = NULL;
-	GError *error = NULL;
 
 	g_debug("Parsing file: %s", filename);
 
-	io_channel = g_io_channel_new_file(filename, "r", &error);
+	io_channel = g_io_channel_new_file(filename, "r", error);
 	if (io_channel == NULL) {
-		g_message("Cannot open file %s: %s", filename, error->message);
 		return NULL;
 	}
 

@@ -18,7 +18,7 @@ parser_functest_short(void) {
 	g_log_set_handler(NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
 
 	/* Run the parser */
-	data = massifg_parse_file(PARSER_TEST_INPUT_SHORT);
+	data = massifg_parse_file(PARSER_TEST_INPUT_SHORT, NULL);
 
 	/* Header values */
 	g_assert_cmpstr(data->desc->str, ==, "--detailed-freq=1");
@@ -56,7 +56,7 @@ void
 parser_return_null_on_nonexisting_file(void) {
 	MassifgOutputData *data;
 
-	data = massifg_parse_file("tests/non-existing-file.keejrsperr");
+	data = massifg_parse_file("tests/non-existing-file.keejrsperr", NULL);
 	g_assert(data == NULL);
 }
 
@@ -64,7 +64,7 @@ void
 parser_return_null_on_bogus_data(void) {
 	MassifgOutputData *data;
 
-	data = massifg_parse_file("tests/parser.c");
+	data = massifg_parse_file("tests/parser.c", NULL);
 	g_assert(data == NULL);
 }
 
