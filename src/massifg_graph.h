@@ -19,5 +19,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void massifg_draw_graph(MassifgOutputData *data);
+#include <cairo.h>
+
+void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, int height);
 

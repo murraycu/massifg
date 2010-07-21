@@ -24,9 +24,6 @@
 
 #include "massifg_parser.h"
 
-#define SURF_SIZE_H 400
-#define SURF_SIZE_W 800
-
 /* Data structures */
 
 /* Used as an argument to get_max_values () foreach function 
@@ -126,7 +123,7 @@ draw_snapshot_serie(cairo_t *context, MassifgOutputData *data, MassifgGraphSerie
 
 /* Draw all the data series */
 static void
-draw_snapshot_series(cairo_t *context, MassifgOutputData *data) {
+draw_snapshot_series(cairo_t *context, MassifgOutputData *data, int width, int height) {
 	MaxValues max;
 	max.y = -1;
 	max.x = -1;
@@ -136,12 +133,12 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data) {
 	/* Transform from positive y-axis downwards to positive y-axis upwards */
 	g_debug("Transforming to traditional human y-axis conversion.");
 	cairo_scale(context, 1.0, -1.0);
-	cairo_translate(context, 0, -SURF_SIZE_H);
+	cairo_translate(context, 0, -height);
 
 	/* Scale to match the boundries of the image */
 	g_list_foreach(data->snapshots, get_max_values, &max);
-	cairo_scale(context, SURF_SIZE_W/(double)max.x, SURF_SIZE_H/(double)max.y);
-	g_debug("Scaling by factor: x=%e, y=%e", SURF_SIZE_W/(double)max.x, SURF_SIZE_H/(double)max.y);
+	cairo_scale(context, width/(double)max.x, height/(double)max.y);
+	g_debug("Scaling by factor: x=%e, y=%e", width/(double)max.x, height/(double)max.y);
 
 	/* Draw the path */
 	/* NOTE: order here matters, because the series that are drawn later
@@ -160,24 +157,13 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data) {
 
 /* Public functions */
 
-/* FIXME: use another way to return the graph than writing a png to disk */
 /* Draw a graph of data using Cairo */
-void massifg_draw_graph(MassifgOutputData *data) {
-	cairo_surface_t *surface = NULL;
-	cairo_t *context = NULL;
+void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, int height) {
 
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, SURF_SIZE_W, SURF_SIZE_H);
-	context = cairo_create(surface);
+	/* TODO: axes, tics and legend */
 
 	/* Draw each data series; heap, heap_extra, stack */
-	draw_snapshot_series(context, data);
-
-	/* Output */
-	cairo_surface_write_to_png(surface, "massifg-graph-test.png");
-
-	/* Cleanup */
-	cairo_surface_destroy(surface);
-	cairo_destroy(context);
+	draw_snapshot_series(context, data, width, height);
 
 }
 

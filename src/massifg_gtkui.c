@@ -69,10 +69,10 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 
 void
 massifg_gtkui_file_changed(MassifgApplication *app) {
-	GtkImage *graph_image = NULL;
+	GtkWidget *graph = NULL;
 	GError *error = NULL;
 
-	graph_image = GTK_IMAGE(gtk_builder_get_object (app->gtk_builder, "image"));
+	graph = GTK_WIDGET(gtk_builder_get_object(app->gtk_builder, "graph"));
 
 	/* Parse the file */
 	app->output_data = massifg_parse_file(app->filename, &error);
@@ -82,11 +82,8 @@ massifg_gtkui_file_changed(MassifgApplication *app) {
 		return;
 	}
 
-	/* Draw the graph */
-	massifg_draw_graph(app->output_data);
-
 	/* Update the UI */
-	gtk_image_set_from_file(graph_image, "massifg-graph-test.png");
+	gtk_widget_queue_draw(graph);
 
 }
 
@@ -97,6 +94,18 @@ void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
 	gtk_main_quit();
 }
 
+/* Draw the graph widget */
+static gboolean
+graph_widget_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
+	MassifgApplication *app = (MassifgApplication *)data;
+	cairo_t *cr = gdk_cairo_create(widget->window);
+
+	if (app->output_data != NULL) {
+		massifg_draw_graph(cr, app->output_data,
+			widget->allocation.width, widget->allocation.height);
+	}
+	return FALSE;
+}
 
 /* Actions */
 void
@@ -141,6 +150,7 @@ massifg_gtkui_init(MassifgApplication *app) {
 	GtkWidget *window = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *menubar = NULL;
+	GtkWidget *graph = NULL;
 
 	GError *error = NULL;
 	GtkActionGroup *action_group = NULL;
@@ -174,6 +184,10 @@ massifg_gtkui_init(MassifgApplication *app) {
 
 	window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
+
+	graph = GTK_WIDGET(gtk_builder_get_object (app->gtk_builder, "graph"));
+	g_signal_connect(G_OBJECT(graph), "expose_event",
+                    G_CALLBACK(graph_widget_expose_event), app);
 
 	gtk_builder_connect_signals (app->gtk_builder,NULL);
 

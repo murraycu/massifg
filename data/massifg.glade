@@ -12,9 +12,10 @@
           <placeholder/>
         </child>
         <child>
-          <object class="GtkImage" id="image">
+          <object class="GtkDrawingArea" id="graph">
+            <property name="width_request">200</property>
+            <property name="height_request">100</property>
             <property name="visible">True</property>
-            <property name="stock">gtk-missing-image</property>
           </object>
           <packing>
             <property name="position">1</property>
