@@ -45,6 +45,7 @@ typedef enum {
 /* Used as an argument to the draw_snapshot_point () foreach function */
 typedef struct {
 	cairo_t *cr;
+	cairo_matrix_t *aux_matrix;
 	MassifgGraphSeries series;
 } MassifgGraphDrawSeries;
 
@@ -63,6 +64,7 @@ typedef struct {
 /* Holds the shared state used in the graph */
 typedef struct {
 	cairo_t *cr;
+	cairo_matrix_t *aux_matrix;
 	MassifgOutputData *data;
 	MassifgGraphFormat *format;
 } MassifgGraph;
@@ -144,6 +146,7 @@ draw_snapshot_point(gpointer data, gpointer user_data) {
 	}
 
 	/* Draw the data point */
+	cairo_matrix_transform_point(draw_series->aux_matrix, &x, &y);
 	cairo_line_to(draw_series->cr, x, y);
 
 	/* Print debugging information */ 
@@ -163,11 +166,16 @@ draw_snapshot_serie(MassifgGraph *graph, MassifgGraphSeries serie) {
 	MassifgGraphDrawSeries ds;
 	ds.cr = graph->cr;
 	ds.series = serie;
+	ds.aux_matrix = graph->aux_matrix;
 	RGBAColor *serie_color = graph->format->data_series_color[serie];
+
+	double x = (double)last_snapshot->time;
+	double y = 0.0;
 
 	/* Create the path for the serie */
 	g_list_foreach(graph->data->snapshots, draw_snapshot_point, &ds);
-	cairo_line_to(graph->cr, (double)last_snapshot->time, 0.);
+	cairo_matrix_transform_point(graph->aux_matrix, &x, &y);
+	cairo_line_to(graph->cr, x, y);
 	cairo_close_path(graph->cr);
 
 	cairo_set_source_rgba(graph->cr, serie_color->r, serie_color->g, serie_color->b, serie_color->a);
@@ -180,17 +188,15 @@ draw_snapshot_series(MassifgGraph *graph, int width, int height) {
 	MaxValues max;
 	max.y = -1;
 	max.x = -1;
+	cairo_matrix_t tmp_matrix;
 
 	g_debug("Drawing snapshot series graph");
 
-	/* Transform from positive y-axis downwards to positive y-axis upwards */
-	g_debug("Transforming to traditional human y-axis conversion.");
-	cairo_scale(graph->cr, 1.0, -1.0);
-	cairo_translate(graph->cr, 0, -height);
-
 	/* Scale to match the boundries of the image */
 	g_list_foreach(graph->data->snapshots, get_max_values, &max);
-	cairo_scale(graph->cr, width/(double)max.x, height/(double)max.y);
+
+	tmp_matrix = *graph->aux_matrix;
+	cairo_matrix_scale(graph->aux_matrix, width/(double)max.x, height/(double)max.y);
 	g_debug("Scaling by factor: x=%e, y=%e", width/(double)max.x, height/(double)max.y);
 
 	/* Draw the path */
@@ -202,6 +208,8 @@ draw_snapshot_series(MassifgGraph *graph, int width, int height) {
 	draw_snapshot_serie(graph, GRAPH_SERIES_STACKS);
 	draw_snapshot_serie(graph, GRAPH_SERIES_HEAP_EXTRA);
 	draw_snapshot_serie(graph, GRAPH_SERIES_HEAP);
+
+	*graph->aux_matrix = tmp_matrix;
 }
 
 
@@ -213,6 +221,14 @@ void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, in
 	graph->format = massifg_graphformat_new();
 	graph->data = data;
 	graph->cr = context;
+	graph->aux_matrix = (cairo_matrix_t *)g_malloc(sizeof(cairo_matrix_t));
+
+	/* Create a transformation matrix that can be used to convert between
+	 * traditional human coordinate system (origo bottom left, positive y-values up)
+	 * and cairo coordinate system (origo top left, positive y-values down) */
+	cairo_get_matrix(graph->cr, graph->aux_matrix);
+	cairo_matrix_scale(graph->aux_matrix, 1.0, -1.0);
+	cairo_matrix_translate(graph->aux_matrix, 0, -height);
 
 	/* Draw each data series; heap, heap_extra, stack */
 	draw_snapshot_series(graph, width, height);
