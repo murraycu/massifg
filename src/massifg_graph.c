@@ -285,7 +285,37 @@ draw_legend(MassifgGraph *graph) {
 
 }
 
+/* Draw the axes. This does not include tics for values */
+static void
+draw_axes(MassifgGraph *graph, int width, int height) {
+	double origo_x = 0.0;
+	double origo_y = 0.0;
+
+	cairo_set_source_rgba(graph->cr, 0.0, 0.0, 0.0, 1.0); /* TODO: read from format */
+	/* TODO: add a nice arrow at the end, or similar */
+	/* X-axis line */
+	cairo_new_path(graph->cr);
+	cairo_matrix_transform_point(graph->aux_matrix, &origo_x, &origo_y);
+	cairo_move_to(graph->cr, origo_x, origo_y);
+	cairo_line_to(graph->cr, width, origo_y);
+	cairo_stroke(graph->cr);
+
+	/* Y-axis line */
+	cairo_new_path(graph->cr);
+	cairo_matrix_transform_point(graph->aux_matrix, &origo_x, &origo_y);
+	cairo_move_to(graph->cr, origo_x, origo_y);
+	cairo_line_to(graph->cr, origo_x, height);
+	cairo_stroke(graph->cr);
+
+}
+
 /* Public functions */
+/* FIXME: these should be part of a data structure, so that it can be set/adjusted at runtime */
+#define MASSIFG_GRAPH_DATA_SERIES_OFFSET_X 2
+#define MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y 2
+
+#define MASSIFG_GRAPH_DATA_SERIES_PADDING_X 5
+#define MASSIFG_GRAPH_DATA_SERIES_PADDING_Y 5
 
 /* Draw a graph of data using Cairo */
 void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, int height) {
@@ -303,7 +333,15 @@ void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, in
 	cairo_matrix_translate(graph->aux_matrix, 0, -height);
 
 	/* Draw each data series; heap, heap_extra, stack */
-	draw_snapshot_series(graph, width, height);
+	/* FIXME: the position and size of the data series element should be handled that function,
+	 * or a generic function that can do this for any element */
+	cairo_translate(context, MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
+	draw_snapshot_series(graph,
+			width-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_X+MASSIFG_GRAPH_DATA_SERIES_PADDING_X),
+			height-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y+MASSIFG_GRAPH_DATA_SERIES_PADDING_Y));
+	cairo_translate(context, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
+
+	draw_axes(graph, width, height);
 
 	/* Draw the various labels */
 	draw_legend(graph);
