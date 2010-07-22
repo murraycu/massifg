@@ -39,6 +39,7 @@ typedef enum {
 	GRAPH_SERIES_HEAP,
 	GRAPH_SERIES_HEAP_EXTRA,
 	GRAPH_SERIES_STACKS,
+	GRAPH_SERIES_LAST, /* NOTE: only used to calculate the number of elements in the */
 } MassifgGraphSeries;
 
 /* Used as an argument to the draw_snapshot_point () foreach function */
@@ -47,7 +48,51 @@ typedef struct {
 	MassifgGraphSeries series;
 } MassifgGraphDrawSeries;
 
+/* Represent a RGB color with alpha channel */
+typedef struct {
+	double r, g, b, a;
+} RGBAColor ;
+
+/* Holds the various variables that decides how the graph should look */
+typedef struct {
+	/* The colors of the different data series. Array indexed by the MassifgGraphSeries enum
+ 	 * NOTE: this might not be the best datastructure for this */
+	RGBAColor *data_series_color[GRAPH_SERIES_LAST];
+} MassifgGraphFormat;
+
+
 /* Private functions */
+/* Free with g_free () */
+RGBAColor *
+massifg_rgbacolor_new(double r, double g, double b, double a) {
+	RGBAColor *color = (RGBAColor *)g_malloc(sizeof(RGBAColor));
+	color->r =r;
+	color->g =g;
+	color->b =b;
+	color->a =a;
+
+}
+
+/* Free with massifg_graphformat_free () */
+MassifgGraphFormat *
+massifg_graphformat_new(void) {
+	MassifgGraphFormat *graph_format = (MassifgGraphFormat *)g_malloc(sizeof(MassifgGraphFormat));
+
+	/* Initialize with default values */
+	graph_format->data_series_color[GRAPH_SERIES_STACKS] = massifg_rgbacolor_new(0.0, 0.0, 1.0, 1.0);
+	graph_format->data_series_color[GRAPH_SERIES_HEAP_EXTRA] = massifg_rgbacolor_new(0.0, 1.0, 0.0, 1.0);
+	graph_format->data_series_color[GRAPH_SERIES_HEAP] = massifg_rgbacolor_new(1.0, 0.0, 0.0, 1.0);
+
+	return graph_format;
+}
+
+void
+massifg_graphformat_free(MassifgGraphFormat *graph_format) {
+	int i;
+	for (i=0; i<GRAPH_SERIES_LAST; i++) {
+		g_free(graph_format->data_series_color[i]);
+	}
+}
 
 /* Get the maximum x and y values, and put them in the MaxValues struct
  * passed in via user_data
@@ -106,24 +151,26 @@ draw_snapshot_point(gpointer data, gpointer user_data) {
 
 /* Draw a single data series */
 static void
-draw_snapshot_serie(cairo_t *context, MassifgOutputData *data, MassifgGraphSeries serie) {
+draw_snapshot_serie(cairo_t *context, MassifgOutputData *data, MassifgGraphFormat *graph_format, MassifgGraphSeries serie) {
 	GList *last_elem = g_list_last(data->snapshots);
 	MassifgSnapshot *last_snapshot = (MassifgSnapshot *)last_elem->data;
 	MassifgGraphDrawSeries ds;
 	ds.cr = context;
 	ds.series = serie;
+	RGBAColor *serie_color = graph_format->data_series_color[serie];
 
 	/* Create the path for the serie */
 	g_list_foreach(data->snapshots, draw_snapshot_point, &ds);
 	cairo_line_to(context, (double)last_snapshot->time, 0.);
 	cairo_close_path(context);
 
+	cairo_set_source_rgba(context, serie_color->r, serie_color->g, serie_color->b, serie_color->a);
 	cairo_fill(context);
 }
 
 /* Draw all the data series */
 static void
-draw_snapshot_series(cairo_t *context, MassifgOutputData *data, int width, int height) {
+draw_snapshot_series(cairo_t *context, MassifgOutputData *data, MassifgGraphFormat *graph_format, int width, int height) {
 	MaxValues max;
 	max.y = -1;
 	max.x = -1;
@@ -146,12 +193,9 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data, int width, int h
 	 * the graph with the largest y values must be drawn first.
 	 * The code deciding which series that is can found in draw_snapshot_point ()
 	 */
-	cairo_set_source_rgba(context, 0.0, 0.0, 1.0, 1.0);
-	draw_snapshot_serie(context, data, GRAPH_SERIES_STACKS);
-	cairo_set_source_rgba(context, 0.0, 1.0, 0.0, 1.0);
-	draw_snapshot_serie(context, data, GRAPH_SERIES_HEAP_EXTRA);
-	cairo_set_source_rgba(context, 1.0, 0.0, 0.0, 1.0);
-	draw_snapshot_serie(context, data, GRAPH_SERIES_HEAP);
+	draw_snapshot_serie(context, data, graph_format, GRAPH_SERIES_STACKS);
+	draw_snapshot_serie(context, data, graph_format, GRAPH_SERIES_HEAP_EXTRA);
+	draw_snapshot_serie(context, data, graph_format, GRAPH_SERIES_HEAP);
 }
 
 
@@ -159,11 +203,10 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data, int width, int h
 
 /* Draw a graph of data using Cairo */
 void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, int height) {
-
-	/* TODO: axes, tics and legend */
+	MassifgGraphFormat *graph_format = massifg_graphformat_new();
 
 	/* Draw each data series; heap, heap_extra, stack */
-	draw_snapshot_series(context, data, width, height);
+	draw_snapshot_series(context, data, graph_format, width, height);
 
 }
 
