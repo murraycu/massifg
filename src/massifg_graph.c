@@ -56,8 +56,8 @@ massifg_graphformat_new(void) {
 	graph_format->data_series_color[GRAPH_SERIES_STACKS] = massifg_rgbacolor_new(0.0, 0.0, 1.0, 1.0);
 	graph_format->data_series_color[GRAPH_SERIES_HEAP_EXTRA] = massifg_rgbacolor_new(0.0, 1.0, 0.0, 1.0);
 	graph_format->data_series_color[GRAPH_SERIES_HEAP] = massifg_rgbacolor_new(1.0, 0.0, 0.0, 1.0);
-	graph_format->data_series_pos_x = 2;
-	graph_format->data_series_pos_y = 2;
+	graph_format->data_series_pos_x = 30;
+	graph_format->data_series_pos_y = 30;
 	graph_format->data_series_padding_left = 5;
 	graph_format->data_series_padding_top = 5;
 
@@ -66,7 +66,7 @@ massifg_graphformat_new(void) {
 
 	graph_format->axes_color = massifg_rgbacolor_new(0.0, 0.0, 0.0, 1.0);
 
-	graph_format->legend_pos_x = 50.;
+	graph_format->legend_pos_x = 150.;
 	graph_format->legend_pos_y = 150.;
 	graph_format->legend_entry_box_size = 12.;
 
@@ -253,29 +253,99 @@ draw_legend(MassifgGraph *graph) {
 
 }
 
-/* Draw the axes. This does not include tics for values */
+
 static void
-draw_axes(MassifgGraph *graph, int width, int height) {
+draw_x_axis(MassifgGraph *graph, int width, int number_of_tics) {
 	double origo_x = 0.0;
 	double origo_y = 0.0;
+	double dummy = 0.0;
+	int i = -1;
+	GString *value_string = g_string_new("");
 
+	double axis_tic_length = 10.; /* TODO: read from format struct */
 	RGBAColor *color = color = graph->format->axes_color;
+
 	cairo_set_source_rgba(graph->cr, color->r, color->g, color->b, color->a);
 
-	/* TODO: add a nice arrow at the end, or similar */
-	/* X-axis line */
-	cairo_new_path(graph->cr);
+	/* Draw the axis line */
 	cairo_matrix_transform_point(graph->aux_matrix, &origo_x, &origo_y);
 	cairo_move_to(graph->cr, origo_x, origo_y);
 	cairo_line_to(graph->cr, width, origo_y);
 	cairo_stroke(graph->cr);
 
-	/* Y-axis line */
-	cairo_new_path(graph->cr);
+	double x_axis_tic_start = -axis_tic_length/2.;
+        double x_axis_tic_stop = x_axis_tic_start+axis_tic_length;
+    	cairo_matrix_transform_point(graph->aux_matrix, &dummy, &x_axis_tic_start);
+    	cairo_matrix_transform_point(graph->aux_matrix, &dummy, &x_axis_tic_stop);
+
+	/* Draw the axis tics */
+	for (i=0; i<number_of_tics; i++) {
+		double x_pos = i*((double)width/number_of_tics);
+                cairo_matrix_transform_point(graph->aux_matrix, &x_pos, &dummy);
+
+		cairo_move_to(graph->cr, x_pos, x_axis_tic_start);
+		cairo_line_to(graph->cr, x_pos, x_axis_tic_stop);
+		cairo_stroke(graph->cr);
+
+		double x_val = (i*((double)width/number_of_tics))/(double)width*graph->data->max_time;
+		g_string_printf(value_string, "%.2e%s", x_val, graph->data->time_unit->str);
+                draw_text(graph, value_string->str, x_pos, -5); /* TODO: unhardcode last value */
+
+	}
+	g_string_free(value_string, TRUE);
+
+}
+
+/* FIXME: code duplication with draw_x_axis () */
+static void
+draw_y_axis(MassifgGraph *graph, int height, int number_of_tics) {
+	double origo_x = 0.0;
+	double origo_y = 0.0;
+	double dummy = 0.0;
+	int i = -1;
+	GString *value_string = g_string_new("");
+
+	double axis_tic_length = 10.; /* TODO: read from format struct */
+	RGBAColor *color = color = graph->format->axes_color;
+
+	cairo_set_source_rgba(graph->cr, color->r, color->g, color->b, color->a);
+
+	/* Draw the axis line */
 	cairo_matrix_transform_point(graph->aux_matrix, &origo_x, &origo_y);
 	cairo_move_to(graph->cr, origo_x, origo_y);
-	cairo_line_to(graph->cr, origo_x, height);
+	cairo_line_to(graph->cr, origo_x, 0);
 	cairo_stroke(graph->cr);
+
+	double y_axis_tic_start = -axis_tic_length/2.;
+        double y_axis_tic_stop = y_axis_tic_start+axis_tic_length;
+    	cairo_matrix_transform_point(graph->aux_matrix, &y_axis_tic_start, &dummy);
+    	cairo_matrix_transform_point(graph->aux_matrix, &y_axis_tic_stop, &dummy);
+
+	/* Draw the axis tics */
+	for (i=0; i<number_of_tics; i++) {
+		double y_pos = i*((double)height/number_of_tics);
+                cairo_matrix_transform_point(graph->aux_matrix, &y_pos, &dummy);
+
+		cairo_move_to(graph->cr, y_axis_tic_start, y_pos);
+		cairo_line_to(graph->cr, y_axis_tic_stop, y_pos);
+		cairo_stroke(graph->cr);
+
+		/* */
+		double y_val = (i*((double)height/number_of_tics))/(double)height*graph->data->max_mem_allocation/1e3;
+		g_message("%.0f KiB", y_val);
+    		g_string_printf(value_string, "%.0f KiB", y_val);
+                draw_text(graph, value_string->str, 0, y_pos);
+	}
+
+}
+
+
+/* Draw the axes, and tics */
+static void
+draw_axes(MassifgGraph *graph, double width, double height) {
+
+    draw_x_axis(graph, width, 10);
+    draw_y_axis(graph, height, 10);
 
 }
 
@@ -299,7 +369,6 @@ void massifg_graph_free(MassifgGraph *graph) {
 	massifg_graphformat_free(graph->format);
 	g_free(graph->aux_matrix);
 	g_free(graph);
-
 }
 
 /* Redraw the graph. When this is called, it is important that the graph datastructure
@@ -317,12 +386,18 @@ void massifg_graph_redraw(MassifgGraph *graph) {
 	 * or a generic function that can do this for any element */
 	double data_series_width = graph->context_width-(graph->format->data_series_pos_x+graph->format->data_series_padding_left);
 	double data_series_height = graph->context_height-(graph->format->data_series_pos_y+graph->format->data_series_padding_top);
-	cairo_translate(graph->cr, graph->format->data_series_pos_x, graph->format->data_series_pos_y);
+
+	cairo_translate(graph->cr, graph->format->data_series_pos_x, -graph->format->data_series_pos_y);
 	draw_snapshot_series(graph, data_series_width, data_series_height);
-	cairo_translate(graph->cr, -graph->format->data_series_pos_x, -graph->format->data_series_pos_y);
+	cairo_translate(graph->cr, -graph->format->data_series_pos_x, graph->format->data_series_pos_y);
 
 	/* Draw axes */
-	draw_axes(graph, graph->context_width, graph->context_height);
+        double graph_pos_x = graph->format->data_series_pos_x;
+        double graph_pos_y = graph->format->data_series_pos_y;
+	cairo_translate(graph->cr, graph_pos_x, -graph_pos_y);
+	draw_axes(graph, graph->context_width-graph_pos_x, graph->context_height-graph_pos_y);
+    	cairo_translate(graph->cr, -graph_pos_x, graph_pos_y);
+
 
 	/* Draw the various labels */
 	draw_legend(graph);
