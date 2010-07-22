@@ -165,10 +165,6 @@ massifg_gtkui_init(MassifgApplication *app) {
 	/* Initialize gtk */
 	gtk_init (app->argc_ptr, app->argv_ptr);
 
-	/* Ignore debug output */
-	/* TODO: allow the user to chose this at runtime, with an envvar or cli option */
-	g_log_set_handler (NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
-
 	gladefile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "massifg.glade");
 	uifile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "menu.ui");
 

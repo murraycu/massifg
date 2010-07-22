@@ -38,6 +38,8 @@ main (int argc, char **argv) {
 	app.argc_ptr = &argc;
 	app.argv_ptr = &argv;
 
+	massifg_utils_configure_debug_output();
+
 	/* Create the UI */
 	if (massifg_gtkui_init(&app) != 0) {
 		g_message("Failed to create GTK+ UI");

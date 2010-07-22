@@ -100,3 +100,18 @@ void massifg_utils_free_foreach(gpointer data, gpointer user_data) {
 	g_free(data);
 }
 
+/* Check for the environment variable MASSIFG_DEBUG,
+ * if it is not "enable" or "all", ignore debug output */
+void
+massifg_utils_configure_debug_output(void) {
+	/* TODO: Allow enabling debug output for just the UI, grapher or parser */
+	GDebugKey debug_keys[] = { {"enable", 1<<0}, };
+	const int num_debug_keys = G_N_ELEMENTS(debug_keys);
+	const gchar* debug_string = g_getenv("MASSIFG_DEBUG");
+
+	guint debug = g_parse_debug_string(debug_string, debug_keys, num_debug_keys);
+	if (!debug) {
+		g_log_set_handler(NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL); 
+	}
+}
+

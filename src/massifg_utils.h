@@ -27,6 +27,7 @@ void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 			const gchar *message,
 			gpointer user_data);
 void massifg_utils_free_foreach(gpointer data, gpointer user_data);
+void massifg_utils_configure_debug_output(void);
 
 #endif /* __MASSIFG_UTILS_H__ */
 
