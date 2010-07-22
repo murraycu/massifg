@@ -60,6 +60,12 @@ typedef struct {
 	RGBAColor *data_series_color[GRAPH_SERIES_LAST];
 } MassifgGraphFormat;
 
+/* Holds the shared state used in the graph */
+typedef struct {
+	cairo_t *cr;
+	MassifgOutputData *data;
+	MassifgGraphFormat *format;
+} MassifgGraph;
 
 /* Private functions */
 /* Free with g_free () */
@@ -151,26 +157,26 @@ draw_snapshot_point(gpointer data, gpointer user_data) {
 
 /* Draw a single data series */
 static void
-draw_snapshot_serie(cairo_t *context, MassifgOutputData *data, MassifgGraphFormat *graph_format, MassifgGraphSeries serie) {
-	GList *last_elem = g_list_last(data->snapshots);
+draw_snapshot_serie(MassifgGraph *graph, MassifgGraphSeries serie) {
+	GList *last_elem = g_list_last(graph->data->snapshots);
 	MassifgSnapshot *last_snapshot = (MassifgSnapshot *)last_elem->data;
 	MassifgGraphDrawSeries ds;
-	ds.cr = context;
+	ds.cr = graph->cr;
 	ds.series = serie;
-	RGBAColor *serie_color = graph_format->data_series_color[serie];
+	RGBAColor *serie_color = graph->format->data_series_color[serie];
 
 	/* Create the path for the serie */
-	g_list_foreach(data->snapshots, draw_snapshot_point, &ds);
-	cairo_line_to(context, (double)last_snapshot->time, 0.);
-	cairo_close_path(context);
+	g_list_foreach(graph->data->snapshots, draw_snapshot_point, &ds);
+	cairo_line_to(graph->cr, (double)last_snapshot->time, 0.);
+	cairo_close_path(graph->cr);
 
-	cairo_set_source_rgba(context, serie_color->r, serie_color->g, serie_color->b, serie_color->a);
-	cairo_fill(context);
+	cairo_set_source_rgba(graph->cr, serie_color->r, serie_color->g, serie_color->b, serie_color->a);
+	cairo_fill(graph->cr);
 }
 
 /* Draw all the data series */
 static void
-draw_snapshot_series(cairo_t *context, MassifgOutputData *data, MassifgGraphFormat *graph_format, int width, int height) {
+draw_snapshot_series(MassifgGraph *graph, int width, int height) {
 	MaxValues max;
 	max.y = -1;
 	max.x = -1;
@@ -179,12 +185,12 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data, MassifgGraphForm
 
 	/* Transform from positive y-axis downwards to positive y-axis upwards */
 	g_debug("Transforming to traditional human y-axis conversion.");
-	cairo_scale(context, 1.0, -1.0);
-	cairo_translate(context, 0, -height);
+	cairo_scale(graph->cr, 1.0, -1.0);
+	cairo_translate(graph->cr, 0, -height);
 
 	/* Scale to match the boundries of the image */
-	g_list_foreach(data->snapshots, get_max_values, &max);
-	cairo_scale(context, width/(double)max.x, height/(double)max.y);
+	g_list_foreach(graph->data->snapshots, get_max_values, &max);
+	cairo_scale(graph->cr, width/(double)max.x, height/(double)max.y);
 	g_debug("Scaling by factor: x=%e, y=%e", width/(double)max.x, height/(double)max.y);
 
 	/* Draw the path */
@@ -193,9 +199,9 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data, MassifgGraphForm
 	 * the graph with the largest y values must be drawn first.
 	 * The code deciding which series that is can found in draw_snapshot_point ()
 	 */
-	draw_snapshot_serie(context, data, graph_format, GRAPH_SERIES_STACKS);
-	draw_snapshot_serie(context, data, graph_format, GRAPH_SERIES_HEAP_EXTRA);
-	draw_snapshot_serie(context, data, graph_format, GRAPH_SERIES_HEAP);
+	draw_snapshot_serie(graph, GRAPH_SERIES_STACKS);
+	draw_snapshot_serie(graph, GRAPH_SERIES_HEAP_EXTRA);
+	draw_snapshot_serie(graph, GRAPH_SERIES_HEAP);
 }
 
 
@@ -203,10 +209,13 @@ draw_snapshot_series(cairo_t *context, MassifgOutputData *data, MassifgGraphForm
 
 /* Draw a graph of data using Cairo */
 void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, int height) {
-	MassifgGraphFormat *graph_format = massifg_graphformat_new();
+	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
+	graph->format = massifg_graphformat_new();
+	graph->data = data;
+	graph->cr = context;
 
 	/* Draw each data series; heap, heap_extra, stack */
-	draw_snapshot_series(context, data, graph_format, width, height);
+	draw_snapshot_series(graph, width, height);
 
 }
 
