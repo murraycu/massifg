@@ -20,6 +20,7 @@
  */
 
 #include <cairo.h>
+#include <pango/pangocairo.h>
 #include <glib.h>
 
 #include "massifg_parser.h"
@@ -212,6 +213,75 @@ draw_snapshot_series(MassifgGraph *graph, int width, int height) {
 	*graph->aux_matrix = tmp_matrix;
 }
 
+/* Draw text at (human convention) coordinates x, y 
+ * This is a generic function, designed for being used by the more concrete 
+ * elements of the graph */
+static void
+draw_text(MassifgGraph *graph, gchar *text, double x, double y) {
+	PangoLayout *layout;
+	PangoFontDescription *desc;
+
+	layout = pango_cairo_create_layout(graph->cr);
+
+	/* Set cairo options */
+	cairo_matrix_transform_point(graph->aux_matrix, &x, &y);
+	cairo_translate(graph->cr, x, y);
+	cairo_set_source_rgba(graph->cr, 0.0, 0.0, 0.0, 1.0); /* TODO: read from format */
+
+	/* Set Pango options */
+	pango_layout_set_text(layout, text, -1); 
+	desc = pango_font_description_from_string("Sans 10"); /* TODO: read from format */
+	pango_layout_set_font_description(layout, desc);
+	pango_font_description_free(desc);
+
+	/* Draw the text */
+	pango_cairo_update_layout(graph->cr, layout);
+	pango_cairo_show_layout(graph->cr, layout);
+
+	/* Cleanup */
+	cairo_translate(graph->cr, -x, -y);
+	g_object_unref(layout);
+
+}
+
+static void
+draw_legend_entry(MassifgGraph *graph, MassifgGraphSeries serie) {
+	RGBAColor *color = NULL;
+	gchar *text = NULL;
+	/* FIXME: these should be read from the format */
+	double rect_w = 12.;
+	double rect_h = rect_w;
+	double base_x = 50.;
+	double base_y = 150.;
+
+	double entry_x = base_x;
+	double entry_y = base_y + rect_h*serie;
+	/* FIXME: these should be stored in the format */
+	gchar *legend_texts[] = {"Heap", "Heap Extra", "Stacks"};
+
+	color = graph->format->data_series_color[serie];
+	text = legend_texts[serie];
+
+	draw_text(graph, text, entry_x+rect_w, entry_y);
+
+	cairo_set_source_rgba(graph->cr, color->r, color->g, color->b, color->a);
+	cairo_matrix_transform_point(graph->aux_matrix, &entry_x, &entry_y);
+	cairo_rectangle(graph->cr, entry_x, entry_y, rect_w, rect_h);
+	cairo_fill(graph->cr);
+
+}
+
+/* Legend consists of a box showing the meaning of each data
+ * series in the graph. */
+static void
+draw_legend(MassifgGraph *graph) {
+	/* TODO: add a background, so the legend is visible even if it on top of data */
+
+	draw_legend_entry(graph, GRAPH_SERIES_HEAP);
+	draw_legend_entry(graph, GRAPH_SERIES_HEAP_EXTRA);
+	draw_legend_entry(graph, GRAPH_SERIES_STACKS);
+
+}
 
 /* Public functions */
 
@@ -232,6 +302,9 @@ void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, in
 
 	/* Draw each data series; heap, heap_extra, stack */
 	draw_snapshot_series(graph, width, height);
+
+	/* Draw the various labels */
+	draw_legend(graph);
 
 	massifg_graphformat_free(graph->format);
 	g_free(graph->aux_matrix);
