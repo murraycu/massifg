@@ -193,6 +193,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 
 	/* Cleanup */
 	g_free((gpointer)uifile_path);
+	g_object_unref(G_OBJECT(action_group));
 	g_object_unref(G_OBJECT(uimanager));
 
 	return 0;

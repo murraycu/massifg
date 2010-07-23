@@ -62,27 +62,32 @@ massifg_utils_get_resource_file(const gchar *argv0, const gchar *filename) {
 	gchar *pathname = NULL;
 	const gchar *application_name = "massifg";
 	const gchar *install_prefix = NULL;
-	install_prefix = g_path_get_dirname(argv0);
-	install_prefix = g_path_get_dirname(install_prefix);
+	const gchar *tmp_str = NULL;
+
+	tmp_str = g_path_get_dirname(argv0);
+	install_prefix = g_path_get_dirname(tmp_str);
+	g_free((gpointer)tmp_str);
 
 	pathname = g_build_filename(install_prefix, "data", filename, NULL);
 	g_debug("Looking for resource file \"%s\" in %s", filename, pathname);
 	if (pathname != NULL && g_file_test(pathname, G_FILE_TEST_EXISTS)) {
-		g_debug("Found resource file \"%s\": %s", filename, pathname);
-		return pathname;
+		goto end;
 	}
 
 	pathname = g_build_filename(install_prefix, "share", application_name, filename, NULL);
 	g_debug("Looking for resource file \"%s\" in %s", filename, pathname);
 	if (pathname != NULL && g_file_test(pathname, G_FILE_TEST_EXISTS)) {
-		g_debug("Found resource file \"%s\": %s", filename, pathname);
-		return pathname;
+		goto end;
 	}
 
 	pathname = get_system_file(application_name, filename);
 	if (pathname != NULL) {
-		g_debug("Found resource file \"%s\": %s", filename, pathname);
+		goto end;
 	}
+
+end:
+	g_free((gpointer)install_prefix);
+	g_debug("Found resource file \"%s\": %s", filename, pathname);
 	return pathname;
 }
 

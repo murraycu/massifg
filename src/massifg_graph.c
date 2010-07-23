@@ -101,6 +101,7 @@ massifg_graphformat_free(MassifgGraphFormat *graph_format) {
 	for (i=0; i<GRAPH_SERIES_LAST; i++) {
 		g_free(graph_format->data_series_color[i]);
 	}
+	g_free(graph_format);
 }
 
 /* Get the maximum x and y values, and put them in the MaxValues struct
@@ -236,6 +237,7 @@ draw_text(MassifgGraph *graph, gchar *text, double x, double y) {
 
 	/* Draw the text */
 	pango_cairo_update_layout(graph->cr, layout);
+	/* Valgrind memcheck thinks this is leaking memory, TODO: investigate */
 	pango_cairo_show_layout(graph->cr, layout);
 
 	/* Cleanup */
