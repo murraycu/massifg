@@ -53,6 +53,6 @@ main (int argc, char **argv) {
 	/* Present the UI and hand over control to the gtk mainloop */
 	massifg_gtkui_start(&app);
 
-	g_object_unref (G_OBJECT(app.gtk_builder));
+	g_object_unref(G_OBJECT(app.gtk_builder));
 	return 0;
 }

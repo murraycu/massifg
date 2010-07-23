@@ -64,6 +64,7 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 	gtk_message_dialog_set_markup(error_dialog, markup_string->str);
 	gtk_dialog_run(GTK_DIALOG(error_dialog));
 
+	g_string_free(markup_string, TRUE);
 	gtk_widget_destroy(error_dialog);
 }
 
@@ -74,11 +75,16 @@ massifg_gtkui_file_changed(MassifgApplication *app) {
 
 	graph = GTK_WIDGET(gtk_builder_get_object(app->gtk_builder, "graph"));
 
+	/* TODO: when parsing fails, keep the previous graph */
 	/* Parse the file */
+	if (app->output_data != NULL) {
+		massifg_output_data_free(app->output_data);
+	}
 	app->output_data = massifg_parse_file(app->filename, &error);
 	if (app->output_data == NULL) {
 		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
 				app->filename, error->message); /* Parsing failed */
+		g_error_free(error);
 		return;
 	}
 
@@ -139,21 +145,18 @@ open_file_action(GtkAction *action, gpointer data) {
 	massifg_gtkui_file_changed(app);
 }
 
-
-/* Public functions */
+/* Set up actions and menus */
 gint
-massifg_gtkui_init(MassifgApplication *app) {
-	gchar *gladefile_path = NULL;
+massifg_gtkui_init_menus(MassifgApplication *app) {
 	gchar *uifile_path = NULL;
-
-	GtkUIManager *uimanager = NULL;
-	GtkWidget *window = NULL;
+	GtkActionGroup *action_group = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *menubar = NULL;
-	GtkWidget *graph = NULL;
-
+	GtkWidget *window = NULL;
+	GtkUIManager *uimanager = NULL;
 	GError *error = NULL;
-	GtkActionGroup *action_group = NULL;
+
+	/* Declare actions */
 	GtkActionEntry actions[] =
 	{ /* action name, stock id, label, accelerator, tooltip, action (callback) */
 	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
@@ -162,38 +165,17 @@ massifg_gtkui_init(MassifgApplication *app) {
 	};
 	const int num_actions = G_N_ELEMENTS(actions);
 
-	/* Initialize gtk */
-	gtk_init (app->argc_ptr, app->argv_ptr);
-
-	gladefile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "massifg.glade");
-	uifile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "menu.ui");
-
-	/* GTK builder */
-	app->gtk_builder = gtk_builder_new();
-
-	if (!gtk_builder_add_from_file (app->gtk_builder, gladefile_path, &error))
-	{
-		g_message ("%s", error->message);
-		g_error_free (error);
-		return 1;
-	}
-
-	window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+	/* Initialize */
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
+	window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
 
-	graph = GTK_WIDGET(gtk_builder_get_object (app->gtk_builder, "graph"));
-	g_signal_connect(G_OBJECT(graph), "expose_event",
-                    G_CALLBACK(graph_widget_expose_event), app);
-
-	gtk_builder_connect_signals (app->gtk_builder,NULL);
-
-	/* UI manager */
+	uifile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "menu.ui");
 	action_group = gtk_action_group_new ("action group");
+	uimanager = gtk_ui_manager_new();
+
+	/* Build menus */
 	gtk_action_group_add_actions (action_group, actions, num_actions, app);
-
-	uimanager = gtk_ui_manager_new ();
 	gtk_ui_manager_insert_action_group (uimanager, action_group, 0);
-
 	if (!gtk_ui_manager_add_ui_from_file (uimanager, uifile_path, &error))
 	{
 		g_message ("Building menus failed: %s", error->message);
@@ -201,15 +183,52 @@ massifg_gtkui_init(MassifgApplication *app) {
 		return 1;
 	}
 
-	/* Menubar */
-	menubar = gtk_ui_manager_get_widget (uimanager, MAIN_WINDOW_MENU);
+	/* Add the menubar to the window */
+	menubar = gtk_ui_manager_get_widget(uimanager, MAIN_WINDOW_MENU);
 	gtk_window_add_accel_group (GTK_WINDOW (window),
 		               gtk_ui_manager_get_accel_group (uimanager));
-
 	gtk_box_pack_start (GTK_BOX (vbox), menubar, FALSE, FALSE, 1);
 	gtk_box_reorder_child (GTK_BOX (vbox), menubar, 0);
 
+	/* Cleanup */
+	g_free(uifile_path);
+	g_object_unref(G_OBJECT(uimanager));
+
 	return 0;
+}
+
+/* Public functions */
+/* Initialize the whole UI. After calling this, the UI can be started by calling
+ * massifg_gtkui_start () */
+gint
+massifg_gtkui_init(MassifgApplication *app) {
+	gchar *gladefile_path = NULL;
+	GtkWidget *graph = NULL;
+	GError *error = NULL;
+
+	/* Initialize */
+	gtk_init (app->argc_ptr, app->argv_ptr);
+
+	app->gtk_builder = gtk_builder_new();
+	gladefile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "massifg.glade");
+
+	/* Build UI */
+	if (!gtk_builder_add_from_file (app->gtk_builder, gladefile_path, &error))
+	{
+		g_message ("%s", error->message);
+		g_error_free (error);
+		return 1;
+	}
+
+	graph = GTK_WIDGET(gtk_builder_get_object (app->gtk_builder, "graph"));
+	g_signal_connect(G_OBJECT(graph), "expose_event",
+                    G_CALLBACK(graph_widget_expose_event), app);
+	gtk_builder_connect_signals (app->gtk_builder,NULL);
+
+	/* Cleanup */
+	g_free(gladefile_path);
+
+	return massifg_gtkui_init_menus(app);
 }
 
 /* Present window, and start the gtk mainloop */
