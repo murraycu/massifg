@@ -106,11 +106,13 @@ static gboolean
 graph_widget_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
 	MassifgApplication *app = (MassifgApplication *)data;
 	cairo_t *cr = gdk_cairo_create(widget->window);
+	MassifgGraph *graph = massifg_graph_new(); /* TODO: initialize only once */
 
 	if (app->output_data != NULL) {
-		massifg_draw_graph(cr, app->output_data,
+		massifg_graph_update(graph, cr, app->output_data,
 			widget->allocation.width, widget->allocation.height);
 	}
+	massifg_graph_free(graph);
 	return FALSE;
 }
 

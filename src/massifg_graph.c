@@ -24,6 +24,7 @@
 #include <glib.h>
 
 #include "massifg_parser.h"
+#include "massifg_graph.h"
 
 /* Data structures */
 
@@ -35,40 +36,12 @@ typedef struct {
 	gint y;
 } MaxValues;
 
-/* Enum that represents the different possible data series */
-typedef enum {
-	GRAPH_SERIES_HEAP,
-	GRAPH_SERIES_HEAP_EXTRA,
-	GRAPH_SERIES_STACKS,
-	GRAPH_SERIES_LAST, /* NOTE: only used to calculate the number of elements in the */
-} MassifgGraphSeries;
-
 /* Used as an argument to the draw_snapshot_point () foreach function */
 typedef struct {
 	cairo_t *cr;
 	cairo_matrix_t *aux_matrix;
 	MassifgGraphSeries series;
 } MassifgGraphDrawSeries;
-
-/* Represent a RGB color with alpha channel */
-typedef struct {
-	double r, g, b, a;
-} RGBAColor ;
-
-/* Holds the various variables that decides how the graph should look */
-typedef struct {
-	/* The colors of the different data series. Array indexed by the MassifgGraphSeries enum
- 	 * NOTE: this might not be the best datastructure for this */
-	RGBAColor *data_series_color[GRAPH_SERIES_LAST];
-} MassifgGraphFormat;
-
-/* Holds the shared state used in the graph */
-typedef struct {
-	cairo_t *cr;
-	cairo_matrix_t *aux_matrix;
-	MassifgOutputData *data;
-	MassifgGraphFormat *format;
-} MassifgGraph;
 
 /* Private functions */
 /* Free with g_free () */
@@ -310,44 +283,75 @@ draw_axes(MassifgGraph *graph, int width, int height) {
 }
 
 /* Public functions */
-/* FIXME: these should be part of a data structure, so that it can be set/adjusted at runtime */
+MassifgGraph *
+massifg_graph_new(void) {
+
+	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
+	graph->aux_matrix = (cairo_matrix_t *)g_malloc(sizeof(cairo_matrix_t));
+	graph->format = massifg_graphformat_new();
+
+	graph->data = NULL;
+	graph->cr = NULL;
+	graph->context_width = 0.0;
+	graph->context_height = 0.0;
+
+	return graph;
+}
+
+void massifg_graph_free(MassifgGraph *graph) {
+	massifg_graphformat_free(graph->format);
+	g_free(graph->aux_matrix);
+	g_free(graph);
+
+}
+
+/* FIXME: these should be part of the format data structure, so that it can be set/adjusted at runtime */
 #define MASSIFG_GRAPH_DATA_SERIES_OFFSET_X 2
 #define MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y 2
 
 #define MASSIFG_GRAPH_DATA_SERIES_PADDING_X 5
 #define MASSIFG_GRAPH_DATA_SERIES_PADDING_Y 5
 
-/* Draw a graph of data using Cairo */
-void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, int height) {
-	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
-	graph->format = massifg_graphformat_new();
-	graph->data = data;
-	graph->cr = context;
-	graph->aux_matrix = (cairo_matrix_t *)g_malloc(sizeof(cairo_matrix_t));
-
-	/* Create a transformation matrix that can be used to convert between
+/* Redraw the graph. When this is called, it is important that the graph datastructure
+ * members are up to date, especially the cairo context, the context_width and _height, and the data  */
+void massifg_graph_redraw(MassifgGraph *graph) {
+	/* Update the transformation matrix for converting between
 	 * traditional human coordinate system (origo bottom left, positive y-values up)
 	 * and cairo coordinate system (origo top left, positive y-values down) */
 	cairo_get_matrix(graph->cr, graph->aux_matrix);
 	cairo_matrix_scale(graph->aux_matrix, 1.0, -1.0);
-	cairo_matrix_translate(graph->aux_matrix, 0, -height);
+	cairo_matrix_translate(graph->aux_matrix, 0, -graph->context_height);
+
 
 	/* Draw each data series; heap, heap_extra, stack */
 	/* FIXME: the position and size of the data series element should be handled that function,
 	 * or a generic function that can do this for any element */
-	cairo_translate(context, MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
+	cairo_translate(graph->cr, MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
 	draw_snapshot_series(graph,
-			width-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_X+MASSIFG_GRAPH_DATA_SERIES_PADDING_X),
-			height-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y+MASSIFG_GRAPH_DATA_SERIES_PADDING_Y));
-	cairo_translate(context, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
+			graph->context_width-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_X+MASSIFG_GRAPH_DATA_SERIES_PADDING_X),
+			graph->context_height-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y+MASSIFG_GRAPH_DATA_SERIES_PADDING_Y));
+	cairo_translate(graph->cr, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
 
-	draw_axes(graph, width, height);
+	draw_axes(graph, graph->context_width, graph->context_height);
 
 	/* Draw the various labels */
 	draw_legend(graph);
+}
 
-	massifg_graphformat_free(graph->format);
-	g_free(graph->aux_matrix);
-	g_free(graph);
+/* Utility function that updates the graph data members, and then redraws it */
+void 
+massifg_graph_update(MassifgGraph *graph, 
+			cairo_t *context, MassifgOutputData *data, 
+			int width, int height) {
+
+	/* Update graph members */
+	graph->data = data;
+	graph->cr = context;
+	graph->context_width = width;
+	graph->context_height = height;
+
+	/* Do the actual drawing */
+	massifg_graph_redraw(graph);
+
 }
 
