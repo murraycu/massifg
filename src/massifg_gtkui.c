@@ -26,6 +26,7 @@
 
 #include "massifg.h"
 #include "massifg_gtkui.h"
+#include "massifg_graph.h"
 #include "massifg_utils.h"
 
 #define MAIN_WINDOW "mainwindow"
@@ -52,7 +53,7 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
                                  GTK_DIALOG_DESTROY_WITH_PARENT,
                                  GTK_MESSAGE_ERROR,
                                  GTK_BUTTONS_CLOSE,
-                                 "");
+                                 NULL);
 	markup_string = g_string_new("");
 
 	/* Prepare markup string, */
@@ -65,7 +66,7 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 	gtk_dialog_run(GTK_DIALOG(error_dialog));
 
 	g_string_free(markup_string, TRUE);
-	gtk_widget_destroy(error_dialog);
+	gtk_widget_destroy(GTK_WIDGET(error_dialog));
 }
 
 void

@@ -79,7 +79,7 @@ massifg_rgbacolor_new(double r, double g, double b, double a) {
 	color->g =g;
 	color->b =b;
 	color->a =a;
-
+	return color;
 }
 
 /* Free with massifg_graphformat_free () */
