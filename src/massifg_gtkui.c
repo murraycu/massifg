@@ -148,7 +148,7 @@ open_file_action(GtkAction *action, gpointer data) {
 /* Set up actions and menus */
 gint
 massifg_gtkui_init_menus(MassifgApplication *app) {
-	gchar *uifile_path = NULL;
+	const gchar const *uifile_path = NULL;
 	GtkActionGroup *action_group = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *menubar = NULL;
@@ -191,7 +191,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	gtk_box_reorder_child (GTK_BOX (vbox), menubar, 0);
 
 	/* Cleanup */
-	g_free(uifile_path);
+	g_free((gpointer)uifile_path);
 	g_object_unref(G_OBJECT(uimanager));
 
 	return 0;
@@ -202,7 +202,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
  * massifg_gtkui_start () */
 gint
 massifg_gtkui_init(MassifgApplication *app) {
-	gchar *gladefile_path = NULL;
+	const gchar const *gladefile_path = NULL;
 	GtkWidget *graph = NULL;
 	GError *error = NULL;
 
@@ -226,7 +226,7 @@ massifg_gtkui_init(MassifgApplication *app) {
 	gtk_builder_connect_signals (app->gtk_builder,NULL);
 
 	/* Cleanup */
-	g_free(gladefile_path);
+	g_free((gpointer)gladefile_path);
 
 	return massifg_gtkui_init_menus(app);
 }
