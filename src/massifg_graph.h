@@ -42,6 +42,16 @@ typedef struct {
 	/* The colors of the different data series. Array indexed by the MassifgGraphSeries enum
  	 * NOTE: this might not be the best datastructure for this */
 	RGBAColor *data_series_color[GRAPH_SERIES_LAST];
+	RGBAColor *text_color;
+	GString *text_font;
+	RGBAColor *axes_color;
+	double legend_pos_x;
+	double legend_pos_y;
+	double legend_entry_box_size;
+	double data_series_pos_x;
+	double data_series_pos_y;
+	double data_series_padding_left;
+	double data_series_padding_top;
 } MassifgGraphFormat;
 
 /* Holds the shared state used in the graph */

@@ -64,6 +64,19 @@ massifg_graphformat_new(void) {
 	graph_format->data_series_color[GRAPH_SERIES_STACKS] = massifg_rgbacolor_new(0.0, 0.0, 1.0, 1.0);
 	graph_format->data_series_color[GRAPH_SERIES_HEAP_EXTRA] = massifg_rgbacolor_new(0.0, 1.0, 0.0, 1.0);
 	graph_format->data_series_color[GRAPH_SERIES_HEAP] = massifg_rgbacolor_new(1.0, 0.0, 0.0, 1.0);
+	graph_format->data_series_pos_x = 2;
+	graph_format->data_series_pos_y = 2;
+	graph_format->data_series_padding_left = 5;
+	graph_format->data_series_padding_top = 5;
+
+	graph_format->text_color = massifg_rgbacolor_new(0.0, 0.0, 0.0, 1.0);
+	graph_format->text_font = g_string_new("Sans 10");
+
+	graph_format->axes_color = massifg_rgbacolor_new(0.0, 0.0, 0.0, 1.0);
+
+	graph_format->legend_pos_x = 50.;
+	graph_format->legend_pos_y = 150.;
+	graph_format->legend_entry_box_size = 12.;
 
 	return graph_format;
 }
@@ -74,7 +87,15 @@ massifg_graphformat_free(MassifgGraphFormat *graph_format) {
 	for (i=0; i<GRAPH_SERIES_LAST; i++) {
 		g_free(graph_format->data_series_color[i]);
 	}
+
+	g_free((gpointer)graph_format->text_color);
+	g_string_free(graph_format->text_font, TRUE);
+
+	g_free((gpointer)graph_format->axes_color);
+
 	g_free(graph_format);
+
+
 }
 
 /* Get the maximum x and y values, and put them in the MaxValues struct
@@ -194,17 +215,20 @@ static void
 draw_text(MassifgGraph *graph, gchar *text, double x, double y) {
 	PangoLayout *layout;
 	PangoFontDescription *desc;
+	RGBAColor *color = NULL;
 
 	layout = pango_cairo_create_layout(graph->cr);
 
 	/* Set cairo options */
 	cairo_matrix_transform_point(graph->aux_matrix, &x, &y);
 	cairo_translate(graph->cr, x, y);
-	cairo_set_source_rgba(graph->cr, 0.0, 0.0, 0.0, 1.0); /* TODO: read from format */
+
+	color = graph->format->text_color;
+	cairo_set_source_rgba(graph->cr, color->r, color->g, color->b, color->a);
 
 	/* Set Pango options */
 	pango_layout_set_text(layout, text, -1); 
-	desc = pango_font_description_from_string("Sans 10"); /* TODO: read from format */
+	desc = pango_font_description_from_string(graph->format->text_font->str);
 	pango_layout_set_font_description(layout, desc);
 	pango_font_description_free(desc);
 
@@ -223,15 +247,14 @@ static void
 draw_legend_entry(MassifgGraph *graph, MassifgGraphSeries serie) {
 	RGBAColor *color = NULL;
 	gchar *text = NULL;
-	/* FIXME: these should be read from the format */
-	double rect_w = 12.;
-	double rect_h = rect_w;
-	double base_x = 50.;
-	double base_y = 150.;
+
+	double rect_w = graph->format->legend_entry_box_size;
+	double rect_h = graph->format->legend_entry_box_size;
+	double base_x = graph->format->legend_pos_x;
+	double base_y = graph->format->legend_pos_y;
 
 	double entry_x = base_x;
 	double entry_y = base_y + rect_h*serie;
-	/* FIXME: these should be stored in the format */
 	gchar *legend_texts[] = {"Heap", "Heap Extra", "Stacks"};
 
 	color = graph->format->data_series_color[serie];
@@ -264,7 +287,9 @@ draw_axes(MassifgGraph *graph, int width, int height) {
 	double origo_x = 0.0;
 	double origo_y = 0.0;
 
-	cairo_set_source_rgba(graph->cr, 0.0, 0.0, 0.0, 1.0); /* TODO: read from format */
+	RGBAColor *color = color = graph->format->axes_color;
+	cairo_set_source_rgba(graph->cr, color->r, color->g, color->b, color->a);
+
 	/* TODO: add a nice arrow at the end, or similar */
 	/* X-axis line */
 	cairo_new_path(graph->cr);
@@ -305,13 +330,6 @@ void massifg_graph_free(MassifgGraph *graph) {
 
 }
 
-/* FIXME: these should be part of the format data structure, so that it can be set/adjusted at runtime */
-#define MASSIFG_GRAPH_DATA_SERIES_OFFSET_X 2
-#define MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y 2
-
-#define MASSIFG_GRAPH_DATA_SERIES_PADDING_X 5
-#define MASSIFG_GRAPH_DATA_SERIES_PADDING_Y 5
-
 /* Redraw the graph. When this is called, it is important that the graph datastructure
  * members are up to date, especially the cairo context, the context_width and _height, and the data  */
 void massifg_graph_redraw(MassifgGraph *graph) {
@@ -322,16 +340,16 @@ void massifg_graph_redraw(MassifgGraph *graph) {
 	cairo_matrix_scale(graph->aux_matrix, 1.0, -1.0);
 	cairo_matrix_translate(graph->aux_matrix, 0, -graph->context_height);
 
-
 	/* Draw each data series; heap, heap_extra, stack */
 	/* FIXME: the position and size of the data series element should be handled that function,
 	 * or a generic function that can do this for any element */
-	cairo_translate(graph->cr, MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
-	draw_snapshot_series(graph,
-			graph->context_width-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_X+MASSIFG_GRAPH_DATA_SERIES_PADDING_X),
-			graph->context_height-(MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y+MASSIFG_GRAPH_DATA_SERIES_PADDING_Y));
-	cairo_translate(graph->cr, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_X, -MASSIFG_GRAPH_DATA_SERIES_OFFSET_Y);
+	double data_series_width = graph->context_width-(graph->format->data_series_pos_x+graph->format->data_series_padding_left);
+	double data_series_height = graph->context_height-(graph->format->data_series_pos_y+graph->format->data_series_padding_top);
+	cairo_translate(graph->cr, graph->format->data_series_pos_x, graph->format->data_series_pos_y);
+	draw_snapshot_series(graph, data_series_width, data_series_height);
+	cairo_translate(graph->cr, -graph->format->data_series_pos_x, -graph->format->data_series_pos_y);
 
+	/* Draw axes */
 	draw_axes(graph, graph->context_width, graph->context_height);
 
 	/* Draw the various labels */
