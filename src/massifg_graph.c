@@ -28,14 +28,6 @@
 
 /* Data structures */
 
-/* Used as an argument to get_max_values () foreach function 
- * to prevent having to iterate trough the list twice, 
- * once for x values and once for y values */
-typedef struct {
-	gint x;
-	gint y;
-} MaxValues;
-
 /* Used as an argument to the draw_snapshot_point () foreach function */
 typedef struct {
 	cairo_t *cr;
@@ -96,23 +88,6 @@ massifg_graphformat_free(MassifgGraphFormat *graph_format) {
 	g_free(graph_format);
 
 
-}
-
-/* Get the maximum x and y values, and put them in the MaxValues struct
- * passed in via user_data
- * Meant to be used as a parameter to a g_(s)list_foreach call */
-static void
-get_max_values(gpointer data, gpointer user_data) {
-	MassifgSnapshot *s = (MassifgSnapshot *)data;
-	MaxValues *max = (MaxValues *)user_data;
-
-	/* y value*/
-	gint y = s->mem_heap_B + s->mem_heap_extra_B + s->mem_stacks_B;
-	if (y > max->y)
-		max->y = y;
-	/* x value */
-	if (s->time > max->x)
-		max->x = s->time;
 }
 
 /* Draw a single data point of a data series 
@@ -181,19 +156,16 @@ draw_snapshot_serie(MassifgGraph *graph, MassifgGraphSeries serie) {
 /* Draw all the data series */
 static void
 draw_snapshot_series(MassifgGraph *graph, int width, int height) {
-	MaxValues max;
-	max.y = -1;
-	max.x = -1;
+	double max_y = (double)graph->data->max_mem_allocation;
+	double max_x = (double)graph->data->max_time;
 	cairo_matrix_t tmp_matrix;
 
 	g_debug("Drawing snapshot series graph");
 
 	/* Scale to match the boundries of the image */
-	g_list_foreach(graph->data->snapshots, get_max_values, &max);
-
 	tmp_matrix = *graph->aux_matrix;
-	cairo_matrix_scale(graph->aux_matrix, width/(double)max.x, height/(double)max.y);
-	g_debug("Scaling by factor: x=%e, y=%e", width/(double)max.x, height/(double)max.y);
+	cairo_matrix_scale(graph->aux_matrix, width/max_x, height/max_y);
+	g_debug("Scaling by factor: x=%e, y=%e", width/max_x, height/max_y);
 
 	/* Draw the path */
 	/* NOTE: order here matters, because the series that are drawn later

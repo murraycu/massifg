@@ -41,6 +41,11 @@ struct _MassifgOutputData {
 	GString *desc;
 	GString *cmd;
 	GString *time_unit;
+
+	/* Not provided by the output format directly, but set by the parser 
+	 * as it builds up the data structure. */
+	gint max_time;
+	gint max_mem_allocation;
 };
 typedef struct _MassifgOutputData MassifgOutputData;
 

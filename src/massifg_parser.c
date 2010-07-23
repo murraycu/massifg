@@ -171,7 +171,13 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 	case STATE_SNAPSHOT_TIME:
 		massifg_parse_snapshot_element(parser, line, "time=",
 				&parser->current_snapshot->time, STATE_SNAPSHOT_MEM_HEAP);
-		break;	
+
+		/* Check if this snapshots values for time is larger than the ones before it 
+		 * NOTE: this should pretty much always be true */
+		if (parser->current_snapshot->time > parser->output_data->max_time) {
+			parser->output_data->max_time = parser->current_snapshot->time;
+		}
+		break;
 	case STATE_SNAPSHOT_MEM_HEAP:
 		massifg_parse_snapshot_element(parser, line, "mem_heap_B=",
 				&parser->current_snapshot->mem_heap_B, STATE_SNAPSHOT_MEM_HEAP_EXTRA);
@@ -183,6 +189,15 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 	case STATE_SNAPSHOT_MEM_STACKS:
 		massifg_parse_snapshot_element(parser, line, "mem_stacks_B=",
 				&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT);
+
+		/* Check if this snapshots values for memory allocation is larger than the ones before it */
+		gint total_mem_allocation = parser->current_snapshot->mem_heap_B + 
+				parser->current_snapshot->mem_heap_extra_B +
+				parser->current_snapshot->mem_stacks_B;
+		if (total_mem_allocation > parser->output_data->max_mem_allocation) {
+			parser->output_data->max_mem_allocation = total_mem_allocation;
+		}
+
 		/* XXX: looks for next snapshot, heap tree parsing not implemented yet */
 		break;
 	/* TODO: implement */
@@ -207,6 +222,9 @@ MassifgOutputData *massifg_output_data_new() {
 	data->desc = g_string_new("");
 	data->cmd = g_string_new("");
 	data->time_unit = g_string_new("");
+
+	data->max_time = 0;
+	data->max_mem_allocation = 0;
 
 	return data;
 }

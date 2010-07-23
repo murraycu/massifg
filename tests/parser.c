@@ -6,7 +6,7 @@
 #include "../src/massifg_parser.c"
 
 #define PARSER_TEST_INPUT_SHORT "tests/massif-output-2snapshots.txt"
-
+#define PARSER_TEST_INPUT_LONG "tests/massif-output-glom-shortened.txt"
 
 void
 parser_functest_short(void) {
@@ -68,6 +68,15 @@ parser_return_null_on_bogus_data(void) {
 	g_assert(data == NULL);
 }
 
+void
+parser_maxvalues(void) {
+	MassifgOutputData *data;
+
+	data = massifg_parse_file(PARSER_TEST_INPUT_LONG, NULL);
+	g_assert_cmpint(data->max_time, ==, 2101548346);
+	g_assert_cmpint(data->max_mem_allocation, ==, 8843592);
+}
+
 int
 main (int argc, char **argv) {
 	g_test_init(&argc, &argv, NULL);
@@ -75,6 +84,7 @@ main (int argc, char **argv) {
 	g_test_add_func("/parser/functest", parser_functest_short);
 	g_test_add_func("/parser/nonexisting-file", parser_return_null_on_nonexisting_file);
 	g_test_add_func("/parser/bogus-data", parser_return_null_on_bogus_data);
+	g_test_add_func("/parser/max-values", parser_maxvalues);
 
 	return g_test_run();
 }
