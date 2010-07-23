@@ -233,5 +233,8 @@ void massifg_draw_graph(cairo_t *context, MassifgOutputData *data, int width, in
 	/* Draw each data series; heap, heap_extra, stack */
 	draw_snapshot_series(graph, width, height);
 
+	massifg_graphformat_free(graph->format);
+	g_free(graph->aux_matrix);
+	g_free(graph);
 }
 
