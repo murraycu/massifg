@@ -1,11 +1,28 @@
 
-To compile and run the program, do:
+== INSTALLING ==
+MassifG uses GNU autotools to build and install.
+
+Thus, do the following to build, install and run:
+./autogen.sh --prefix=/wanted/prefix
+make
+make install
+massifg [FILE]
+
+To compile and run the program from the source tree (useful when hacking), do:
 ./autogen.sh
 make
-./bin/massifg FILENAME
+./bin/massifg [FILE]
 
 To compile and run the unit tests, do:
-gcc tests/parser.c -o test_parser `pkg-config --cflags --libs glib-2.0`
-gtester test_parser --verbose
+make check
 
+== BUGS ==
+- Some massif output can break the graph, see for instance
+tests/massif-output-broken-800.txt
 
+== TODO ==
+- Add description to graph
+- Implement detailed graph
+- Let users run massif directly from MassifG
+- Let users export the graph to PDF/PNG from a saving dialog, or from the cli
+- Create a custom widget that other applications can embed
