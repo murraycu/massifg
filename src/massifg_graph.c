@@ -324,7 +324,7 @@ draw_y_axis(MassifgGraph *graph, int height, int number_of_tics) {
 	/* Draw the axis tics */
 	for (i=0; i<number_of_tics; i++) {
 		double y_pos = i*((double)height/number_of_tics);
-                cairo_matrix_transform_point(graph->aux_matrix, &y_pos, &dummy);
+                cairo_matrix_transform_point(graph->aux_matrix, &dummy, &y_pos);
 
 		cairo_move_to(graph->cr, y_axis_tic_start, y_pos);
 		cairo_line_to(graph->cr, y_axis_tic_stop, y_pos);
@@ -332,8 +332,8 @@ draw_y_axis(MassifgGraph *graph, int height, int number_of_tics) {
 
 		/* */
 		double y_val = (i*((double)height/number_of_tics))/(double)height*graph->data->max_mem_allocation/1e3;
-		g_message("%.0f KiB", y_val);
     		g_string_printf(value_string, "%.0f KiB", y_val);
+		cairo_matrix_transform_point(graph->aux_matrix, &dummy, &y_pos);
                 draw_text(graph, value_string->str, 0, y_pos);
 	}
 
