@@ -17,7 +17,7 @@ bin_massifg_LDADD = $(DEPS_LIBS)
 dist_noinst_SCRIPTS = autogen.sh
 
 desktopdir = $(datadir)/applications
-desktop_DATA = data/massifg.desktop
+dist_desktop_DATA = data/massifg.desktop
 
 uidir = $(pkgdatadir)
 dist_ui_DATA = data/massifg.glade \
