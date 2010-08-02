@@ -82,7 +82,7 @@ massifg_gtkui_file_changed(MassifgApplication *app) {
 		massifg_output_data_free(app->output_data);
 	}
 	app->output_data = massifg_parse_file(app->filename, &error);
-	if (app->output_data == NULL) {
+	if (app->output_data == NULL && app->filename != NULL) {
 		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
 				app->filename, error->message); /* Parsing failed */
 		g_error_free(error);
