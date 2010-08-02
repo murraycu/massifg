@@ -3,6 +3,7 @@
      <menu name="FileMenu" action="FileMenuAction">
        <separator/>
        <menuitem name="Open" action="OpenFileAction"/>
+       <menuitem name="Print" action="PrintAction"/>
        <menuitem name="Quit" action="QuitAction"/>
      </menu>
    </menubar>

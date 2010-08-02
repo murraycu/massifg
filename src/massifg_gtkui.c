@@ -94,6 +94,34 @@ massifg_gtkui_file_changed(MassifgApplication *app) {
 
 }
 
+static void
+print_op_begin_print(GtkPrintOperation *operation,
+		GtkPrintContext *context, gpointer user_data) {
+
+	gtk_print_operation_set_n_pages(operation, 1);
+}
+
+static void
+print_op_draw_page(GtkPrintOperation *operation,
+		GtkPrintContext *context, gint page_nr, gpointer data) {
+
+	MassifgApplication *app = (MassifgApplication *)data;
+	cairo_t *cr;
+	gdouble width, height;
+	MassifgGraph *graph;
+
+	cr = gtk_print_context_get_cairo_context (context);
+	width = gtk_print_context_get_width (context);
+	height = gtk_print_context_get_width (context);
+
+	graph = massifg_graph_new(); /* TODO: initialize only once */
+
+	if (app->output_data != NULL) {
+		massifg_graph_update(graph, cr, app->output_data, width, height);
+	}
+	massifg_graph_free(graph);
+}
+
 
 /* Signal handlers */
 /* Destroy event handler for the main window, hooked up though glade/gtkbuilder */
@@ -148,6 +176,36 @@ open_file_action(GtkAction *action, gpointer data) {
 	massifg_gtkui_file_changed(app);
 }
 
+void
+print_action(GtkAction *action, gpointer data) {
+	GtkWidget *main_window = NULL;
+	MassifgApplication *app = (MassifgApplication *)data;
+	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+	GError *error = NULL;
+	GtkPrintOperationResult result;
+	GtkPrintOperation* print_op = NULL;
+
+	print_op = gtk_print_operation_new();
+	g_signal_connect(print_op, "begin-print",
+	G_CALLBACK (print_op_begin_print), app);
+	g_signal_connect(print_op, "draw-page",
+	G_CALLBACK (print_op_draw_page), app);
+
+	result = gtk_print_operation_run(print_op,
+		GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, main_window, &error);
+	if(result == GTK_PRINT_OPERATION_RESULT_ERROR)
+	{
+		if(error)
+		g_warning("Error while printing: %s", error->message);
+
+		g_clear_error(&error);
+	}
+	/* TODO: Handle saving of page setup. */
+
+	g_object_unref (print_op);
+}
+
+
 /* Set up actions and menus */
 gint
 massifg_gtkui_init_menus(MassifgApplication *app) {
@@ -165,6 +223,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
 	  { "QuitAction", GTK_STOCK_QUIT, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
 	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open", NULL, NULL, G_CALLBACK(open_file_action)},
+	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
 	};
 	const int num_actions = G_N_ELEMENTS(actions);
 
