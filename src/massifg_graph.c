@@ -245,7 +245,16 @@ draw_legend_entry(MassifgGraph *graph, MassifgGraphSeries serie) {
  * series in the graph. */
 static void
 draw_legend(MassifgGraph *graph) {
-	/* TODO: add a background, so the legend is visible even if it on top of data */
+	double rect_w = graph->format->legend_entry_box_size;
+	double rect_h = graph->format->legend_entry_box_size;
+	double base_x = graph->format->legend_pos_x -5;
+	double base_y = graph->format->legend_pos_y -5;
+
+	cairo_set_source_rgba(graph->cr, 0.9, 0.9, 0.9, 0.9);
+	cairo_matrix_transform_point(graph->aux_matrix, &base_x, &base_y);
+	/* FIXME: hacky, will break when sizes of font or legend box changes */
+	cairo_rectangle(graph->cr, base_x, base_y+rect_h, rect_w*8, -rect_h*4.0);
+	cairo_fill(graph->cr);
 
 	draw_legend_entry(graph, GRAPH_SERIES_HEAP);
 	draw_legend_entry(graph, GRAPH_SERIES_HEAP_EXTRA);
