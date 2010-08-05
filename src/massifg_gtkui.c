@@ -192,7 +192,8 @@ print_action(GtkAction *action, gpointer data) {
 	G_CALLBACK (print_op_draw_page), app);
 
 	result = gtk_print_operation_run(print_op,
-		GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG, main_window, &error);
+		GTK_PRINT_OPERATION_ACTION_PRINT_DIALOG,
+		GTK_WINDOW(main_window), &error);
 	if(result == GTK_PRINT_OPERATION_RESULT_ERROR)
 	{
 		if(error)
@@ -209,7 +210,7 @@ print_action(GtkAction *action, gpointer data) {
 /* Set up actions and menus */
 gint
 massifg_gtkui_init_menus(MassifgApplication *app) {
-	const gchar const *uifile_path = NULL;
+	const gchar *uifile_path = NULL;
 	GtkActionGroup *action_group = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *menubar = NULL;
@@ -265,7 +266,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
  * massifg_gtkui_start () */
 gint
 massifg_gtkui_init(MassifgApplication *app) {
-	const gchar const *gladefile_path = NULL;
+	const gchar *gladefile_path = NULL;
 	GtkWidget *graph = NULL;
 	GError *error = NULL;
 

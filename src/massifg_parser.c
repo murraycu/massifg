@@ -43,7 +43,7 @@ typedef enum {
 	STATE_SNAPSHOT_MEM_STACKS,
 	STATE_SNAPSHOT_HEAP_TREE,
 
-	STATE_SNAPSHOT_HEAP_TREE_LEAF,
+	STATE_SNAPSHOT_HEAP_TREE_LEAF
 } MassifgParserState;
 
 /* Data strucure for the parser, which is passed around to
@@ -102,13 +102,6 @@ massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
 	}
 
 }
-
-/* TODO: implement */
-static void 
-massifg_parse_heap_tree_leaf(MassifgParser *parser, gchar *line) {
-	;
-}
-
 
 /* Parse a single line, based on the current state of the parser
  * NOTE: function assumes that the line does not contain any trailing newline character */

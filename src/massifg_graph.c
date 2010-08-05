@@ -114,6 +114,8 @@ draw_snapshot_point(gpointer data, gpointer user_data) {
 		    (double)snapshot->mem_heap_extra_B +
 		    (double)snapshot->mem_stacks_B;
 		break;
+	case GRAPH_SERIES_LAST:
+		g_warn_if_reached();
 	}
 
 	/* Draw the data point */

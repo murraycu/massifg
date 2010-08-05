@@ -29,7 +29,7 @@ typedef enum {
 	GRAPH_SERIES_HEAP,
 	GRAPH_SERIES_HEAP_EXTRA,
 	GRAPH_SERIES_STACKS,
-	GRAPH_SERIES_LAST, /* NOTE: only used to calculate the number of elements in the enum */
+	GRAPH_SERIES_LAST /* NOTE: only used to calculate the number of elements in the enum */
 } MassifgGraphSeries;
 
 /* Represent a RGB color with alpha channel */
