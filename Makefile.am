@@ -23,6 +23,9 @@ uidir = $(pkgdatadir)
 dist_ui_DATA = data/massifg.glade \
                data/menu.ui
 
+dist_noinst_DATA = tests/massif-output-2snapshots.txt \
+		   tests/massif-output-glom-shortened.txt
+
 # Unit/Functional tests setup
 check_PROGRAMS = tests/parser
 tests_parser_SOURCES = tests/parser.c
@@ -37,7 +40,7 @@ GTESTER_REPORT = gtester-report
 
 # test: run all tests
 test: ${check_PROGRAMS}
-	@test -z "${check_PROGRAMS}" || ${GTESTER} --verbose ${check_PROGRAMS}
+	@test -z "${check_PROGRAMS}" || top_srcdir=${top_srcdir} ${GTESTER} --verbose ${check_PROGRAMS}
 
 # test-report: run tests and generate report
 # perf-report: run tests with -m perf and generate report
@@ -55,9 +58,9 @@ test-report perf-report full-report: ${check_PROGRAMS}
 	  full-report) test_options="-k -m=perf -m=slow";; \
 	  esac; \
 	  if test -z "$$GTESTER_LOGDIR"; then	\
-	    ${GTESTER} --verbose $$test_options -o test-report.xml ${check_PROGRAMS}; \
+	    top_srcdir=${top_srcdir} ${GTESTER} --verbose $$test_options -o test-report.xml ${check_PROGRAMS}; \
 	  elif test -n "${check_PROGRAMS}"; then \
-	    ${GTESTER} --verbose $$test_options -o `mktemp "$$GTESTER_LOGDIR/log-XXXXXX"` ${check_PROGRAMS}; \
+	    top_srcdir=${top_srcdir} ${GTESTER} --verbose $$test_options -o `mktemp "$$GTESTER_LOGDIR/log-XXXXXX"` ${check_PROGRAMS}; \
 	  fi; \
 	}; \
 	$$ignore_logdir || { \

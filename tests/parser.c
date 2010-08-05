@@ -5,8 +5,19 @@
 #include "../src/massifg_utils.c"
 #include "../src/massifg_parser.c"
 
-#define PARSER_TEST_INPUT_SHORT "tests/massif-output-2snapshots.txt"
-#define PARSER_TEST_INPUT_LONG "tests/massif-output-glom-shortened.txt"
+#define PARSER_TEST_INPUT_SHORT "massif-output-2snapshots.txt"
+#define PARSER_TEST_INPUT_LONG "massif-output-glom-shortened.txt"
+
+/* Utility function for finding the test input files. Especially important for distcheck
+ * http://www.gnu.org/software/automake/manual/automake.html#Tests
+ * Caller should free return value using g_free () */
+gchar *
+get_test_file(const gchar *filename) {
+	gchar *srcdir = g_getenv("top_srcdir");
+	gchar *path = g_build_filename(srcdir, "tests", filename, NULL);
+	return path;
+}
+
 
 void
 parser_functest_short(void) {
@@ -18,7 +29,9 @@ parser_functest_short(void) {
 	g_log_set_handler(NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
 
 	/* Run the parser */
-	data = massifg_parse_file(PARSER_TEST_INPUT_SHORT, NULL);
+	gchar *path = get_test_file(PARSER_TEST_INPUT_SHORT);
+	data = massifg_parse_file(path, NULL);
+	g_free(path);
 
 	/* Header values */
 	g_assert_cmpstr(data->desc->str, ==, "--detailed-freq=1");
@@ -56,7 +69,10 @@ void
 parser_return_null_on_nonexisting_file(void) {
 	MassifgOutputData *data;
 
-	data = massifg_parse_file("tests/non-existing-file.keejrsperr", NULL);
+	gchar *path = get_test_file("non-existing-file.keejrsperr");
+	data = massifg_parse_file(path, NULL);
+	g_free(path);
+
 	g_assert(data == NULL);
 }
 
@@ -64,7 +80,10 @@ void
 parser_return_null_on_bogus_data(void) {
 	MassifgOutputData *data;
 
-	data = massifg_parse_file("tests/parser.c", NULL);
+	gchar *path = get_test_file("parser.c");
+	data = massifg_parse_file(path, NULL);
+	g_free(path);
+
 	g_assert(data == NULL);
 }
 
@@ -72,7 +91,10 @@ void
 parser_maxvalues(void) {
 	MassifgOutputData *data;
 
-	data = massifg_parse_file(PARSER_TEST_INPUT_LONG, NULL);
+	gchar *path = get_test_file(PARSER_TEST_INPUT_LONG);
+	data = massifg_parse_file(path, NULL);
+	g_free(path);
+
 	g_assert_cmpint(data->max_time, ==, 2101548346);
 	g_assert_cmpint(data->max_mem_allocation, ==, 8843592);
 }
