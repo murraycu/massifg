@@ -93,7 +93,7 @@ massifg_gtkui_file_changed(MassifgApplication *app) {
 
 }
 
-/*
+
 static void
 print_op_begin_print(GtkPrintOperation *operation,
 		GtkPrintContext *context, gpointer user_data) {
@@ -114,12 +114,10 @@ print_op_draw_page(GtkPrintOperation *operation,
 	width = gtk_print_context_get_width (context);
 	height = gtk_print_context_get_width (context);
 
-	graph = massifg_graph_new(); /* TODO: initialize only once */
-
-/*	if (app->output_data != NULL) {
-		massifg_graph_update(graph, cr, app->output_data, width, height);
+	/* TODO: move this logic up to print_action */
+	if (app->output_data != NULL) {
+		massifg_graph_render_to_cairo(app->graph, cr, width, height);
 	}
-	massifg_graph_free(graph);
 }
 
 
@@ -162,7 +160,7 @@ open_file_action(GtkAction *action, gpointer data) {
 	massifg_gtkui_file_changed(app);
 }
 
-/*
+
 void
 print_action(GtkAction *action, gpointer data) {
 	GtkWidget *main_window = NULL;
@@ -189,7 +187,7 @@ print_action(GtkAction *action, gpointer data) {
 		g_clear_error(&error);
 	}
 	/* TODO: Handle saving of page setup. */
-/*
+
 	g_object_unref (print_op);
 }
 
@@ -212,7 +210,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
 	  { "QuitAction", GTK_STOCK_QUIT, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
 	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open", NULL, NULL, G_CALLBACK(open_file_action)},
-//	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
+	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
 	};
 	const int num_actions = G_N_ELEMENTS(actions);
 

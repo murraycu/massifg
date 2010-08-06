@@ -32,6 +32,9 @@
 #include <goffice/utils/go-styled-object.h>
 #include <goffice/gtk/go-graph-widget.h>
 
+#include <cairo.h>
+#include <glib.h>
+
 #include "massifg_parser.h"
 
 #ifndef __MASSIFG_GRAPH_H__
@@ -55,6 +58,7 @@ MassifgGraph *massifg_graph_new(void);
 void massifg_graph_free(MassifgGraph *graph);
 
 void massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data);
+gboolean massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr, gint width, gint height);
 
 #endif /* __MASSIFG_GRAPH_H__ */
 

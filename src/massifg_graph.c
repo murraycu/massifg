@@ -158,3 +158,16 @@ massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data) {
 	}
 }
 
+gboolean
+massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
+				gint width, gint height) {
+	gboolean retval;
+
+	GogGraph *go_graph = go_graph_widget_get_graph(GO_GRAPH_WIDGET(graph->widget));
+	GogRenderer *renderer = gog_renderer_new(go_graph);
+
+	retval = gog_renderer_render_to_cairo(renderer, cr, width, height);
+	g_object_unref(G_OBJECT(renderer));
+	return retval;
+}
+
