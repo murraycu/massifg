@@ -71,10 +71,8 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 
 void
 massifg_gtkui_file_changed(MassifgApplication *app) {
-	GtkWidget *graph = NULL;
-	GError *error = NULL;
 
-	graph = GTK_WIDGET(gtk_builder_get_object(app->gtk_builder, "graph"));
+	GError *error = NULL;
 
 	/* TODO: when parsing fails, keep the previous graph */
 	/* Parse the file */
@@ -89,11 +87,13 @@ massifg_gtkui_file_changed(MassifgApplication *app) {
 		return;
 	}
 
-	/* Update the UI */
-	gtk_widget_queue_draw(graph);
+	if (app->output_data != NULL) {
+		massifg_graph_update(app->graph, app->output_data);
+	}
 
 }
 
+/*
 static void
 print_op_begin_print(GtkPrintOperation *operation,
 		GtkPrintContext *context, gpointer user_data) {
@@ -116,7 +116,7 @@ print_op_draw_page(GtkPrintOperation *operation,
 
 	graph = massifg_graph_new(); /* TODO: initialize only once */
 
-	if (app->output_data != NULL) {
+/*	if (app->output_data != NULL) {
 		massifg_graph_update(graph, cr, app->output_data, width, height);
 	}
 	massifg_graph_free(graph);
@@ -129,20 +129,6 @@ void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
 	gtk_main_quit();
 }
 
-/* Draw the graph widget */
-static gboolean
-graph_widget_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
-	MassifgApplication *app = (MassifgApplication *)data;
-	cairo_t *cr = gdk_cairo_create(widget->window);
-	MassifgGraph *graph = massifg_graph_new(); /* TODO: initialize only once */
-
-	if (app->output_data != NULL) {
-		massifg_graph_update(graph, cr, app->output_data,
-			widget->allocation.width, widget->allocation.height);
-	}
-	massifg_graph_free(graph);
-	return FALSE;
-}
 
 /* Actions */
 void
@@ -176,6 +162,7 @@ open_file_action(GtkAction *action, gpointer data) {
 	massifg_gtkui_file_changed(app);
 }
 
+/*
 void
 print_action(GtkAction *action, gpointer data) {
 	GtkWidget *main_window = NULL;
@@ -202,7 +189,7 @@ print_action(GtkAction *action, gpointer data) {
 		g_clear_error(&error);
 	}
 	/* TODO: Handle saving of page setup. */
-
+/*
 	g_object_unref (print_op);
 }
 
@@ -210,6 +197,7 @@ print_action(GtkAction *action, gpointer data) {
 /* Set up actions and menus */
 gint
 massifg_gtkui_init_menus(MassifgApplication *app) {
+
 	const gchar *uifile_path = NULL;
 	GtkActionGroup *action_group = NULL;
 	GtkWidget *vbox = NULL;
@@ -224,7 +212,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
 	  { "QuitAction", GTK_STOCK_QUIT, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
 	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open", NULL, NULL, G_CALLBACK(open_file_action)},
-	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
+//	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
 	};
 	const int num_actions = G_N_ELEMENTS(actions);
 
@@ -267,7 +255,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 gint
 massifg_gtkui_init(MassifgApplication *app) {
 	const gchar *gladefile_path = NULL;
-	GtkWidget *graph = NULL;
+	GtkWidget *vbox = NULL;
 	GError *error = NULL;
 
 	/* Initialize */
@@ -284,10 +272,10 @@ massifg_gtkui_init(MassifgApplication *app) {
 		return 1;
 	}
 
-	graph = GTK_WIDGET(gtk_builder_get_object (app->gtk_builder, "graph"));
-	g_signal_connect(G_OBJECT(graph), "expose_event",
-                    G_CALLBACK(graph_widget_expose_event), app);
-	gtk_builder_connect_signals (app->gtk_builder,NULL);
+	/* Add the graph widget */
+	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
+	app->graph = massifg_graph_new();
+	gtk_box_pack_start(GTK_BOX (vbox), app->graph->widget, TRUE, TRUE, 1);
 
 	/* Cleanup */
 	g_free((gpointer)gladefile_path);

@@ -24,6 +24,7 @@
 
 #include <gtk/gtk.h>
 #include "massifg_parser.h"
+#include "massifg_graph.h"
 
 /* Datastructure containing shared application state */
 typedef struct {
@@ -31,6 +32,7 @@ typedef struct {
 	char ***argv_ptr;
 	gchar *filename;
 	MassifgOutputData *output_data;
+	MassifgGraph *graph;
 	GtkBuilder *gtk_builder;
 } MassifgApplication;
 

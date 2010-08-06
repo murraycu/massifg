@@ -33,12 +33,14 @@ main (int argc, char **argv) {
 	/* Initialize application data structure */
 	MassifgApplication app;
 	app.output_data = NULL;
+	app.graph = NULL;
 	app.filename = NULL;
 	app.gtk_builder = NULL;
 	app.argc_ptr = &argc;
 	app.argv_ptr = &argv;
 
 	massifg_utils_configure_debug_output();
+	massifg_graph_init();
 
 	/* Create the UI */
 	if (massifg_gtkui_init(&app) != 0) {
