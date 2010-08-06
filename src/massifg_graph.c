@@ -47,6 +47,9 @@ typedef enum {
 	MASSIFG_DATA_SERIES_LAST /* NOTE: only used to calculate the number of elements in the enum */
 } MassifgDataSeries;
 
+/* Indexed by MassifgDataSeries */
+gchar *MASSIFG_DATA_SERIES_DESC[] = {"Time", "Heap", "Heap Extra", "Stacks"};
+
 typedef struct {
 	MassifgDataSeries series;
 	double *data_array;
@@ -148,11 +151,12 @@ massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data) {
 	gog_plot_clear_series(graph->plot); /* TODO: verify that we arenot  responsible for freeing */
 	GOData *time_data = data_from_snapshots(data->snapshots, MASSIFG_DATA_SERIES_TIME);
 
-	/* TODO: title for each series */
 	MassifgDataSeries ds;
 	for (ds=MASSIFG_DATA_SERIES_HEAP; ds<=MASSIFG_DATA_SERIES_STACKS; ds++) {
 		GogSeries *gog_series = gog_plot_new_series(graph->plot);
 		GOData *series_data = data_from_snapshots(data->snapshots, ds);
+		GOData *series_name = go_data_scalar_str_new(MASSIFG_DATA_SERIES_DESC[ds], FALSE);
+		gog_series_set_name(gog_series, series_name,&graph->error);
 		gog_series_set_dim(gog_series, 0, time_data, &graph->error);
 		gog_series_set_dim(gog_series, 1, series_data, &graph->error);
 	}
