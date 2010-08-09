@@ -25,6 +25,13 @@
 #include <glib.h>
 
 /* Data structures */
+typedef struct _MassifgSnapshotLeaf {
+	glong total_mem_B;
+	GString *label;
+	GList *children;
+
+} MassifgSnapshotLeaf;
+
 struct _MassifgSnapshot {
 	gint snapshot_no;
 
@@ -32,6 +39,8 @@ struct _MassifgSnapshot {
 	glong mem_heap_B;
 	glong mem_heap_extra_B;
 	glong mem_stacks_B;
+
+	GString *heap_tree_desc;
 };
 typedef struct _MassifgSnapshot MassifgSnapshot;
 

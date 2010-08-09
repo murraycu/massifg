@@ -138,6 +138,7 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 		if (g_str_has_prefix(line, "snapshot=")) {
 			parser->current_snapshot = (MassifgSnapshot*) g_malloc(sizeof(MassifgSnapshot));
 
+			parser->current_snapshot->heap_tree_desc = g_string_new("");
 			/* Initialize */
 			parser->current_snapshot->snapshot_no = -1;
 			parser->current_snapshot->time = -2;
@@ -181,7 +182,7 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 		break;
 	case STATE_SNAPSHOT_MEM_STACKS:
 		massifg_parse_snapshot_element(parser, line, "mem_stacks_B=",
-				&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT);
+				&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT_HEAP_TREE);
 
 		/* Check if this snapshots values for memory allocation is larger than the ones before it */
 		gint total_mem_allocation = parser->current_snapshot->mem_heap_B + 
@@ -190,16 +191,29 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 		if (total_mem_allocation > parser->output_data->max_mem_allocation) {
 			parser->output_data->max_mem_allocation = total_mem_allocation;
 		}
-
-		/* XXX: looks for next snapshot, heap tree parsing not implemented yet */
 		break;
-	/* TODO: implement */
-	case STATE_SNAPSHOT_HEAP_TREE:
 
-	/* TODO: implement */
+
+	case STATE_SNAPSHOT_HEAP_TREE:
+		g_message("STATE_SNAPSHOT_HEAP_TREE");
+
+		if (g_str_has_prefix(line, "heap_tree=")) {
+			kv_tokens = massifg_tokenify_line(line, "=");
+			g_string_printf(parser->current_snapshot->heap_tree_desc, "%s", kv_tokens[1]);
+			g_strfreev(kv_tokens);
+
+			if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "empty"))
+				parser->current_state = STATE_SNAPSHOT;
+			else if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "detailed"))
+				parser->current_state = STATE_SNAPSHOT_HEAP_TREE_LEAF;
+		}
+		break;
+
 	/* Snapshot heap tree entries */
 	case STATE_SNAPSHOT_HEAP_TREE_LEAF:
-		;
+		/* TODO: implement */
+		parser->current_state = STATE_SNAPSHOT;
+		break;
 	}
 
 }

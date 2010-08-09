@@ -25,9 +25,6 @@ parser_functest_short(void) {
 	GList *list;
 	MassifgSnapshot *s;
 
-	/* Silence DEBUG messages */
-	g_log_set_handler(NULL, G_LOG_LEVEL_DEBUG, massifg_utils_log_ignore, NULL);
-
 	/* Run the parser */
 	gchar *path = get_test_file(PARSER_TEST_INPUT_SHORT);
 	data = massifg_parse_file(path, NULL);
@@ -52,6 +49,8 @@ parser_functest_short(void) {
 	g_assert_cmpint(s->mem_heap_extra_B, ==, 0);
 	g_assert_cmpint(s->mem_stacks_B, ==, 0);
 
+	g_assert_cmpstr(s->heap_tree_desc->str, ==, "detailed");
+
 	/* Snapshot 1 values */
 	list = g_list_nth(data->snapshots, 1);
 	s = (MassifgSnapshot*) list->data;
@@ -62,6 +61,8 @@ parser_functest_short(void) {
 	g_assert_cmpint(s->mem_heap_B, ==, 352);
 	g_assert_cmpint(s->mem_heap_extra_B, ==, 8);
 	g_assert_cmpint(s->mem_stacks_B, ==, 0);
+
+	g_assert_cmpstr(s->heap_tree_desc->str, ==, "detailed");
 
 }
 
@@ -108,5 +109,6 @@ main (int argc, char **argv) {
 	g_test_add_func("/parser/bogus-data", parser_return_null_on_bogus_data);
 	g_test_add_func("/parser/max-values", parser_maxvalues);
 
+	massifg_utils_configure_debug_output();
 	return g_test_run();
 }
