@@ -22,7 +22,7 @@
 #ifndef __MASSIFG_UTILS_H__
 #define __MASSIFG_UTILS_H__
 
-gchar *massifg_utils_get_resource_file(const gchar *argv0, const gchar *filename);
+gchar *massifg_utils_get_resource_file(const gchar *filename);
 void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 			const gchar *message,
 			gpointer user_data);

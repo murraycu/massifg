@@ -218,7 +218,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
 	window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
 
-	uifile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "menu.ui");
+	uifile_path = massifg_utils_get_resource_file("menu.ui");
 	action_group = gtk_action_group_new ("action group");
 	uimanager = gtk_ui_manager_new();
 
@@ -260,7 +260,7 @@ massifg_gtkui_init(MassifgApplication *app) {
 	gtk_init (app->argc_ptr, app->argv_ptr);
 
 	app->gtk_builder = gtk_builder_new();
-	gladefile_path = massifg_utils_get_resource_file((*app->argv_ptr)[0], "massifg.glade");
+	gladefile_path = massifg_utils_get_resource_file("massifg.glade");
 
 	/* Build UI */
 	if (!gtk_builder_add_from_file (app->gtk_builder, gladefile_path, &error))

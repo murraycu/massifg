@@ -23,6 +23,7 @@
  * in a single component */
 
 #include <glib.h>
+#include "config.h"
 
 /* Private functions */
 
@@ -53,41 +54,42 @@ get_system_file(const gchar *progam_name, const gchar *filename)
 }
 
 /* Find a resource file
- * First checks INSTALL_PREFIX/data/ in case the program is running from the build dir
+ * Returns the path to the file, or NULL on failing to find a matching file 
+ * Caller is responsible for freeing the results with g_free
+ * First checks ./data/ in case the program is running from the build dir
  * Second, INSTALL_PREFIX/share in case of running from a non-system prefix
  * Then, checks the system folders as given by g_get_system_data_dirs()
- * Returns the path to the file, or NULL on failing to find a matching file */
+ */
 gchar *
-massifg_utils_get_resource_file(const gchar *argv0, const gchar *filename) {
+massifg_utils_get_resource_file(const gchar *filename) {
 	gchar *pathname = NULL;
+	const gchar *run_prefix = NULL;
 	const gchar *application_name = "massifg";
-	const gchar *install_prefix = NULL;
-	const gchar *tmp_str = NULL;
 
-	tmp_str = g_path_get_dirname(argv0);
-	install_prefix = g_path_get_dirname(tmp_str);
-	g_free((gpointer)tmp_str);
+	/* Check in ./data/ */
+	run_prefix = g_get_current_dir();
+	pathname = g_build_filename(run_prefix, "data", filename, NULL);
+	if (!g_file_test(pathname, G_FILE_TEST_EXISTS)) {
+		g_free(pathname);
+		pathname = NULL;
+	}
+	g_free((gpointer)run_prefix);
 
-	pathname = g_build_filename(install_prefix, "data", filename, NULL);
-	g_debug("Looking for resource file \"%s\" in %s", filename, pathname);
-	if (pathname != NULL && g_file_test(pathname, G_FILE_TEST_EXISTS)) {
-		goto end;
+	/* If the file was not found, check in INSTALL_PREFIX/share/APPNAME/ */
+	if (!pathname) {
+		pathname = g_build_filename(INSTALL_PREFIX, "share", application_name, filename, NULL);
+		if (!g_file_test(pathname, G_FILE_TEST_EXISTS)) {
+			g_free(pathname);
+			pathname = NULL;
+		}
 	}
 
-	pathname = g_build_filename(install_prefix, "share", application_name, filename, NULL);
-	g_debug("Looking for resource file \"%s\" in %s", filename, pathname);
-	if (pathname != NULL && g_file_test(pathname, G_FILE_TEST_EXISTS)) {
-		goto end;
+	/* If the file was not found, check in system directories */
+	if (!pathname) {
+		pathname = get_system_file(application_name, filename);
 	}
 
-	pathname = get_system_file(application_name, filename);
-	if (pathname != NULL) {
-		goto end;
-	}
-
-end:
-	g_free((gpointer)install_prefix);
-	g_debug("Found resource file \"%s\": %s", filename, pathname);
+	g_debug("Path to resource file \"%s\": %s", filename, pathname);
 	return pathname;
 }
 
