@@ -71,7 +71,9 @@ massifg_tokenify_line(const gchar *line, const gchar *delim) {
 	return tokens;
 }
 
-/* Parse a header element, setting element to the value parsed
+/* Parse a header element, 
+ * Format: "key: value", where value is a string
+ * Sets element to the value parsed
  * If line does not start with prefix, this function does nothing */
 static void
 massifg_parse_header_element(MassifgParser *parser, const gchar *line,
@@ -87,7 +89,9 @@ massifg_parse_header_element(MassifgParser *parser, const gchar *line,
 
 }
 
-/* Parse a snapshot element, setting element to the value parsed
+/* Parse a snapshot element.
+ * Format: "key=value", where value is a number
+ * Sets element to the value parsed
  * If line does not start with prefix, this function does nothing */
 static void
 massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
@@ -103,25 +107,100 @@ massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
 
 }
 
+/* Parse snapshot identifier, and initialize the snapshot datastructure. Format:
+ * #-----------
+ * snapshot=N
+ * #-----------
+ */
+void
+massifg_parse_snapshot(MassifgParser *parser, const gchar *line) {
+	gchar **kv_tokens;
+	if (g_str_has_prefix(line, "snapshot=")) {
+		parser->current_snapshot = (MassifgSnapshot*) g_malloc(sizeof(MassifgSnapshot));
+
+		parser->current_snapshot->heap_tree_desc = g_string_new("");
+		/* Initialize */
+		parser->current_snapshot->snapshot_no = -1;
+		parser->current_snapshot->time = -2;
+		parser->current_snapshot->mem_heap_B = -3;
+		parser->current_snapshot->mem_heap_extra_B = -4;
+		parser->current_snapshot->mem_stacks_B = -5;
+
+		/* Actually parse and set correct snapshot number */
+		kv_tokens = massifg_tokenify_line(line, "=");
+		parser->current_snapshot->snapshot_no = atoi(kv_tokens[1]);
+		g_strfreev(kv_tokens);
+
+		/* Add to output data structure */
+		parser->output_data->snapshots =
+			g_list_append(parser->output_data->snapshots, parser->current_snapshot);
+
+		parser->current_state = STATE_SNAPSHOT_TIME;
+
+	}
+}
+
+/* Parses the snapshot element "time", and maintains a maximum value */
+void
+massifg_parse_snapshot_time(MassifgParser *parser, const gchar *line) {
+	massifg_parse_snapshot_element(parser, line, "time=",
+			&parser->current_snapshot->time, STATE_SNAPSHOT_MEM_HEAP);
+
+	/* Check if this snapshots values for time is larger than the ones before it 
+	 * NOTE: this should pretty much always be true */
+	if (parser->current_snapshot->time > parser->output_data->max_time) {
+		parser->output_data->max_time = parser->current_snapshot->time;
+	}
+}
+
+/* Parses the snapshot element "mem_stacks_B", and maintains a maximum value of the sum of memory */
+void
+massifg_parse_snapshot_mem_stacks(MassifgParser *parser, const gchar *line) {
+	massifg_parse_snapshot_element(parser, line, "mem_stacks_B=",
+			&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT_HEAP_TREE);
+
+	/* Check if this snapshots values for memory allocation is larger than the ones before it */
+	gint total_mem_allocation = parser->current_snapshot->mem_heap_B + 
+			parser->current_snapshot->mem_heap_extra_B +
+			parser->current_snapshot->mem_stacks_B;
+	if (total_mem_allocation > parser->output_data->max_mem_allocation) {
+		parser->output_data->max_mem_allocation = total_mem_allocation;
+	}
+}
+
+/* Parse heap tree identifier 
+ * Format: "heap_tree=value", where value can be "details", "empty" or "peak"*/
+void
+massifg_parse_heap_tree(MassifgParser *parser, const gchar *line) {
+	gchar **kv_tokens;
+	if (g_str_has_prefix(line, "heap_tree=")) {
+		kv_tokens = massifg_tokenify_line(line, "=");
+		g_string_printf(parser->current_snapshot->heap_tree_desc, "%s", kv_tokens[1]);
+		g_strfreev(kv_tokens);
+
+		if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "empty"))
+			parser->current_state = STATE_SNAPSHOT;
+		else if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "detailed"))
+			parser->current_state = STATE_SNAPSHOT_HEAP_TREE_LEAF;
+	}
+}
+
 /* Parse a single line, based on the current state of the parser
  * NOTE: function assumes that the line does not contain any trailing newline character */
 static void 
 massifg_parse_line(MassifgParser *parser, gchar *line) {
-	gchar **kv_tokens;
-
 	g_debug("Parsing line: \"%s\". Parser state: %d", 
 		line, parser->current_state);
 
 	switch (parser->current_state) {
 
-	/* Header entries
-	 * Format: "key: value", where value is a string */
+	/* Header entries */
 	case STATE_DESC:
-		massifg_parse_header_element(parser, line, "desc: ", 
+		massifg_parse_header_element(parser, line, "desc: ",
 			parser->output_data->desc, STATE_CMD);
 		break;
 	case STATE_CMD:
-		massifg_parse_header_element(parser, line, "cmd: ", 
+		massifg_parse_header_element(parser, line, "cmd: ",
 			parser->output_data->cmd, STATE_TIME_UNIT);
 		break;
 	case STATE_TIME_UNIT:
@@ -129,86 +208,32 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 				parser->output_data->time_unit, STATE_SNAPSHOT);
 		break;
 
-	/* Snapshot identifier
-	 * #-----------
-	 * snapshot=N
-	 * #-----------
-	 */
+	/* Snapshot identifier */
 	case STATE_SNAPSHOT: 
-		if (g_str_has_prefix(line, "snapshot=")) {
-			parser->current_snapshot = (MassifgSnapshot*) g_malloc(sizeof(MassifgSnapshot));
-
-			parser->current_snapshot->heap_tree_desc = g_string_new("");
-			/* Initialize */
-			parser->current_snapshot->snapshot_no = -1;
-			parser->current_snapshot->time = -2;
-			parser->current_snapshot->mem_heap_B = -3;
-			parser->current_snapshot->mem_heap_extra_B = -4;
-			parser->current_snapshot->mem_stacks_B = -5;
-
-			/* Actually parse and set correct snapshot number */
-			kv_tokens = massifg_tokenify_line(line, "=");
-			parser->current_snapshot->snapshot_no = atoi(kv_tokens[1]);
-			g_strfreev(kv_tokens);
-
-			/* Add to output data structure */
-			parser->output_data->snapshots = 
-				g_list_append(parser->output_data->snapshots, parser->current_snapshot);
-
-			parser->current_state = STATE_SNAPSHOT_TIME;
-
-		}
+		massifg_parse_snapshot(parser, line);
 		break;
-
-	/* Snapshot entries
-	 * Format: "key=value", where value is, most often, a number */
+	/* Snapshot entries */
 	case STATE_SNAPSHOT_TIME:
-		massifg_parse_snapshot_element(parser, line, "time=",
-				&parser->current_snapshot->time, STATE_SNAPSHOT_MEM_HEAP);
-
-		/* Check if this snapshots values for time is larger than the ones before it 
-		 * NOTE: this should pretty much always be true */
-		if (parser->current_snapshot->time > parser->output_data->max_time) {
-			parser->output_data->max_time = parser->current_snapshot->time;
-		}
+		massifg_parse_snapshot_time(parser, line);
 		break;
 	case STATE_SNAPSHOT_MEM_HEAP:
 		massifg_parse_snapshot_element(parser, line, "mem_heap_B=",
-				&parser->current_snapshot->mem_heap_B, STATE_SNAPSHOT_MEM_HEAP_EXTRA);
+				&parser->current_snapshot->mem_heap_B,
+				STATE_SNAPSHOT_MEM_HEAP_EXTRA);
 		break;
 	case STATE_SNAPSHOT_MEM_HEAP_EXTRA:
 		massifg_parse_snapshot_element(parser, line, "mem_heap_extra_B=",
-				&parser->current_snapshot->mem_heap_extra_B, STATE_SNAPSHOT_MEM_STACKS);
+				&parser->current_snapshot->mem_heap_extra_B,
+				STATE_SNAPSHOT_MEM_STACKS);
 		break;
 	case STATE_SNAPSHOT_MEM_STACKS:
-		massifg_parse_snapshot_element(parser, line, "mem_stacks_B=",
-				&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT_HEAP_TREE);
-
-		/* Check if this snapshots values for memory allocation is larger than the ones before it */
-		gint total_mem_allocation = parser->current_snapshot->mem_heap_B + 
-				parser->current_snapshot->mem_heap_extra_B +
-				parser->current_snapshot->mem_stacks_B;
-		if (total_mem_allocation > parser->output_data->max_mem_allocation) {
-			parser->output_data->max_mem_allocation = total_mem_allocation;
-		}
+		massifg_parse_snapshot_mem_stacks(parser, line);
 		break;
 
-
+	/* Snapshot heap tree identifier */
 	case STATE_SNAPSHOT_HEAP_TREE:
-		g_message("STATE_SNAPSHOT_HEAP_TREE");
-
-		if (g_str_has_prefix(line, "heap_tree=")) {
-			kv_tokens = massifg_tokenify_line(line, "=");
-			g_string_printf(parser->current_snapshot->heap_tree_desc, "%s", kv_tokens[1]);
-			g_strfreev(kv_tokens);
-
-			if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "empty"))
-				parser->current_state = STATE_SNAPSHOT;
-			else if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "detailed"))
-				parser->current_state = STATE_SNAPSHOT_HEAP_TREE_LEAF;
-		}
+		massifg_parse_heap_tree(parser, line);
 		break;
-
 	/* Snapshot heap tree entries */
 	case STATE_SNAPSHOT_HEAP_TREE_LEAF:
 		/* TODO: implement */
