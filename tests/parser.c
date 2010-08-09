@@ -6,7 +6,7 @@
 #include "../src/massifg_parser.c"
 
 #define PARSER_TEST_INPUT_SHORT "massif-output-2snapshots.txt"
-#define PARSER_TEST_INPUT_LONG "massif-output-glom-shortened.txt"
+#define PARSER_TEST_INPUT_LONG "massif-output-glom.txt"
 
 /* Utility function for finding the test input files. Especially important for distcheck
  * http://www.gnu.org/software/automake/manual/automake.html#Tests
@@ -95,7 +95,7 @@ parser_maxvalues(void) {
 	data = massifg_parse_file(path, NULL);
 	g_free(path);
 
-	g_assert_cmpint(data->max_time, ==, 2101548346);
+	g_assert_cmpint(data->max_time, ==, 2318524449);
 	g_assert_cmpint(data->max_mem_allocation, ==, 8843592);
 }
 

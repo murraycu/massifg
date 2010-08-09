@@ -28,10 +28,10 @@
 struct _MassifgSnapshot {
 	gint snapshot_no;
 
-	gint time;
-	gint mem_heap_B;
-	gint mem_heap_extra_B;
-	gint mem_stacks_B;
+	glong time;
+	glong mem_heap_B;
+	glong mem_heap_extra_B;
+	glong mem_stacks_B;
 };
 typedef struct _MassifgSnapshot MassifgSnapshot;
 
@@ -44,8 +44,8 @@ struct _MassifgOutputData {
 
 	/* Not provided by the output format directly, but set by the parser 
 	 * as it builds up the data structure. */
-	gint max_time;
-	gint max_mem_allocation;
+	glong max_time;
+	glong max_mem_allocation;
 };
 typedef struct _MassifgOutputData MassifgOutputData;
 

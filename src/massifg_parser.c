@@ -19,7 +19,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h> /* for atoi() */
+#include <stdlib.h> /* for atoi() / strtol() */
 
 #include <glib.h>
 
@@ -91,12 +91,12 @@ massifg_parse_header_element(MassifgParser *parser, const gchar *line,
  * If line does not start with prefix, this function does nothing */
 static void
 massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
-				const gchar *prefix, gint *element,
+				const gchar *prefix, glong *element,
 				MassifgParserState next_state) {
 	gchar **kv_tokens;
 	if (g_str_has_prefix(line, prefix)) {
 		kv_tokens = massifg_tokenify_line(line, "=");
-		*element = atoi(kv_tokens[1]);
+		*element = strtol(kv_tokens[1], NULL, 10);
 		g_strfreev(kv_tokens);
 		parser->current_state = next_state;
 	}
