@@ -25,12 +25,16 @@
 #include <glib.h>
 
 /* Data structures */
-typedef struct _MassifgSnapshotLeaf {
+typedef struct _MassifgHeapTreeNode {
+	gint num_children;
 	glong total_mem_B;
 	GString *label;
-	GList *children;
 
-} MassifgSnapshotLeaf;
+	/* Only used while parsing */
+	gint parsing_remaining_children; /* 0 after correct parsing */
+	gint parsing_depth; /* Should be equal to the depth of the tree */
+
+} MassifgHeapTreeNode;
 
 struct _MassifgSnapshot {
 	gint snapshot_no;
@@ -41,6 +45,7 @@ struct _MassifgSnapshot {
 	glong mem_stacks_B;
 
 	GString *heap_tree_desc;
+	GNode *heap_tree;
 };
 typedef struct _MassifgSnapshot MassifgSnapshot;
 

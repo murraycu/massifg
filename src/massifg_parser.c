@@ -20,6 +20,7 @@
  */
 
 #include <stdlib.h> /* for atoi() / strtol() */
+#include <string.h>
 
 #include <glib.h>
 
@@ -43,7 +44,7 @@ typedef enum {
 	STATE_SNAPSHOT_MEM_STACKS,
 	STATE_SNAPSHOT_HEAP_TREE,
 
-	STATE_SNAPSHOT_HEAP_TREE_LEAF
+	STATE_SNAPSHOT_HEAP_TREE_NODE
 } MassifgParserState;
 
 /* Data strucure for the parser, which is passed around to
@@ -51,6 +52,8 @@ typedef enum {
 struct _MassifgParser {
 	MassifgParserState current_state;
 	MassifgSnapshot *current_snapshot;
+	GNode *current_parent;
+	gint current_line_number;
 	MassifgOutputData *output_data;
 };
 typedef struct _MassifgParser MassifgParser;
@@ -107,6 +110,23 @@ massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
 
 }
 
+
+MassifgSnapshot *
+massifg_snapshot_new() {
+	MassifgSnapshot *snapshot = g_new(MassifgSnapshot, 1);
+
+	snapshot->heap_tree_desc = g_string_new("");
+	snapshot->heap_tree = NULL;
+
+	/* Initialize */
+	snapshot->snapshot_no = -1;
+	snapshot->time = -2;
+	snapshot->mem_heap_B = -3;
+	snapshot->mem_heap_extra_B = -4;
+	snapshot->mem_stacks_B = -5;
+	return snapshot;
+}
+
 /* Parse snapshot identifier, and initialize the snapshot datastructure. Format:
  * #-----------
  * snapshot=N
@@ -116,15 +136,7 @@ void
 massifg_parse_snapshot(MassifgParser *parser, const gchar *line) {
 	gchar **kv_tokens;
 	if (g_str_has_prefix(line, "snapshot=")) {
-		parser->current_snapshot = (MassifgSnapshot*) g_malloc(sizeof(MassifgSnapshot));
-
-		parser->current_snapshot->heap_tree_desc = g_string_new("");
-		/* Initialize */
-		parser->current_snapshot->snapshot_no = -1;
-		parser->current_snapshot->time = -2;
-		parser->current_snapshot->mem_heap_B = -3;
-		parser->current_snapshot->mem_heap_extra_B = -4;
-		parser->current_snapshot->mem_stacks_B = -5;
+		parser->current_snapshot = massifg_snapshot_new();
 
 		/* Actually parse and set correct snapshot number */
 		kv_tokens = massifg_tokenify_line(line, "=");
@@ -171,18 +183,156 @@ massifg_parse_snapshot_mem_stacks(MassifgParser *parser, const gchar *line) {
 /* Parse heap tree identifier 
  * Format: "heap_tree=value", where value can be "details", "empty" or "peak"*/
 void
-massifg_parse_heap_tree(MassifgParser *parser, const gchar *line) {
+massifg_parse_heap_tree_desc(MassifgParser *parser, const gchar *line) {
 	gchar **kv_tokens;
 	if (g_str_has_prefix(line, "heap_tree=")) {
 		kv_tokens = massifg_tokenify_line(line, "=");
 		g_string_printf(parser->current_snapshot->heap_tree_desc, "%s", kv_tokens[1]);
 		g_strfreev(kv_tokens);
 
-		if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "empty"))
+		if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "empty") == 0)
 			parser->current_state = STATE_SNAPSHOT;
-		else if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "detailed"))
-			parser->current_state = STATE_SNAPSHOT_HEAP_TREE_LEAF;
+		else if (g_strcmp0(parser->current_snapshot->heap_tree_desc->str, "detailed") == 0)
+			parser->current_state = STATE_SNAPSHOT_HEAP_TREE_NODE;
 	}
+}
+
+gint
+massifg_str_count_leading_spaces(const gchar *str) {
+	gint i = 0;
+	gint num_spaces = 0;
+
+	for (i=0; i<strlen(str); i++) {
+		if (str[i] != ' ')
+			break;
+		num_spaces++;
+	}
+	return num_spaces;
+}
+
+/* Return a new string that is a copy of src between indexes
+ * start_idx and stop_idx
+ * Free with g_free () */
+gchar *
+massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
+	int i;
+	gchar *str;
+
+	str = g_new0(gchar, stop_idx-start_idx+1); /* 1 for the \0 byte*/
+	for (i=0; i<stop_idx-1; i++) {
+		str[i] = src[i+start_idx];
+	}
+	return str;
+}
+
+/* Set simple node attributes.
+ * Simple attributes are those that can be found just by parsing the line,
+ * without considering context */
+void
+massifg_heap_tree_node_init_simple_attributes(MassifgHeapTreeNode *node, const gchar *line) {
+	gchar *tmp_str = NULL;
+	gchar **tokens = NULL;
+
+	/* Copy and strip whitespace */
+	tmp_str = g_strdup(line);
+	g_strstrip(tmp_str);
+
+	tokens = g_strsplit(tmp_str, " ", 3);
+	g_free(tmp_str);
+
+	/* Copy, dropping the leading n and the trailing : character */
+	tmp_str = massifg_str_copy_region(tokens[0], 1, strlen(tokens[0])-1);
+
+	node->num_children = (int)strtol(tmp_str, NULL, 10);
+	g_free(tmp_str);
+
+	node->total_mem_B = strtol(tokens[1], NULL, 10);
+	g_string_printf(node->label, "%s", tokens[2]);
+
+	node->parsing_depth = massifg_str_count_leading_spaces(line);
+	node->parsing_remaining_children = node->num_children;
+
+	g_strfreev(tokens);
+}
+
+/* Return a pointer to a newly allocated and initialized MassifgHeapTreeNode */
+MassifgHeapTreeNode *
+massifg_heap_tree_node_new(const gchar *line) {
+	MassifgHeapTreeNode *node = g_new(MassifgHeapTreeNode, 1);
+
+	node->label = g_string_new("");
+	massifg_heap_tree_node_init_simple_attributes(node, line);
+
+	return node;
+}
+
+/* Free a MassifgHeapTreeNode */
+void
+massifg_heap_tree_node_free(MassifgHeapTreeNode *node) {
+	g_string_free(node->label, TRUE);
+	g_free(node);
+}
+
+
+/* Find the parent the next node should go to after the end of a subtree has been reached
+ * Returns NULL if no suitable parent can be found */
+GNode *
+massifg_heap_tree_get_next_parent(GNode *current_parent) {
+	MassifgHeapTreeNode *next_parent_data = NULL;
+	GNode *next_parent = current_parent->parent;
+
+	if (!next_parent) {
+		return NULL; /* Tree only had one node, which was the root */
+	}
+
+	next_parent_data = (MassifgHeapTreeNode *)next_parent->data;
+
+	while (!next_parent_data->parsing_remaining_children) {
+		next_parent = next_parent->parent;
+		if (!next_parent) {
+			break; /* Hit the root of the tree */
+		}
+		next_parent_data = next_parent->data;
+	}
+	return next_parent;
+}
+
+/*
+ * n13: 1411172 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ *    n4: 209472 0x5792ABD: dictresize (dictobject.c:517)
+ *      n0: 576 in 1 place, below massif's threshold (01.00%)
+ * n$num_children: $memory_cost $label
+ * Number of leading spaces indicate the depth of the element in the tree
+ */
+void
+massifg_parse_heap_tree_node(MassifgParser *parser, const gchar *line) {
+	MassifgSnapshot *snapshot = parser->current_snapshot;
+	GNode *next_parent = NULL;
+	MassifgHeapTreeNode *tmp_node = NULL;
+
+	/* Create a new node */
+	MassifgHeapTreeNode *new_node = massifg_heap_tree_node_new(line);
+
+	/* Add the node to the tree */
+	if (!snapshot->heap_tree) {
+		/* This is the first node, create the root */
+		g_debug("Creating heap tree root node");
+		snapshot->heap_tree = g_node_new((gpointer)new_node);
+		parser->current_parent = snapshot->heap_tree;
+	}
+	else {
+		/* This is an ordinary node, add it to its parent */
+		g_node_append_data(parser->current_parent, new_node);
+		tmp_node = (MassifgHeapTreeNode *)parser->current_parent->data;
+		tmp_node->parsing_remaining_children--;
+		parser->current_parent = parser->current_parent->children;
+	}
+
+	/* Find out how to interpret the next line */
+	if (new_node->num_children == 0)
+		parser->current_state = STATE_SNAPSHOT;
+		/* FIXME: implement backtracking to be able to parse the next subtree */
+
 }
 
 /* Parse a single line, based on the current state of the parser
@@ -232,12 +382,11 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 
 	/* Snapshot heap tree identifier */
 	case STATE_SNAPSHOT_HEAP_TREE:
-		massifg_parse_heap_tree(parser, line);
+		massifg_parse_heap_tree_desc(parser, line);
 		break;
 	/* Snapshot heap tree entries */
-	case STATE_SNAPSHOT_HEAP_TREE_LEAF:
-		/* TODO: implement */
-		parser->current_state = STATE_SNAPSHOT;
+	case STATE_SNAPSHOT_HEAP_TREE_NODE:
+		massifg_parse_heap_tree_node(parser, line);
 		break;
 	}
 
@@ -297,15 +446,20 @@ MassifgOutputData
 	parser = &parser_onstack;
 	parser->current_state = STATE_DESC;
 	parser->output_data = output_data;
+	parser->current_parent = NULL;
+	parser->current_line_number = 0;
 
 	line_string = g_string_new("initial string");
 
 	/* Parse file */
 	while (io_status == G_IO_STATUS_NORMAL) {
 		io_status = g_io_channel_read_line_string(io_channel, line_string, NULL, error);
+		parser->current_line_number++;
 		line_string->str = g_strchomp(line_string->str); /* Remove newline */
 		massifg_parse_line(parser, line_string->str);
 	}
+	g_debug("Parsing DONE");
+
 	if (io_status == G_IO_STATUS_ERROR) {
 		output_data = NULL;
 	}
