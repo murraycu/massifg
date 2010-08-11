@@ -25,7 +25,7 @@ dist_ui_DATA = data/massifg.glade \
                data/menu.ui
 
 dist_noinst_DATA = tests/massif-output-2snapshots.txt \
-		   tests/massif-output-glom-shortened.txt
+		   tests/massif-output-glom.txt
 
 # Unit/Functional tests setup
 check_PROGRAMS = tests/parser
