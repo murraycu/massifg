@@ -13,11 +13,22 @@
  * Caller should free return value using g_free () */
 gchar *
 get_test_file(const gchar *filename) {
-	gchar *srcdir = g_getenv("top_srcdir");
+	gchar *srcdir = g_getenv("top_srcdir"); /* Should not be freed */
 	gchar *path = g_build_filename(srcdir, "tests", filename, NULL);
 	return path;
 }
 
+/* Test that we can find our test input files */
+void
+locate_test_files(void) {
+	gchar *str;
+
+	str = get_test_file(PARSER_TEST_INPUT_SHORT);
+	g_assert(g_file_test(str, G_FILE_TEST_EXISTS));
+
+	str = get_test_file(PARSER_TEST_INPUT_LONG);
+	g_assert(g_file_test(str, G_FILE_TEST_EXISTS));
+}
 
 void
 parser_functest_short(void) {
@@ -185,6 +196,8 @@ parser_heaptree_functest(void) {
 int
 main (int argc, char **argv) {
 	g_test_init(&argc, &argv, NULL);
+
+	g_test_add_func("/locate-test-files", locate_test_files);
 
 	g_test_add_func("/parser/heaptree/functest", parser_heaptree_functest);
 
