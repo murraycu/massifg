@@ -52,7 +52,7 @@ typedef enum {
 struct _MassifgParser {
 	MassifgParserState current_state;
 	MassifgSnapshot *current_snapshot;
-	GNode *current_parent;
+	GNode *ht_current_parent;
 	gint current_line_number;
 	MassifgOutputData *output_data;
 };
@@ -278,22 +278,19 @@ massifg_heap_tree_node_free(MassifgHeapTreeNode *node) {
  * Returns NULL if no suitable parent can be found */
 GNode *
 massifg_heap_tree_get_next_parent(GNode *current_parent) {
-	MassifgHeapTreeNode *next_parent_data = NULL;
 	GNode *next_parent = current_parent->parent;
 
-	if (!next_parent) {
-		return NULL; /* Tree only had one node, which was the root */
-	}
-
-	next_parent_data = (MassifgHeapTreeNode *)next_parent->data;
-
-	while (!next_parent_data->parsing_remaining_children) {
+	while ( next_parent &&
+	((MassifgHeapTreeNode *)next_parent->data)->parsing_remaining_children == 0) {
+/*		g_message("%d, %s", ((MassifgHeapTreeNode *)next_parent->data)->parsing_remaining_children,*/
+/*			((MassifgHeapTreeNode *)next_parent->data)->label->str);*/
 		next_parent = next_parent->parent;
-		if (!next_parent) {
-			break; /* Hit the root of the tree */
-		}
-		next_parent_data = next_parent->data;
 	}
+	if (next_parent)
+		g_debug("Found next parent, label: \"%s\"",
+			((MassifgHeapTreeNode *)next_parent->data)->label->str);
+	else
+		g_debug("Heap tree complete");
 	return next_parent;
 }
 
@@ -307,7 +304,7 @@ massifg_heap_tree_get_next_parent(GNode *current_parent) {
 void
 massifg_parse_heap_tree_node(MassifgParser *parser, const gchar *line) {
 	MassifgSnapshot *snapshot = parser->current_snapshot;
-	GNode *next_parent = NULL;
+	GNode *next_parent = parser->ht_current_parent;
 	MassifgHeapTreeNode *tmp_node = NULL;
 
 	/* Create a new node */
@@ -318,28 +315,45 @@ massifg_parse_heap_tree_node(MassifgParser *parser, const gchar *line) {
 		/* This is the first node, create the root */
 		g_debug("Creating heap tree root node");
 		snapshot->heap_tree = g_node_new((gpointer)new_node);
-		parser->current_parent = snapshot->heap_tree;
+		next_parent = snapshot->heap_tree;
 	}
+
 	else {
 		/* This is an ordinary node, add it to its parent */
-		g_node_append_data(parser->current_parent, new_node);
-		tmp_node = (MassifgHeapTreeNode *)parser->current_parent->data;
+		g_node_append_data(parser->ht_current_parent, new_node);
+		tmp_node = (MassifgHeapTreeNode *)parser->ht_current_parent->data;
 		tmp_node->parsing_remaining_children--;
-		parser->current_parent = parser->current_parent->children;
+		g_assert(tmp_node->parsing_remaining_children >= 0);
+		next_parent = g_node_last_child(parser->ht_current_parent);
 	}
 
-	/* Find out how to interpret the next line */
-	if (new_node->num_children == 0)
-		parser->current_state = STATE_SNAPSHOT;
-		/* FIXME: implement backtracking to be able to parse the next subtree */
+	/* Check if we are at the end of a tree */
+	if (new_node->num_children == 0) {
+		/* End of a subtree, the next node belongs to a parent further up
+		 * This parent can be found by traversing back up the tree and locating the
+		 * first node with non-zero parsing_expected_children */
+		next_parent = massifg_heap_tree_get_next_parent(next_parent);
+		if (!next_parent) {
+			/* No node has missing children, so this was the
+			 * last node in the heap tree,
+			 * and we expect a new snapshot to come next */
+			parser->current_state = STATE_SNAPSHOT;
+		}
+		else {
+			tmp_node = (MassifgHeapTreeNode *)parser->ht_current_parent->data;
+			g_assert(new_node->parsing_depth ==  tmp_node->parsing_depth+1);
+		}
+	}
 
+	/* Set the parent for the next node */
+	parser->ht_current_parent = next_parent;
 }
 
 /* Parse a single line, based on the current state of the parser
  * NOTE: function assumes that the line does not contain any trailing newline character */
 static void 
 massifg_parse_line(MassifgParser *parser, gchar *line) {
-	g_debug("Parsing line: \"%s\". Parser state: %d", 
+	g_debug("Parsing line %d: \"%s\". Parser state: %d", parser->current_line_number,
 		line, parser->current_state);
 
 	switch (parser->current_state) {
@@ -446,7 +460,7 @@ MassifgOutputData
 	parser = &parser_onstack;
 	parser->current_state = STATE_DESC;
 	parser->output_data = output_data;
-	parser->current_parent = NULL;
+	parser->ht_current_parent = NULL;
 	parser->current_line_number = 0;
 
 	line_string = g_string_new("initial string");

@@ -13,7 +13,7 @@
  * Caller should free return value using g_free () */
 gchar *
 get_test_file(const gchar *filename) {
-	gchar *srcdir = g_getenv("top_srcdir"); /* Should not be freed */
+	const gchar *srcdir = g_getenv("top_srcdir"); /* Should not be freed */
 	gchar *path = g_build_filename(srcdir, "tests", filename, NULL);
 	return path;
 }
@@ -156,7 +156,7 @@ parser_heaptree_functest(void) {
 	s = (MassifgSnapshot *)list->data;
 
 	/* This only has a tree with one node */
-	n = s->heap_tree->data;
+	n = (MassifgHeapTreeNode *)s->heap_tree->data;
 	g_assert_cmpint(n->total_mem_B, ==, 0);
 	g_assert_cmpint(n->num_children, ==, 0);
 	g_assert_cmpstr(n->label->str, ==, "(heap allocation functions) malloc/new/new[], --alloc-fns, etc.");
@@ -167,17 +167,16 @@ parser_heaptree_functest(void) {
 
 
 	/* Test an arbitrary node in this tree */
-	n = s->heap_tree->children->data;
+	n = (MassifgHeapTreeNode *)s->heap_tree->children->data;
 	g_assert_cmpint(n->total_mem_B, ==, 352);
 	g_assert_cmpint(n->num_children, ==, 1);
 	g_assert_cmpstr(n->label->str, ==, "0x5A22DDD: __fopen_internal (iofopen.c:76)");
 
 	/* Test another node further down */
-	n = s->heap_tree->children->children->children->data;
+	n = (MassifgHeapTreeNode *)s->heap_tree->children->children->children->data;
 	g_assert_cmpint(n->total_mem_B, ==, 352);
 	g_assert_cmpint(n->num_children, ==, 1);
 	g_assert_cmpstr(n->label->str, ==, "0x54A26EE: ??? (in /lib/libselinux.so.1)");
-
 
 	/* Test the last node in the tree */
 	gn = s->heap_tree;
@@ -186,11 +185,66 @@ parser_heaptree_functest(void) {
 		i++;
 	}
 
-	n = gn->data;
+	n = (MassifgHeapTreeNode *)gn->data;
 	g_assert_cmpint(n->total_mem_B, ==, 352);
 	g_assert_cmpint(n->num_children, ==, 0);
 	g_assert_cmpstr(n->label->str, ==, "0x400088D: ??? (in /lib/ld-2.10.1.so)");
 
+}
+
+
+/* Test that the parser properly backtracks after the end of a subtree */
+void
+parser_heaptree_subtrees(void) {
+	GList *list;
+	GNode *gn;
+	MassifgOutputData *data;
+	MassifgSnapshot *s;
+	MassifgHeapTreeNode *n;
+
+	/* Run the parser */
+	gchar *path = get_test_file(PARSER_TEST_INPUT_LONG);
+	data = massifg_parse_file(path, NULL);
+	g_free(path);
+
+	/* Get a snapshot with a non-trivial heap tree */
+	list = g_list_nth(data->snapshots, 3);
+	s = (MassifgSnapshot *)list->data;
+
+	/* Root node */
+	g_assert_cmpint(g_node_n_children(s->heap_tree), ==, 18);
+
+	/* Test a node. 
+	 * Line 281 of input file */
+	gn = g_node_first_child(s->heap_tree);
+	g_assert_cmpint(g_node_n_children(gn), ==, 2);
+	n = (MassifgHeapTreeNode *)gn->data;
+	g_assert_cmpstr(n->label->str, ==, "0x57985E2: PyObject_Malloc (obmalloc.c:563)");
+
+	/* Test nodes from that subtree */
+	/* Line 282 of input file */
+	gn = g_node_first_child(gn);
+	g_assert_cmpint(g_node_n_children(gn), ==, 1);
+	n = (MassifgHeapTreeNode *)gn->data;
+	g_assert_cmpstr(n->label->str, ==, "0x5814DB3: _PyObject_GC_Malloc (gcmodule.c:1322)");
+
+	/* Line 292 */
+	gn = g_node_next_sibling(gn);
+	g_assert_cmpint(g_node_n_children(gn), ==, 1);
+	n = (MassifgHeapTreeNode *)gn->data;
+	g_assert_cmpstr(n->label->str, ==, "0x579FC24: PyString_FromStringAndSize (stringobject.c:75)");
+
+	/* Line 293 */
+	gn = g_node_first_child(gn);
+	g_assert_cmpint(g_node_n_children(gn), ==, 1);
+	n = (MassifgHeapTreeNode *)gn->data;
+	g_assert_cmpstr(n->label->str, ==, "0x5801A1B: r_object (marshal.c:713)");
+
+
+	/* Arbitrary child of the root */
+	gn = g_node_nth_child(s->heap_tree, 5); /* Line 441 */
+	n = (MassifgHeapTreeNode *)gn->data;
+	g_assert_cmpstr(n->label->str, ==, "0x554E715: xmlHashCreate (hash.c:156)");
 }
 
 int
@@ -200,6 +254,7 @@ main (int argc, char **argv) {
 	g_test_add_func("/locate-test-files", locate_test_files);
 
 	g_test_add_func("/parser/heaptree/functest", parser_heaptree_functest);
+	g_test_add_func("/parser/heaptree/subtrees", parser_heaptree_subtrees);
 
 	g_test_add_func("/parser/functest", parser_functest_short);
 	g_test_add_func("/parser/nonexisting-file", parser_return_null_on_nonexisting_file);
