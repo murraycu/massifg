@@ -6,5 +6,8 @@
        <menuitem name="Print" action="PrintAction"/>
        <menuitem name="Quit" action="QuitAction"/>
      </menu>
+     <menu name="ViewMenu" action="ViewMenuAction">
+       <menuitem name="Detailed" action="ToggleViewAction"/>
+     </menu>
    </menubar>
 </ui>

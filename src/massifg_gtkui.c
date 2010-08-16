@@ -191,6 +191,13 @@ print_action(GtkAction *action, gpointer data) {
 	g_object_unref (print_op);
 }
 
+void
+toggle_view_action(GtkToggleAction *action, gpointer data) {
+	MassifgApplication *app = (MassifgApplication *)data;
+
+	app->graph->detailed = gtk_toggle_action_get_active(action);
+	massifg_graph_update(app->graph, NULL);
+}
 
 /* Set up actions and menus */
 gint
@@ -211,8 +218,14 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	  { "QuitAction", GTK_STOCK_QUIT, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
 	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open", NULL, NULL, G_CALLBACK(open_file_action)},
 	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
+
+	  { "ViewMenuAction", NULL, "_View", NULL, NULL, NULL},
 	};
 	const int num_actions = G_N_ELEMENTS(actions);
+
+	GtkToggleActionEntry view_actions[] =
+	{ {"ToggleViewAction", NULL, "_Detailed", NULL, NULL, G_CALLBACK(toggle_view_action)} };
+	const int num_view_actions = G_N_ELEMENTS(view_actions);
 
 	/* Initialize */
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
@@ -224,7 +237,9 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 
 	/* Build menus */
 	gtk_action_group_add_actions (action_group, actions, num_actions, app);
+	gtk_action_group_add_toggle_actions (action_group, view_actions, num_view_actions, app);
 	gtk_ui_manager_insert_action_group (uimanager, action_group, 0);
+
 	if (!gtk_ui_manager_add_ui_from_file (uimanager, uifile_path, &error))
 	{
 		g_message ("Building menus failed: %s", error->message);

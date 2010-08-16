@@ -48,6 +48,7 @@ typedef struct {
 	GogPlot *plot;
 	GtkWidget *widget;
 	GError *error;
+	gboolean *detailed;
 
 } MassifgGraph;
 

@@ -99,6 +99,112 @@ data_from_snapshots(GList *snapshots, MassifgDataSeries series) {
 	return go_data_vector_val_new(array, length, NULL);
 }
 
+/* */
+void
+massifg_graph_update_simple(MassifgGraph *graph, GOData *time_data) {
+	MassifgDataSeries ds;
+	for (ds=MASSIFG_DATA_SERIES_HEAP; ds<=MASSIFG_DATA_SERIES_STACKS; ds++) {
+		GogSeries *gog_series = gog_plot_new_series(graph->plot);
+		GOData *series_data = data_from_snapshots(graph->data->snapshots, ds);
+		GOData *series_name = go_data_scalar_str_new(MASSIFG_DATA_SERIES_DESC[ds], FALSE);
+		gog_series_set_name(gog_series, series_name, &graph->error);
+		gog_series_set_dim(gog_series, 0, time_data, &graph->error);
+		gog_series_set_dim(gog_series, 1, series_data, &graph->error);
+	}
+}
+
+typedef struct {
+	MassifgGraph *graph;
+	GOData *time_data;
+	GList *snapshot_details;
+} AddDetailsSerieArg;
+
+void
+add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
+	gchar *label = (gchar *)key;
+	AddDetailsSerieArg *arg = (AddDetailsSerieArg *)user_data;
+	MassifgGraph *graph = arg->graph;
+
+	/* Get the actual data series */
+	GList *l = arg->snapshot_details;
+	GHashTable *functions = NULL;
+	int i = 0;
+	int length = g_list_length(l);
+
+	double *array = g_new(double, length);
+
+	while (l) {
+		functions = (GHashTable *)l->data;
+		array[i] = GPOINTER_TO_INT(g_hash_table_lookup(functions, label));
+		l = l->next;
+		i++;
+	}
+	GOData *series_data = go_data_vector_val_new(array, length, NULL);
+
+	/* Add it to the graph */
+	GogSeries *gog_series = gog_plot_new_series(graph->plot);
+	GOData *series_name = go_data_scalar_str_new(label, FALSE);
+	gog_series_set_name(gog_series, series_name, &graph->error);
+	gog_series_set_dim(gog_series, 0, arg->time_data, &graph->error);
+	gog_series_set_dim(gog_series, 1, series_data, &graph->error);
+}
+
+
+typedef struct {
+	GHashTable *functions;
+	GHashTable *function_labels;
+} AddDetailsArg;
+
+void
+add_details_foreach(GNode *node, gpointer user_data) {
+	MassifgHeapTreeNode *n = (MassifgHeapTreeNode *)node->data;
+	AddDetailsArg *arg = (AddDetailsArg *)user_data;
+
+	/* Note: key is not copied and value is trucated to 32bit */
+	g_hash_table_insert(arg->functions, n->label->str, GINT_TO_POINTER(n->total_mem_B));
+
+	if (!g_hash_table_lookup(arg->function_labels, n->label->str)) {
+		g_hash_table_insert(arg->function_labels, n->label->str, NULL);
+	}
+}
+
+/* */
+void
+massifg_graph_update_detailed(MassifgGraph *graph, GOData *time_data) {
+	GHashTable *function_labels = g_hash_table_new(g_str_hash, g_str_equal);
+	/* List of GHashTables with "function_label": mem_B, needs to be freed */
+	GList *snapshot_details = NULL;
+
+	/* Build datastructures for the functions we want to show */
+	AddDetailsArg foreach_arg;
+	MassifgSnapshot *s = NULL;
+	GHashTable *ht = NULL;
+	GList *l = graph->data->snapshots;
+	foreach_arg.function_labels = function_labels;
+	while (l) {
+		s = (MassifgSnapshot *)l->data;
+		ht = g_hash_table_new(g_str_hash, g_str_equal);
+		snapshot_details = g_list_append(snapshot_details, ht);
+		foreach_arg.functions = ht;
+
+		g_node_children_foreach(s->heap_tree, G_TRAVERSE_ALL,
+			add_details_foreach, (gpointer)&foreach_arg);
+
+		l = l->next;
+	}
+
+	/* For each function, create and add a data serie to graph */
+	AddDetailsSerieArg arg;
+	arg.graph = graph;
+	arg.time_data = time_data;
+	arg.snapshot_details = snapshot_details;
+
+	g_hash_table_foreach(function_labels, add_details_serie_foreach, (gpointer)&arg);
+
+	/* FIXME: free snapshot_details */
+	g_hash_table_destroy(function_labels);
+}
+
 /* Public functions */
 
 /* Initialize.
@@ -116,6 +222,7 @@ massifg_graph_new(void) {
 
 	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
 	graph->data = NULL;
+	graph->detailed = FALSE;
 
 	/* Create a graph widget, and get the embedded graph and chart */
 	graph->widget = go_graph_widget_new(NULL);
@@ -131,7 +238,6 @@ massifg_graph_new(void) {
 	/* Add a legend to the chart */
 	gog_object_add_by_name(GOG_OBJECT(chart), "Legend", NULL);
 
-
 	return graph;
 }
 
@@ -145,20 +251,25 @@ void massifg_graph_free(MassifgGraph *graph) {
 void 
 massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data) {
 	/* Update graph members */
-	graph->data = data;
+	if (data) {
+		graph->data = data;
+	}
+
+	/* Ensure we have data to plot */
+	if (!graph->data) {
+		return;
+	}
 
 	/* Update the data series */
-	gog_plot_clear_series(graph->plot); /* TODO: verify that we arenot  responsible for freeing */
-	GOData *time_data = data_from_snapshots(data->snapshots, MASSIFG_DATA_SERIES_TIME);
+	gog_plot_clear_series(graph->plot); /* TODO: verify that we are not responsible for freeing */
+	GOData *time_data = data_from_snapshots(graph->data->snapshots,
+						MASSIFG_DATA_SERIES_TIME);
 
-	MassifgDataSeries ds;
-	for (ds=MASSIFG_DATA_SERIES_HEAP; ds<=MASSIFG_DATA_SERIES_STACKS; ds++) {
-		GogSeries *gog_series = gog_plot_new_series(graph->plot);
-		GOData *series_data = data_from_snapshots(data->snapshots, ds);
-		GOData *series_name = go_data_scalar_str_new(MASSIFG_DATA_SERIES_DESC[ds], FALSE);
-		gog_series_set_name(gog_series, series_name,&graph->error);
-		gog_series_set_dim(gog_series, 0, time_data, &graph->error);
-		gog_series_set_dim(gog_series, 1, series_data, &graph->error);
+	if (graph->detailed) {
+		massifg_graph_update_detailed(graph, time_data);
+	}
+	else {
+		massifg_graph_update_simple(graph, time_data);
 	}
 }
 
