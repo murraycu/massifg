@@ -222,7 +222,10 @@ massifg_graph_new(void) {
 
 	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
 	graph->data = NULL;
+
+	/* Defaul settings */
 	graph->detailed = FALSE;
+	graph->has_legend = FALSE;
 
 	/* Create a graph widget, and get the embedded graph and chart */
 	graph->widget = go_graph_widget_new(NULL);
@@ -234,9 +237,6 @@ massifg_graph_new(void) {
 	g_object_set (G_OBJECT (graph->plot), "type", "stacked", NULL);
 
 	gog_object_add_by_name(GOG_OBJECT (chart), "Plot", GOG_OBJECT(graph->plot));
-
-	/* Add a legend to the chart */
-	gog_object_add_by_name(GOG_OBJECT(chart), "Legend", NULL);
 
 	return graph;
 }
@@ -270,6 +270,36 @@ massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data) {
 	}
 	else {
 		massifg_graph_update_simple(graph, time_data);
+	}
+}
+
+/* If the graph should be detailed or not */
+void
+massifg_graph_set_show_details(MassifgGraph *graph, gboolean is_detailed) {
+
+	graph->detailed = is_detailed;
+	massifg_graph_update(graph, NULL);
+}
+
+/* Enable/disable display of legend */
+void
+massifg_graph_set_show_legend(MassifgGraph *graph, gboolean has_legend) {
+	GogObject *gog_object = NULL;
+	GogChart *chart = go_graph_widget_get_chart(GO_GRAPH_WIDGET(graph->widget));
+
+	graph->has_legend = has_legend;
+
+	if (has_legend) {
+		gog_object_add_by_name(GOG_OBJECT(chart), "Legend", NULL);
+	}
+	else {
+		/* Remove existing legend, if any */
+		gog_object = gog_object_get_child_by_name(GOG_OBJECT(chart), "Legend");
+		if (gog_object) {
+			gog_object_clear_parent(gog_object);
+			g_object_unref(G_OBJECT(gog_object));
+		}
+
 	}
 }
 

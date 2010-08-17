@@ -45,11 +45,15 @@
 /* Holds the shared state used in the graph */
 typedef struct {
 	MassifgOutputData *data;
-	GogPlot *plot;
 	GtkWidget *widget;
 	GError *error;
-	gboolean *detailed;
 
+	/* Private, access via setter/getters */
+	gboolean detailed;
+	gboolean has_legend;
+
+	/* Private */
+	GogPlot *plot;
 } MassifgGraph;
 
 /* Public functions */
@@ -58,6 +62,7 @@ void massifg_graph_init(void);
 MassifgGraph *massifg_graph_new(void);
 void massifg_graph_free(MassifgGraph *graph);
 
+void massifg_graph_set_legend(MassifgGraph *graph, gboolean has_legend);
 void massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data);
 gboolean massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr, gint width, gint height);
 

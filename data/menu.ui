@@ -7,7 +7,8 @@
        <menuitem name="Quit" action="QuitAction"/>
      </menu>
      <menu name="ViewMenu" action="ViewMenuAction">
-       <menuitem name="Detailed" action="ToggleViewAction"/>
+       <menuitem name="Detailed" action="ToggleDetailsAction"/>
+       <menuitem name="Legend" action="ToggleLegendAction"/>
      </menu>
    </menubar>
 </ui>

@@ -192,12 +192,20 @@ print_action(GtkAction *action, gpointer data) {
 }
 
 void
-toggle_view_action(GtkToggleAction *action, gpointer data) {
+toggle_details_action(GtkToggleAction *action, gpointer data) {
 	MassifgApplication *app = (MassifgApplication *)data;
 
-	app->graph->detailed = gtk_toggle_action_get_active(action);
-	massifg_graph_update(app->graph, NULL);
+	massifg_graph_set_show_details(app->graph, gtk_toggle_action_get_active(action));
+
 }
+
+void
+toggle_legend_action(GtkToggleAction *action, gpointer data) {
+	MassifgApplication *app = (MassifgApplication *)data;
+
+	massifg_graph_set_show_legend(app->graph, gtk_toggle_action_get_active(action));
+}
+
 
 /* Set up actions and menus */
 gint
@@ -223,8 +231,10 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	};
 	const int num_actions = G_N_ELEMENTS(actions);
 
-	GtkToggleActionEntry view_actions[] =
-	{ {"ToggleViewAction", NULL, "_Detailed", NULL, NULL, G_CALLBACK(toggle_view_action)} };
+	GtkToggleActionEntry view_actions[] = {
+	  {"ToggleDetailsAction", NULL, "_Detailed", NULL, NULL, G_CALLBACK(toggle_details_action)},
+	  {"ToggleLegendAction", NULL, "_Legend", NULL, NULL, G_CALLBACK(toggle_legend_action)}
+	};
 	const int num_view_actions = G_N_ELEMENTS(view_actions);
 
 	/* Initialize */
