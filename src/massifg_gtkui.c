@@ -127,6 +127,26 @@ void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
 	gtk_main_quit();
 }
 
+gboolean
+graph_motion_notify_cb(GtkWidget *widget, GdkEventMotion *event, gpointer user_data) {
+	GogRenderer *renderer = NULL;
+	GogView *view = NULL;
+	GtkAllocation allocation;
+	MassifgGraph *ms_graph = (MassifgGraph *)user_data;
+	GogGraph *gog_graph = go_graph_widget_get_graph(GO_GRAPH_WIDGET(ms_graph->widget));
+
+	gtk_widget_get_allocation(widget, &allocation);
+	GogRenderer *rend = gog_renderer_new(gog_graph);
+	gog_renderer_update(rend, allocation.width, allocation.height);
+
+	g_object_get(G_OBJECT (rend), "view", &view, NULL);
+	view = gog_view_find_child_view (view, ms_graph->plot);
+
+	/* TODO: needs to be implemented in goffice */
+	int series_idx = gog_plot_view_get_data_at_point(view, event->x, event->y, NULL);
+
+	g_object_unref(G_OBJECT(rend));
+}
 
 /* Actions */
 void
@@ -299,6 +319,9 @@ massifg_gtkui_init(MassifgApplication *app) {
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
 	app->graph = massifg_graph_new();
 	gtk_box_pack_start(GTK_BOX (vbox), app->graph->widget, TRUE, TRUE, 1);
+
+	g_signal_connect(G_OBJECT(app->graph->widget), "motion-notify-event", graph_motion_notify_cb, app->graph);
+
 
 	/* Cleanup */
 	g_free((gpointer)gladefile_path);
