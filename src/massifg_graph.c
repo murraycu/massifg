@@ -234,6 +234,11 @@ massifg_graph_new(void) {
 
 	/* Create a plot and add it to the chart */
 	graph->plot = (GogPlot *)gog_plot_new_by_name("GogAreaPlot");
+
+	if (!graph->plot) {
+		g_critical("Cannot create plot. Possibly because plugins are not found");
+	}
+
 	g_object_set (G_OBJECT (graph->plot), "type", "stacked", NULL);
 
 	gog_object_add_by_name(GOG_OBJECT (chart), "Plot", GOG_OBJECT(graph->plot));

@@ -132,6 +132,8 @@ graph_motion_notify_cb(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
 	GogRenderer *renderer = NULL;
 	GogView *view = NULL;
 	GtkAllocation allocation;
+	GogSeries *series = NULL;
+	int data_idx = -1;
 	MassifgGraph *ms_graph = (MassifgGraph *)user_data;
 	GogGraph *gog_graph = go_graph_widget_get_graph(GO_GRAPH_WIDGET(ms_graph->widget));
 
@@ -143,9 +145,13 @@ graph_motion_notify_cb(GtkWidget *widget, GdkEventMotion *event, gpointer user_d
 	view = gog_view_find_child_view (view, ms_graph->plot);
 
 	/* TODO: needs to be implemented in goffice */
-	int series_idx = gog_plot_view_get_data_at_point(view, event->x, event->y, NULL);
+	data_idx = gog_plot_view_get_data_at_point(view, event->x, event->y, &series);
+	if (data_idx != -1) {
+		g_message("Found series");
+	}
 
 	g_object_unref(G_OBJECT(rend));
+	return TRUE;
 }
 
 /* Actions */
@@ -320,7 +326,7 @@ massifg_gtkui_init(MassifgApplication *app) {
 	app->graph = massifg_graph_new();
 	gtk_box_pack_start(GTK_BOX (vbox), app->graph->widget, TRUE, TRUE, 1);
 
-	g_signal_connect(G_OBJECT(app->graph->widget), "motion-notify-event", graph_motion_notify_cb, app->graph);
+	g_signal_connect(G_OBJECT(app->graph->widget), "motion-notify-event", G_CALLBACK(graph_motion_notify_cb), app->graph);
 
 
 	/* Cleanup */
