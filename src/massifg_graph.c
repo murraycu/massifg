@@ -37,8 +37,16 @@
 #include "massifg_parser.h"
 #include "massifg_graph.h"
 
+/* This file implements the graphing functionality of MassifG
+ * Currently two modes are supported by the graph, one "simple" and one "detailed"
+ * The "simple" mode shows an area plot over stack, heap and "heap extra" memory usage
+ * for each snapshot
+ * The "detailed" mode shows an area plot, which is broken down
+ * to show how different functions contribute to the heap memory usage
+ * for each snapshot. Currently only the first children of the heap tree is displayed */
+
 /* Data structures */
-/* Enum that represents the different possible data series */
+/* Enum that represents the different possible simple data series */
 typedef enum {
 	MASSIFG_DATA_SERIES_TIME,
 	MASSIFG_DATA_SERIES_HEAP,
@@ -57,6 +65,7 @@ typedef struct {
 } FillDataArrayFuncArg;
 
 /* Private functions */
+/* Fills arg->data_array with values from the specified series */
 void
 fill_data_array_func(gpointer data, gpointer user_data) {
 	MassifgSnapshot *snapshot = (MassifgSnapshot *)data;
@@ -83,7 +92,7 @@ fill_data_array_func(gpointer data, gpointer user_data) {
 	arg->data_array[arg->index++] = y_val;
 }
 
-/* */
+/* Returns a data vector for a single MassifgDataSeries */
 GOData *
 data_from_snapshots(GList *snapshots, MassifgDataSeries series) {
 	FillDataArrayFuncArg foreach_arg;
@@ -99,7 +108,8 @@ data_from_snapshots(GList *snapshots, MassifgDataSeries series) {
 	return go_data_vector_val_new(array, length, NULL);
 }
 
-/* */
+/* Adds all the simple data series to graph
+ * The graph should be cleared for data series before this is called */
 void
 massifg_graph_update_simple(MassifgGraph *graph, GOData *time_data) {
 	MassifgDataSeries ds;
@@ -119,6 +129,7 @@ typedef struct {
 	GList *snapshot_details;
 } AddDetailsSerieArg;
 
+/* Add a single detailed data series, as specified by key */
 void
 add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 	gchar *label = (gchar *)key;
@@ -155,6 +166,9 @@ typedef struct {
 	GHashTable *function_labels;
 } AddDetailsArg;
 
+/* Adds function values to two hash tables:
+ * ->functions is a table over the functions and their memory usage in a single snapshot 
+ * ->function_labels is a table over all the functions in a MassifgOutputData */
 void
 add_details_foreach(GNode *node, gpointer user_data) {
 	MassifgHeapTreeNode *n = (MassifgHeapTreeNode *)node->data;
@@ -168,7 +182,8 @@ add_details_foreach(GNode *node, gpointer user_data) {
 	}
 }
 
-/* */
+/* Adds all the detailed data series to graph
+ * The graph should have been cleared for data series before this is called */
 void
 massifg_graph_update_detailed(MassifgGraph *graph, GOData *time_data) {
 	GHashTable *function_labels = g_hash_table_new(g_str_hash, g_str_equal);
@@ -187,6 +202,8 @@ massifg_graph_update_detailed(MassifgGraph *graph, GOData *time_data) {
 		snapshot_details = g_list_append(snapshot_details, ht);
 		foreach_arg.functions = ht;
 
+		/* Note: we only look at the direct children of the root, because that
+		 * is the behaviour that ms_print and massif_grapher has */
 		g_node_children_foreach(s->heap_tree, G_TRAVERSE_ALL,
 			add_details_foreach, (gpointer)&foreach_arg);
 
@@ -215,6 +232,8 @@ massifg_graph_init(void) {
 	go_plugins_init(NULL, NULL, NULL, NULL, TRUE, GO_TYPE_PLUGIN_LOADER_MODULE);
 }
 
+/* Create a new graph.
+ * Free with massifg_graph_free */
 MassifgGraph *
 massifg_graph_new(void) {
 	GogGraph *go_graph = NULL;
@@ -241,13 +260,16 @@ massifg_graph_new(void) {
 	return graph;
 }
 
+/* Free a MassifgGraph */
 void massifg_graph_free(MassifgGraph *graph) {
 
 	/* FIXME: actually free the stuff used by graph */
 	g_free(graph);
 }
 
-/* Utility function that updates the graph data members, and then redraws it */
+/* Updates the graph data and then redraws it 
+ * data can be NULL, in which case the data is not updated and the 
+ * previous data is used */
 void 
 massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data) {
 	/* Update graph members */
@@ -303,6 +325,8 @@ massifg_graph_set_show_legend(MassifgGraph *graph, gboolean has_legend) {
 	}
 }
 
+/* Render graph to the cairo context cr,
+ * with the specified width and height */
 gboolean
 massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
 				gint width, gint height) {
