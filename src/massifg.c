@@ -81,10 +81,10 @@ massifg_application_set_file(MassifgApplication *app, gchar *filename) {
 
 }
 
+/* Separate from main for testing purposes */
 int
-main (int argc, char **argv) {
+massifg_application_run(MassifgApplication *app) {
 	/* Setup */
-	MassifgApplication *app = massifg_application_new(&argc, &argv);
 	massifg_utils_configure_debug_output();
 	massifg_graph_init();
 
@@ -94,14 +94,20 @@ main (int argc, char **argv) {
 		return 1;
 	}
 
-	if (argc == 2) { 
-		massifg_application_set_file(app, argv[1]);
+	if (*app->argc_ptr == 2) {
+		massifg_application_set_file(app, (*app->argv_ptr)[1]);
 	}
 
 	/* Present the UI and hand over control to the gtk mainloop */
 	massifg_gtkui_start(app);
-
-	/* Cleanup */
-	massifg_application_free(app);
 	return 0;
+}
+
+int
+main (int argc, char **argv) {
+	int retval = 0;
+	MassifgApplication *app = massifg_application_new(&argc, &argv);
+	retval = massifg_application_run(app);
+	massifg_application_free(app);
+	return retval;
 }
