@@ -228,7 +228,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 
 	if (!gtk_ui_manager_add_ui_from_file (uimanager, uifile_path, &error))
 	{
-		g_message ("Building menus failed: %s", error->message);
+		g_critical ("Building menus failed: %s", error->message);
 		g_error_free (error);
 		return 1;
 	}
@@ -266,7 +266,7 @@ massifg_gtkui_init(MassifgApplication *app) {
 	/* Build UI */
 	if (!gtk_builder_add_from_file (app->gtk_builder, gladefile_path, &error))
 	{
-		g_message ("%s", error->message);
+		g_critical ("%s", error->message);
 		g_error_free (error);
 		return 1;
 	}
