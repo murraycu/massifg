@@ -69,31 +69,6 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 	gtk_widget_destroy(GTK_WIDGET(error_dialog));
 }
 
-void
-massifg_gtkui_file_changed(MassifgApplication *app) {
-
-	GError *error = NULL;
-
-	/* TODO: when parsing fails, keep the previous graph */
-	/* Parse the file */
-	if (app->output_data != NULL) {
-		massifg_output_data_free(app->output_data);
-	}
-	app->output_data = massifg_parse_file(app->filename, &error);
-	if (app->output_data == NULL && app->filename != NULL) {
-		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
-				app->filename, error->message); /* Parsing failed */
-		g_error_free(error);
-		return;
-	}
-
-	if (app->output_data != NULL) {
-		massifg_graph_update(app->graph, app->output_data);
-	}
-
-}
-
-
 static void
 print_op_begin_print(GtkPrintOperation *operation,
 		GtkPrintContext *context, gpointer user_data) {
@@ -139,6 +114,7 @@ open_file_action(GtkAction *action, gpointer data) {
 	static gboolean buttons_added = FALSE;
 	GtkWidget *open_dialog = NULL;
 	MassifgApplication *app = (MassifgApplication *)data;
+	gchar *filename = NULL;
 
 	open_dialog = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, OPEN_DIALOG));
 
@@ -154,10 +130,10 @@ open_file_action(GtkAction *action, gpointer data) {
 
 	/* Run the dialog, get the chosen filename */
 	if (gtk_dialog_run(GTK_DIALOG(open_dialog)) == GTK_RESPONSE_OK) {
-		app->filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (open_dialog));
+		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (open_dialog));
 	}
 	gtk_widget_hide(open_dialog);
-	massifg_gtkui_file_changed(app);
+	massifg_application_set_file(app, filename);
 }
 
 
@@ -311,12 +287,6 @@ void
 massifg_gtkui_start(MassifgApplication *app) {
 	GtkWidget *main_window = NULL;
 	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
-
-	/* There might already be a file chosen */
-	/* TODO: Preferably we should to this in an idle callback of the gtk mainloop */
-	if (app->filename != NULL) {
-		massifg_gtkui_file_changed(app);
-	}
 
 	gtk_widget_show_all(main_window);
 	gtk_main();

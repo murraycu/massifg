@@ -55,6 +55,35 @@ massifg_application_free(MassifgApplication *app) {
 	/* FIXME: free graph, and possibly filename */
 }
 
+
+/* Set the currently open file */
+void
+massifg_application_set_file(MassifgApplication *app, gchar *filename) {
+	/* TODO: when parsing fails, keep the previous graph */
+	GError *error = NULL;
+	app->filename = filename;
+
+	/* Parse the file */
+	if (app->output_data != NULL) {
+		massifg_output_data_free(app->output_data);
+	}
+	app->output_data = massifg_parse_file(app->filename, &error);
+
+
+	if (app->output_data == NULL && app->filename != NULL) {
+		/* FIXME: this should not be tied directly to the gtk ui */
+		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
+				app->filename, error->message); /* Parsing failed */
+		g_error_free(error);
+		return;
+	}
+
+	if (app->output_data != NULL) {
+		massifg_graph_update(app->graph, app->output_data);
+	}
+
+}
+
 int
 main (int argc, char **argv) {
 	/* Setup */
@@ -69,7 +98,7 @@ main (int argc, char **argv) {
 	}
 
 	if (argc == 2) { 
-		app->filename = argv[1];
+		massifg_application_set_file(app, argv[1]);
 	}
 
 	/* Present the UI and hand over control to the gtk mainloop */
