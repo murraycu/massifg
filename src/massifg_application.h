@@ -1,5 +1,5 @@
 /*
- *  MassifG - massifg.h
+ *  MassifG - massifg_application.h
  *
  *  Copyright (C) 2010 Openismus GmbH
  *
@@ -19,8 +19,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MASSIFG_H__
-#define __MASSIFG_H__
+#ifndef __MASSIFG_APPLICATION_H__
+#define __MASSIFG_APPLICATION_H__
 
 #include <gtk/gtk.h>
 #include "massifg_parser.h"
@@ -39,4 +39,7 @@ typedef struct {
 MassifgApplication *massifg_application_new(int *argc_ptr, char ***argv_ptr);
 void massifg_application_free(MassifgApplication *app);
 
-#endif /* __MASSIFG_H__ */
+void massifg_application_set_file(MassifgApplication *app, gchar *filename);
+int massifg_application_run(MassifgApplication *app);
+
+#endif /* __MASSIFG_APPLICATION_H__ */

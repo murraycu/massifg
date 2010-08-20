@@ -24,7 +24,7 @@
 #include <gtk/gtk.h>
 #include <stdarg.h>
 
-#include "massifg.h"
+#include "massifg_application.h"
 #include "massifg_gtkui.h"
 #include "massifg_graph.h"
 #include "massifg_utils.h"

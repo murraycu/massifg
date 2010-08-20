@@ -22,7 +22,7 @@
 #ifndef __MASSIFG_GTKUI_H__
 #define __MASSIFG_GTKUI_H__
 
-#include "massifg.h"
+#include "massifg_application.h"
 
 gint massifg_gtkui_init(MassifgApplication *app);
 void massifg_gtkui_start(MassifgApplication *app);

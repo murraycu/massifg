@@ -6,7 +6,8 @@ AM_CPPFLAGS = $(DEPS_CFLAGS) $(MASSIFG_WARNING_FLAGS)
 
 # Building of main application
 bin_PROGRAMS = bin/massifg
-bin_massifg_SOURCES = src/massifg.c src/massifg.h \
+bin_massifg_SOURCES = src/massifg.c \
+		src/massifg_application.c src/massifg_application.h \
 		src/massifg_parser.c src/massifg_parser.h \
                 src/massifg_graph.c src/massifg_graph.h \
 		src/massifg_utils.c src/massifg_utils.h \
