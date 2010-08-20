@@ -222,6 +222,21 @@ massifg_graph_update_detailed(MassifgGraph *graph, GOData *time_data) {
 	g_hash_table_destroy(function_labels);
 }
 
+void
+massifg_graph_update(MassifgGraph *graph) {
+	/* Update the data series */
+	gog_plot_clear_series(graph->plot); /* TODO: verify that we are not responsible for freeing */
+	GOData *time_data = data_from_snapshots(graph->data->snapshots,
+						MASSIFG_DATA_SERIES_TIME);
+
+	if (graph->detailed) {
+		massifg_graph_update_detailed(graph, time_data);
+	}
+	else {
+		massifg_graph_update_simple(graph, time_data);
+	}
+}
+
 /* Public functions */
 
 /* Initialize.
@@ -267,40 +282,23 @@ void massifg_graph_free(MassifgGraph *graph) {
 	g_free(graph);
 }
 
-/* Updates the graph data and then redraws it 
- * data can be NULL, in which case the data is not updated and the 
- * previous data is used */
+/* Set the data to visualize */
 void 
-massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data) {
-	/* Update graph members */
-	if (data) {
-		graph->data = data;
+massifg_graph_set_data(MassifgGraph *graph, MassifgOutputData *data) {
+	if (graph->data) {
+		massifg_output_data_free(graph->data);
 	}
-
-	/* Ensure we have data to plot */
-	if (!graph->data) {
-		return;
-	}
-
-	/* Update the data series */
-	gog_plot_clear_series(graph->plot); /* TODO: verify that we are not responsible for freeing */
-	GOData *time_data = data_from_snapshots(graph->data->snapshots,
-						MASSIFG_DATA_SERIES_TIME);
-
-	if (graph->detailed) {
-		massifg_graph_update_detailed(graph, time_data);
-	}
-	else {
-		massifg_graph_update_simple(graph, time_data);
-	}
+	graph->data = data;
+	massifg_graph_update(graph);
 }
+
 
 /* If the graph should be detailed or not */
 void
 massifg_graph_set_show_details(MassifgGraph *graph, gboolean is_detailed) {
 
 	graph->detailed = is_detailed;
-	massifg_graph_update(graph, NULL);
+	massifg_graph_update(graph);
 }
 
 /* Enable/disable display of legend */

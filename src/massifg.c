@@ -59,27 +59,24 @@ massifg_application_free(MassifgApplication *app) {
 /* Set the currently open file */
 void
 massifg_application_set_file(MassifgApplication *app, gchar *filename) {
-	/* TODO: when parsing fails, keep the previous graph */
 	GError *error = NULL;
-	app->filename = filename;
+	MassifgOutputData *new_data = NULL;
 
-	/* Parse the file */
-	if (app->output_data != NULL) {
-		massifg_output_data_free(app->output_data);
-	}
-	app->output_data = massifg_parse_file(app->filename, &error);
+	/* Try to parse the file */
+	new_data = massifg_parse_file(filename, &error);
 
-
-	if (app->output_data == NULL && app->filename != NULL) {
+	if (new_data == NULL) {
+		/* Parsing failed */
 		/* FIXME: this should not be tied directly to the gtk ui */
 		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
-				app->filename, error->message); /* Parsing failed */
+				filename, error->message);
 		g_error_free(error);
 		return;
 	}
-
-	if (app->output_data != NULL) {
-		massifg_graph_update(app->graph, app->output_data);
+	else {
+		/* Parsing succeeded */
+		massifg_graph_set_data(app->graph, new_data);
+		app->filename = filename;
 	}
 
 }

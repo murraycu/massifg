@@ -62,8 +62,9 @@ void massifg_graph_init(void);
 MassifgGraph *massifg_graph_new(void);
 void massifg_graph_free(MassifgGraph *graph);
 
+void massifg_graph_set_data(MassifgGraph *graph, MassifgOutputData *data);
+void massifg_graph_set_show_details(MassifgGraph *graph, gboolean is_detailed);
 void massifg_graph_set_legend(MassifgGraph *graph, gboolean has_legend);
-void massifg_graph_update(MassifgGraph *graph, MassifgOutputData *data);
 gboolean massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr, gint width, gint height);
 
 #endif /* __MASSIFG_GRAPH_H__ */
