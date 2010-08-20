@@ -36,4 +36,7 @@ typedef struct {
 	GtkBuilder *gtk_builder;
 } MassifgApplication;
 
+MassifgApplication *massifg_application_new(int *argc_ptr, char ***argv_ptr);
+void massifg_application_free(MassifgApplication *app);
+
 #endif /* __MASSIFG_H__ */

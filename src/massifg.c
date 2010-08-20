@@ -28,36 +28,54 @@
 #include "massifg_gtkui.h"
 
 
+/* Initialize application data structure */
+MassifgApplication *
+massifg_application_new(int *argc_ptr, char ***argv_ptr) {
+	MassifgApplication *app = g_new(MassifgApplication, 1);
+
+	app->argc_ptr = argc_ptr;
+	app->argv_ptr = argv_ptr;
+
+	app->output_data = NULL;
+	app->graph = NULL;
+	app->filename = NULL;
+	app->gtk_builder = NULL;
+
+	return app;
+}
+
+/* Free a MassifgApplication */
+void
+massifg_application_free(MassifgApplication *app) {
+	if (app->output_data != NULL) {
+		massifg_output_data_free(app->output_data);
+	}
+	g_object_unref(G_OBJECT(app->gtk_builder));
+
+	/* FIXME: free graph, and possibly filename */
+}
+
 int
 main (int argc, char **argv) {
-	/* Initialize application data structure */
-	MassifgApplication app;
-	app.output_data = NULL;
-	app.graph = NULL;
-	app.filename = NULL;
-	app.gtk_builder = NULL;
-	app.argc_ptr = &argc;
-	app.argv_ptr = &argv;
-
+	/* Setup */
+	MassifgApplication *app = massifg_application_new(&argc, &argv);
 	massifg_utils_configure_debug_output();
 	massifg_graph_init();
 
 	/* Create the UI */
-	if (massifg_gtkui_init(&app) != 0) {
-		g_message("Failed to create GTK+ UI");
+	if (massifg_gtkui_init(app) != 0) {
+		g_critical("Failed to create GTK+ UI");
 		return 1;
 	}
 
 	if (argc == 2) { 
-		app.filename = argv[1];
+		app->filename = argv[1];
 	}
 
 	/* Present the UI and hand over control to the gtk mainloop */
-	massifg_gtkui_start(&app);
+	massifg_gtkui_start(app);
 
-	if (app.output_data != NULL) {
-		massifg_output_data_free(app.output_data);
-	}
-	g_object_unref(G_OBJECT(app.gtk_builder));
+	/* Cleanup */
+	massifg_application_free(app);
 	return 0;
 }
