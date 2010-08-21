@@ -29,10 +29,19 @@ dist_noinst_DATA = tests/massif-output-2snapshots.txt \
 		   tests/massif-output-glom.txt
 
 # Unit/Functional tests setup
-check_PROGRAMS = tests/parser
+check_PROGRAMS = tests/common tests/parser tests/application
+
+tests_common_SOURCES = tests/common.c tests/common.h
+tests_common_CPPFLAGS = $(DEPS_CFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
+tests_common_LDADD = $(DEPS_LIBS)
+
 tests_parser_SOURCES = tests/parser.c
 tests_parser_CPPFLAGS = $(PARSER_DEPS_CFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
 tests_parser_LDADD = ${PARSER_DEPS_LIBS}
+
+tests_application_SOURCES = tests/application.c
+tests_application_CPPFLAGS = $(DEPS_CFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
+tests_application_LDADD = $(DEPS_LIBS)
 
 
 # ----------------------------------------------

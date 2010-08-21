@@ -5,30 +5,7 @@
 #include "../src/massifg_utils.c"
 #include "../src/massifg_parser.c"
 
-#define PARSER_TEST_INPUT_SHORT "massif-output-2snapshots.txt"
-#define PARSER_TEST_INPUT_LONG "massif-output-glom.txt"
-
-/* Utility function for finding the test input files. Especially important for distcheck
- * http://www.gnu.org/software/automake/manual/automake.html#Tests
- * Caller should free return value using g_free () */
-gchar *
-get_test_file(const gchar *filename) {
-	const gchar *srcdir = g_getenv("top_srcdir"); /* Should not be freed */
-	gchar *path = g_build_filename(srcdir, "tests", filename, NULL);
-	return path;
-}
-
-/* Test that we can find our test input files */
-void
-locate_test_files(void) {
-	gchar *str;
-
-	str = get_test_file(PARSER_TEST_INPUT_SHORT);
-	g_assert(g_file_test(str, G_FILE_TEST_EXISTS));
-
-	str = get_test_file(PARSER_TEST_INPUT_LONG);
-	g_assert(g_file_test(str, G_FILE_TEST_EXISTS));
-}
+#include "common.h"
 
 void
 parser_functest_short(void) {
@@ -37,7 +14,7 @@ parser_functest_short(void) {
 	MassifgSnapshot *s;
 
 	/* Run the parser */
-	gchar *path = get_test_file(PARSER_TEST_INPUT_SHORT);
+	gchar *path = get_test_file(TEST_INPUT_SHORT);
 	data = massifg_parse_file(path, NULL);
 	g_free(path);
 
@@ -103,7 +80,7 @@ void
 parser_maxvalues(void) {
 	MassifgOutputData *data;
 
-	gchar *path = get_test_file(PARSER_TEST_INPUT_LONG);
+	gchar *path = get_test_file(TEST_INPUT_LONG);
 	data = massifg_parse_file(path, NULL);
 	g_free(path);
 
@@ -147,7 +124,7 @@ parser_heaptree_functest(void) {
 	int i = 0;
 
 	/* Run the parser */
-	gchar *path = get_test_file(PARSER_TEST_INPUT_SHORT);
+	gchar *path = get_test_file(TEST_INPUT_SHORT);
 	data = massifg_parse_file(path, NULL);
 	g_free(path);
 
@@ -203,7 +180,7 @@ parser_heaptree_subtrees(void) {
 	MassifgHeapTreeNode *n;
 
 	/* Run the parser */
-	gchar *path = get_test_file(PARSER_TEST_INPUT_LONG);
+	gchar *path = get_test_file(TEST_INPUT_LONG);
 	data = massifg_parse_file(path, NULL);
 	g_free(path);
 
@@ -250,8 +227,6 @@ parser_heaptree_subtrees(void) {
 int
 main (int argc, char **argv) {
 	g_test_init(&argc, &argv, NULL);
-
-	g_test_add_func("/locate-test-files", locate_test_files);
 
 	g_test_add_func("/parser/heaptree/functest", parser_heaptree_functest);
 	g_test_add_func("/parser/heaptree/subtrees", parser_heaptree_subtrees);
