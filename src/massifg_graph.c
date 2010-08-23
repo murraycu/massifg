@@ -204,9 +204,10 @@ massifg_graph_update_detailed(MassifgGraph *graph, GOData *time_data) {
 
 		/* Note: we only look at the direct children of the root, because that
 		 * is the behaviour that ms_print and massif_grapher has */
-		g_node_children_foreach(s->heap_tree, G_TRAVERSE_ALL,
-			add_details_foreach, (gpointer)&foreach_arg);
-
+		if (s->heap_tree) {
+			g_node_children_foreach(s->heap_tree, G_TRAVERSE_ALL,
+				add_details_foreach, (gpointer)&foreach_arg);
+		}
 		l = l->next;
 	}
 
