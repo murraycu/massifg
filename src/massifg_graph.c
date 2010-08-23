@@ -70,7 +70,7 @@ void
 fill_data_array_func(gpointer data, gpointer user_data) {
 	MassifgSnapshot *snapshot = (MassifgSnapshot *)data;
 	FillDataArrayFuncArg *arg = (FillDataArrayFuncArg *)user_data;
-	double y_val;
+	double y_val = 0;
 
 	switch (arg->series) {
 	case MASSIFG_DATA_SERIES_TIME:
@@ -117,7 +117,7 @@ massifg_graph_update_simple(MassifgGraph *graph, GOData *time_data) {
 		GogSeries *gog_series = gog_plot_new_series(graph->plot);
 		GOData *series_data = data_from_snapshots(graph->data->snapshots, ds);
 		GOData *series_name = go_data_scalar_str_new(MASSIFG_DATA_SERIES_DESC[ds], FALSE);
-		gog_series_set_name(gog_series, series_name, &graph->error);
+		gog_series_set_name(gog_series, (GODataScalar *)series_name, &graph->error);
 		gog_series_set_dim(gog_series, 0, time_data, &graph->error);
 		gog_series_set_dim(gog_series, 1, series_data, &graph->error);
 	}
@@ -155,7 +155,7 @@ add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 	/* Add it to the graph */
 	GogSeries *gog_series = gog_plot_new_series(graph->plot);
 	GOData *series_name = go_data_scalar_str_new(label, FALSE);
-	gog_series_set_name(gog_series, series_name, &graph->error);
+	gog_series_set_name(gog_series, (GODataScalar *)series_name, &graph->error);
 	gog_series_set_dim(gog_series, 0, arg->time_data, &graph->error);
 	gog_series_set_dim(gog_series, 1, series_data, &graph->error);
 }

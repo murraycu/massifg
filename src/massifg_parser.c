@@ -199,7 +199,7 @@ massifg_parse_heap_tree_desc(MassifgParser *parser, const gchar *line) {
 
 gint
 massifg_str_count_leading_spaces(const gchar *str) {
-	gint i = 0;
+	guint i = 0;
 	gint num_spaces = 0;
 
 	for (i=0; i<strlen(str); i++) {
