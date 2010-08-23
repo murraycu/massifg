@@ -298,7 +298,9 @@ void
 massifg_graph_set_show_details(MassifgGraph *graph, gboolean is_detailed) {
 
 	graph->detailed = is_detailed;
-	massifg_graph_update(graph);
+	if (graph->data) {
+		massifg_graph_update(graph);
+	}
 }
 
 /* Enable/disable display of legend */
