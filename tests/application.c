@@ -12,7 +12,7 @@
 #include "common.h"
 
 
-int open_files_cb_repeat_count = 10;
+int open_files_cb_repeat_count = 5;
 
 /* Forcefully destroy the main window 
  * Workaround because the window of test does not seem to be removed
@@ -29,9 +29,16 @@ massifg_application_destroy(MassifgApplication *app) {
 /* Open the same file over and over again. */
 gboolean
 open_files_cb(gpointer data) {
+	gchar *filename = NULL;
 	MassifgApplication *app = (MassifgApplication *)data;
-	gchar *filename = get_test_file(TEST_INPUT_LONG);
 	static int file_no = 0;
+
+	if (file_no % 2) {
+		filename = get_test_file(TEST_INPUT_LONG);
+	}
+	else {
+		filename = get_test_file(TEST_INPUT_800);
+	}
 
 	massifg_application_set_file(app, filename);
 	file_no++;
@@ -191,6 +198,7 @@ main (int argc, char **argv) {
 
 	g_test_add_func("/application/toggle-details", application_toogle_detailed_view);
 	g_test_add_func("/application/toggle-legend", application_toogle_legend);
+
 
 	massifg_utils_configure_debug_output();
 	return g_test_run();
