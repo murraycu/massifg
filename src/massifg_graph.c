@@ -254,7 +254,6 @@ massifg_graph_init(void) {
  * Free with massifg_graph_free */
 MassifgGraph *
 massifg_graph_new(void) {
-	GogGraph *go_graph = NULL;
 	GogChart *chart = NULL;
 
 	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
@@ -266,7 +265,6 @@ massifg_graph_new(void) {
 
 	/* Create a graph widget, and get the embedded graph and chart */
 	graph->widget = go_graph_widget_new(NULL);
-	go_graph = go_graph_widget_get_graph(GO_GRAPH_WIDGET(graph->widget));
 	chart = go_graph_widget_get_chart(GO_GRAPH_WIDGET(graph->widget));
 
 	/* Create a plot and add it to the chart */
