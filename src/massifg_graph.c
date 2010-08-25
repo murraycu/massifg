@@ -184,8 +184,8 @@ typedef struct {
 
 /* Add a single detailed data series, as specified by key */
 void
-add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
-	gchar *label = (gchar *)key;
+add_details_serie_foreach(gpointer data, gpointer user_data) {
+	gchar *label = (gchar *)data;
 	AddDetailsSerieArg *arg = (AddDetailsSerieArg *)user_data;
 	MassifgGraph *graph = arg->graph;
 	GOData *series_data, *time_data, *series_name;
@@ -213,24 +213,101 @@ add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 }
 
 
+/**
+ * AddDetailsArg:
+ * @function_labels: A table over all the functions in a #MassifgOutputData, and
+ * how many #MassifgSnapshot they appear in
+ * @functions_sorted: A sorted list of the keys in @function_labels
+ * @functions: A temporary table over the functions and their memory usage in a single #MassifgSnapshot
+ *
+ *
+ */
 typedef struct {
 	GHashTable *functions;
 	GHashTable *function_labels;
+	GList *functions_sorted;
 } AddDetailsArg;
 
-/* Adds function values to two hash tables:
- * ->functions is a table over the functions and their memory usage in a single snapshot 
- * ->function_labels is a table over all the functions in a MassifgOutputData */
+/* Adds function values */
 void
 add_details_foreach(GNode *node, gpointer user_data) {
+	gboolean exists = FALSE;
+	gpointer value = 0;
 	MassifgHeapTreeNode *n = (MassifgHeapTreeNode *)node->data;
 	AddDetailsArg *arg = (AddDetailsArg *)user_data;
+	gchar *label_str = n->label->str;
 
 	/* Note: key is not copied and value is trucated to 32bit */
-	g_hash_table_insert(arg->functions, n->label->str, GINT_TO_POINTER(n->total_mem_B));
+	g_hash_table_insert(arg->functions, label_str, GINT_TO_POINTER(n->total_mem_B));
 
-	if (!g_hash_table_lookup(arg->function_labels, n->label->str)) {
-		g_hash_table_insert(arg->function_labels, n->label->str, NULL);
+	exists = g_hash_table_lookup_extended(arg->function_labels, label_str, NULL, &value);
+	if (exists) {
+		g_hash_table_insert(arg->function_labels, label_str,
+				GINT_TO_POINTER(GPOINTER_TO_INT(value)+1));
+	}
+	else {
+		g_hash_table_insert(arg->function_labels, label_str, GINT_TO_POINTER(0));
+	}
+}
+
+
+/**
+ * sort_func_label:
+ * @Returns: +1 if function @a appears in less snapshots than @b,
+ * -1 if function @a appears in more snapshots than @b and 0
+ * if @a appears in as many as @b
+ *
+ * A #GCompareDataFunc to sort snapshots
+ */
+gint
+sort_func_label(gconstpointer a, gconstpointer b, gpointer user_data) {
+	GHashTable *function_labels = (GHashTable *)user_data;
+
+	gchar *label_a = (gchar *)a;
+	gchar *label_b = (gchar *)b;
+	int value_a = GPOINTER_TO_INT(g_hash_table_lookup(function_labels, label_a));
+	int value_b = GPOINTER_TO_INT(g_hash_table_lookup(function_labels, label_b));
+
+	if (value_a == value_b)	return 0;
+	if (value_a < value_b) return +1;
+	if (value_a > value_b) return -1;
+	g_assert_not_reached();
+}
+
+/* Sort the functions according to how many snapshots they appear in
+ * This allows short-lived functions to be on top of the graph, and long-lived
+ * ones on the bottom, which leads to a less confusing graph */
+void
+sort_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
+	AddDetailsArg *arg = (AddDetailsArg *)user_data;
+
+	arg->functions_sorted = g_list_insert_sorted_with_data(
+			arg->functions_sorted, key, sort_func_label,
+			arg->function_labels);
+}
+
+
+
+/* Build datastructures for the functions we want to show */
+void
+build_function_tables(GList *snapshots, GList **snapshot_details, AddDetailsArg *arg) {
+	MassifgSnapshot *s = NULL;
+	GHashTable *ht = NULL;
+	GList *l = snapshots;
+
+	while (l) {
+		s = (MassifgSnapshot *)l->data;
+		ht = g_hash_table_new(g_str_hash, g_str_equal);
+		*snapshot_details = g_list_append(*snapshot_details, ht);
+		arg->functions = ht;
+
+		/* Note: we only look at the direct children of the root, because that
+		 * is the behaviour that ms_print and massif_grapher has */
+		if (s->heap_tree) {
+			g_node_children_foreach(s->heap_tree, G_TRAVERSE_ALL,
+				add_details_foreach, (gpointer)arg);
+		}
+		l = l->next;
 	}
 }
 
@@ -238,37 +315,24 @@ add_details_foreach(GNode *node, gpointer user_data) {
  * The graph should have been cleared for data series before this is called */
 void
 massifg_graph_update_detailed(MassifgGraph *graph) {
-	AddDetailsSerieArg serie_arg;
+	/* TODO: these two helper structures should probably be joined into one */
+	AddDetailsSerieArg add_dserie_arg;
+	AddDetailsArg add_d_arg;
+
 	GHashTable *function_labels = g_hash_table_new(g_str_hash, g_str_equal);
-	/* List of GHashTables with "function_label": mem_B, needs to be freed */
 	GList *snapshot_details = NULL;
 
-	/* Build datastructures for the functions we want to show */
-	AddDetailsArg foreach_arg;
-	MassifgSnapshot *s = NULL;
-	GHashTable *ht = NULL;
-	GList *l = graph->data->snapshots;
-	foreach_arg.function_labels = function_labels;
-	while (l) {
-		s = (MassifgSnapshot *)l->data;
-		ht = g_hash_table_new(g_str_hash, g_str_equal);
-		snapshot_details = g_list_append(snapshot_details, ht);
-		foreach_arg.functions = ht;
+	/* Build the datastructures neccesary for this view */
+	add_d_arg.function_labels = function_labels;
+	add_d_arg.functions_sorted = NULL;
+	add_d_arg.functions = NULL;
+	build_function_tables(graph->data->snapshots, &snapshot_details, &add_d_arg);
+	g_hash_table_foreach(function_labels, sort_details_serie_foreach, (gpointer)&add_d_arg);
 
-		/* Note: we only look at the direct children of the root, because that
-		 * is the behaviour that ms_print and massif_grapher has */
-		if (s->heap_tree) {
-			g_node_children_foreach(s->heap_tree, G_TRAVERSE_ALL,
-				add_details_foreach, (gpointer)&foreach_arg);
-		}
-		l = l->next;
-	}
-
-	/* For each function, create and add a data serie to graph */
-	serie_arg.graph = graph;
-	serie_arg.snapshot_details = snapshot_details;
-
-	g_hash_table_foreach(function_labels, add_details_serie_foreach, (gpointer)&serie_arg);
+	/* Create and add the series to the graph */
+	add_dserie_arg.graph = graph;
+	add_dserie_arg.snapshot_details = snapshot_details;
+	g_list_foreach(add_d_arg.functions_sorted, add_details_serie_foreach, (gpointer)&add_dserie_arg);
 
 	/* FIXME: free snapshot_details */
 	g_hash_table_destroy(function_labels);
