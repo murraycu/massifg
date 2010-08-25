@@ -14,6 +14,12 @@ locate_test_files(void) {
 
 	str = get_test_file(TEST_INPUT_LONG);
 	g_assert(g_file_test(str, G_FILE_TEST_EXISTS));
+
+	str = get_test_file(TEST_INPUT_800);
+	g_assert(g_file_test(str, G_FILE_TEST_EXISTS));
+
+	str = get_test_file(TEST_INPUT_BOGUS);
+	g_assert(g_file_test(str, G_FILE_TEST_EXISTS));
 }
 
 int

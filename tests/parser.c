@@ -69,7 +69,7 @@ void
 parser_return_null_on_bogus_data(void) {
 	MassifgOutputData *data;
 
-	gchar *path = get_test_file("parser.c");
+	gchar *path = get_test_file(TEST_INPUT_BOGUS);
 	data = massifg_parse_file(path, NULL);
 	g_free(path);
 
