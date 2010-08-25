@@ -111,12 +111,17 @@ data_from_snapshots(GList *snapshots, MassifgDataSeries series) {
 /* Adds all the simple data series to graph
  * The graph should be cleared for data series before this is called */
 void
-massifg_graph_update_simple(MassifgGraph *graph, GOData *time_data) {
+massifg_graph_update_simple(MassifgGraph *graph) {
 	MassifgDataSeries ds;
 	for (ds=MASSIFG_DATA_SERIES_HEAP; ds<=MASSIFG_DATA_SERIES_STACKS; ds++) {
 		GogSeries *gog_series = gog_plot_new_series(graph->plot);
 		GOData *series_data = data_from_snapshots(graph->data->snapshots, ds);
 		GOData *series_name = go_data_scalar_str_new(MASSIFG_DATA_SERIES_DESC[ds], FALSE);
+
+		/* TODO: don't get this for each series, as it is identical for all of them 
+		 * The same object cannot be added to all of them because that screws up clearing the series (same object is freed several times) */
+		GOData *time_data = data_from_snapshots(graph->data->snapshots,	MASSIFG_DATA_SERIES_TIME);
+
 		gog_series_set_name(gog_series, (GODataScalar *)series_name, &graph->error);
 		gog_series_set_dim(gog_series, 0, time_data, &graph->error);
 		gog_series_set_dim(gog_series, 1, series_data, &graph->error);
@@ -125,7 +130,6 @@ massifg_graph_update_simple(MassifgGraph *graph, GOData *time_data) {
 
 typedef struct {
 	MassifgGraph *graph;
-	GOData *time_data;
 	GList *snapshot_details;
 } AddDetailsSerieArg;
 
@@ -151,12 +155,13 @@ add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 		i++;
 	}
 	GOData *series_data = go_data_vector_val_new(array, length, NULL);
+	GOData *time_data = data_from_snapshots(graph->data->snapshots,	MASSIFG_DATA_SERIES_TIME);
 
 	/* Add it to the graph */
 	GogSeries *gog_series = gog_plot_new_series(graph->plot);
 	GOData *series_name = go_data_scalar_str_new(label, FALSE);
 	gog_series_set_name(gog_series, (GODataScalar *)series_name, &graph->error);
-	gog_series_set_dim(gog_series, 0, arg->time_data, &graph->error);
+	gog_series_set_dim(gog_series, 0, time_data, &graph->error);
 	gog_series_set_dim(gog_series, 1, series_data, &graph->error);
 }
 
@@ -185,7 +190,7 @@ add_details_foreach(GNode *node, gpointer user_data) {
 /* Adds all the detailed data series to graph
  * The graph should have been cleared for data series before this is called */
 void
-massifg_graph_update_detailed(MassifgGraph *graph, GOData *time_data) {
+massifg_graph_update_detailed(MassifgGraph *graph) {
 	GHashTable *function_labels = g_hash_table_new(g_str_hash, g_str_equal);
 	/* List of GHashTables with "function_label": mem_B, needs to be freed */
 	GList *snapshot_details = NULL;
@@ -214,7 +219,6 @@ massifg_graph_update_detailed(MassifgGraph *graph, GOData *time_data) {
 	/* For each function, create and add a data serie to graph */
 	AddDetailsSerieArg arg;
 	arg.graph = graph;
-	arg.time_data = time_data;
 	arg.snapshot_details = snapshot_details;
 
 	g_hash_table_foreach(function_labels, add_details_serie_foreach, (gpointer)&arg);
@@ -227,14 +231,12 @@ void
 massifg_graph_update(MassifgGraph *graph) {
 	/* Update the data series */
 	gog_plot_clear_series(graph->plot); /* TODO: verify that we are not responsible for freeing */
-	GOData *time_data = data_from_snapshots(graph->data->snapshots,
-						MASSIFG_DATA_SERIES_TIME);
 
 	if (graph->detailed) {
-		massifg_graph_update_detailed(graph, time_data);
+		massifg_graph_update_detailed(graph);
 	}
 	else {
-		massifg_graph_update_simple(graph, time_data);
+		massifg_graph_update_simple(graph);
 	}
 }
 
