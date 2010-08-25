@@ -308,16 +308,15 @@ massifg_graph_set_show_details(MassifgGraph *graph, gboolean is_detailed) {
 
 /* Enable/disable display of legend */
 void
-massifg_graph_set_show_legend(MassifgGraph *graph, gboolean has_legend) {
+massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend) {
 	GogObject *gog_object = NULL;
 	GogChart *chart = go_graph_widget_get_chart(GO_GRAPH_WIDGET(graph->widget));
 
-	graph->has_legend = has_legend;
-
-	if (has_legend) {
+	if (show_legend && !graph->has_legend) {
 		gog_object_add_by_name(GOG_OBJECT(chart), "Legend", NULL);
 	}
-	else {
+
+	if (!show_legend) {
 		/* Remove existing legend, if any */
 		gog_object = gog_object_get_child_by_name(GOG_OBJECT(chart), "Legend");
 		if (gog_object) {
@@ -326,6 +325,8 @@ massifg_graph_set_show_legend(MassifgGraph *graph, gboolean has_legend) {
 		}
 
 	}
+	graph->has_legend = show_legend;
+
 }
 
 /* Render graph to the cairo context cr,
