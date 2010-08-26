@@ -122,6 +122,7 @@ quit_action(GtkAction *action, gpointer data) {
 void
 open_file_action(GtkAction *action, gpointer data) {
 	static gboolean buttons_added = FALSE;
+	GError *error = NULL;
 	GtkWidget *open_dialog = NULL;
 	MassifgApplication *app = (MassifgApplication *)data;
 	gchar *filename = NULL;
@@ -143,7 +144,12 @@ open_file_action(GtkAction *action, gpointer data) {
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (open_dialog));
 	}
 	gtk_widget_hide(open_dialog);
-	massifg_application_set_file(app, filename);
+
+	if (!massifg_application_set_file(app, filename, &error)) {
+		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
+				filename, error->message);
+		g_error_free(error);
+	}
 }
 
 

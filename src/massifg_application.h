@@ -66,7 +66,7 @@ GType massifg_application_get_type (void);
 MassifgApplication *massifg_application_new(int *argc_ptr, char ***argv_ptr);
 void massifg_application_free(MassifgApplication *app);
 
-void massifg_application_set_file(MassifgApplication *app, gchar *filename);
+gboolean massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **error);
 int massifg_application_run(MassifgApplication *app);
 
 #endif /* __MASSIFG_APPLICATION_H__ */

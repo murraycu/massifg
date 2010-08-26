@@ -27,4 +27,6 @@
 gint massifg_gtkui_init(MassifgApplication *app);
 void massifg_gtkui_start(MassifgApplication *app);
 
+void massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...);
+
 #endif /* __MASSIFG_GTKUI_H__ */

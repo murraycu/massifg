@@ -121,16 +121,16 @@ massifg_application_free(MassifgApplication *app) {
 }
 
 
-/* Set the currently open file 
- * This will copy the filename, so it is safe to use with temporary strings */
-void
-massifg_application_set_file(MassifgApplication *app, gchar *filename) {
-	GError *error = NULL;
+/* Set the currently open file
+ * Returns TRUE on success or FALSE on failure
+ * Internally this will copy the filename, so it is safe to use with temporary strings */
+gboolean
+massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **error) {
 	MassifgOutputData *new_data = NULL;
 	gchar *filename_copy = g_strdup(filename);
 
 	/* Try to parse the file */
-	new_data = massifg_parse_file(filename_copy, &error);
+	new_data = massifg_parse_file(filename_copy, error);
 
 	if (new_data) {
 		/* Parsing succeeded */
@@ -138,21 +138,21 @@ massifg_application_set_file(MassifgApplication *app, gchar *filename) {
 		g_free(app->filename);
 		app->filename = filename_copy;
 		g_signal_emit_by_name(app, "file-changed");
+		return TRUE;
 	}
-	else {
-		/* Parsing failed */
-		/* FIXME: this should not be tied directly to the gtk ui */
-		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
-				filename_copy, error->message);
-		g_error_free(error);
-		return;
-	}
+
+	/* Parsing failed */
+	return FALSE;
+
 
 }
 
 /* Separate from main for testing purposes */
 int
 massifg_application_run(MassifgApplication *app) {
+	GError *error = NULL;
+	gchar *filename = NULL;
+
 	/* Setup */
 	massifg_utils_configure_debug_output();
 	massifg_graph_init();
@@ -163,8 +163,15 @@ massifg_application_run(MassifgApplication *app) {
 		return 1;
 	}
 
+
 	if (*app->argc_ptr == 2) {
-		massifg_application_set_file(app, (*app->argv_ptr)[1]);
+		filename = (*app->argv_ptr)[1];
+
+		if (!massifg_application_set_file(app, filename, &error)) {
+			massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
+					filename, error->message);
+			g_error_free(error);
+		}
 	}
 
 	/* Present the UI and hand over control to the gtk mainloop */

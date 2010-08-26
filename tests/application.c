@@ -40,7 +40,7 @@ open_files_cb(gpointer data) {
 		filename = get_test_file(TEST_INPUT_800);
 	}
 
-	massifg_application_set_file(app, filename);
+	massifg_application_set_file(app, filename, NULL);
 	file_no++;
 	g_free(filename);
 
