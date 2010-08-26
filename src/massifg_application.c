@@ -30,6 +30,15 @@
 
 G_DEFINE_TYPE (MassifgApplication, massifg_application, G_TYPE_OBJECT);
 
+enum
+{
+  SIGNAL_FILE_CHANGED,
+  N_SIGNALS
+};
+
+static guint massifg_application_signals[N_SIGNALS];
+
+
 /* Unref object once and only once, to avoid trying to unref an invalid object */
 void
 gobject_safe_unref(GObject *object) {
@@ -86,10 +95,22 @@ massifg_application_dispose(GObject *gobject) {
 static void
 massifg_application_class_init(MassifgApplicationClass *klass)
 {
-  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+	GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-  gobject_class->dispose = massifg_application_dispose;
-  gobject_class->finalize = massifg_application_finalize;
+	gobject_class->dispose = massifg_application_dispose;
+	gobject_class->finalize = massifg_application_finalize;
+
+	massifg_application_signals[SIGNAL_FILE_CHANGED] =
+	g_signal_newv ("file-changed",
+		G_TYPE_FROM_CLASS (gobject_class),
+		G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
+		NULL /* closure */,
+		NULL /* accumulator */,
+		NULL /* accumulator data */,
+		g_cclosure_marshal_VOID__VOID,
+		G_TYPE_NONE /* return_type */,
+		0     /* n_params */,
+		NULL  /* param_types */);
 
 }
 
@@ -116,6 +137,7 @@ massifg_application_set_file(MassifgApplication *app, gchar *filename) {
 		massifg_graph_set_data(app->graph, new_data);
 		g_free(app->filename);
 		app->filename = filename_copy;
+		g_signal_emit_by_name(app, "file-changed");
 	}
 	else {
 		/* Parsing failed */

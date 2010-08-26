@@ -56,6 +56,8 @@ struct _MassifgApplication {
 struct _MassifgApplicationClass {
 	GObjectClass parent_class;
 
+	void (*file_changed) (MassifgApplication *app, gpointer user_data);
+
 };
 
 /* used by MASSIFG_TYPE_APPLICATION */

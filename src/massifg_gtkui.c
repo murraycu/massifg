@@ -102,6 +102,16 @@ void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
 	gtk_main_quit();
 }
 
+void mainwindow_update_title(MassifgApplication *app, gpointer user_data) {
+	GtkWindow *main_window = NULL;
+	main_window = GTK_WINDOW(gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+
+	/* TODO: include application name */
+	if (app->filename) {
+		gtk_window_set_title(main_window, app->filename);
+	}
+}
+
 
 /* Actions */
 void
@@ -260,6 +270,8 @@ massifg_gtkui_init(MassifgApplication *app) {
 
 	/* Initialize */
 	gtk_init (app->argc_ptr, app->argv_ptr);
+
+	g_signal_connect(app, "file-changed", G_CALLBACK(mainwindow_update_title), NULL);
 
 	app->gtk_builder = gtk_builder_new();
 	gladefile_path = massifg_utils_get_resource_file("massifg.glade");

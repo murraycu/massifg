@@ -5,6 +5,7 @@
   <object class="GtkWindow" id="mainwindow">
     <property name="default_width">800</property>
     <property name="default_height">400</property>
+    <property name="icon_name">applications-development</property>
     <signal name="destroy" handler="mainwindow_destroy"/>
     <child>
       <object class="GtkVBox" id="mainvbox">
