@@ -66,7 +66,8 @@ massifg_application_init(MassifgApplication *self) {
 /* Free simple types */
 static void
 massifg_application_finalize(GObject *gobject) {
-	;
+	MassifgApplication *app = MASSIFG_APPLICATION(gobject);
+	g_free(app->filename);
 }
 
 /* Free all references to objects */
@@ -74,12 +75,12 @@ static void
 massifg_application_dispose(GObject *gobject) {
 	MassifgApplication *app = MASSIFG_APPLICATION(gobject);
 
-	if (app->output_data != NULL) {
+	if (app->output_data) {
 		massifg_output_data_free(app->output_data);
 	}
-	gobject_safe_unref(G_OBJECT(app->gtk_builder));
+	massifg_graph_free(app->graph);
 
-	/* FIXME: free graph, and possibly filename */
+	gobject_safe_unref(G_OBJECT(app->gtk_builder));
 }
 
 static void
@@ -99,27 +100,30 @@ massifg_application_free(MassifgApplication *app) {
 }
 
 
-/* Set the currently open file */
+/* Set the currently open file 
+ * This will copy the filename, so it is safe to use with temporary strings */
 void
 massifg_application_set_file(MassifgApplication *app, gchar *filename) {
 	GError *error = NULL;
 	MassifgOutputData *new_data = NULL;
+	gchar *filename_copy = g_strdup(filename);
 
 	/* Try to parse the file */
-	new_data = massifg_parse_file(filename, &error);
+	new_data = massifg_parse_file(filename_copy, &error);
 
-	if (new_data == NULL) {
+	if (new_data) {
+		/* Parsing succeeded */
+		massifg_graph_set_data(app->graph, new_data);
+		g_free(app->filename);
+		app->filename = filename_copy;
+	}
+	else {
 		/* Parsing failed */
 		/* FIXME: this should not be tied directly to the gtk ui */
 		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
-				filename, error->message);
+				filename_copy, error->message);
 		g_error_free(error);
 		return;
-	}
-	else {
-		/* Parsing succeeded */
-		massifg_graph_set_data(app->graph, new_data);
-		app->filename = filename;
 	}
 
 }
