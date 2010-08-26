@@ -327,6 +327,17 @@ massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend) {
 
 }
 
+/* Get the widget which displays the graph */
+GtkWidget *massifg_graph_get_widget(MassifgGraph *graph) {
+	return graph->widget;
+}
+
+/* Get the data the graph represents */
+MassifgOutputData *massifg_graph_get_data(MassifgGraph *graph) {
+	return graph->data;
+}
+
+
 /* Render graph to the cairo context cr,
  * with the specified width and height */
 gboolean

@@ -255,6 +255,7 @@ gint
 massifg_gtkui_init(MassifgApplication *app) {
 	const gchar *gladefile_path = NULL;
 	GtkWidget *vbox = NULL;
+	GtkWidget *graph_widget = NULL;
 	GError *error = NULL;
 
 	/* Initialize */
@@ -274,7 +275,8 @@ massifg_gtkui_init(MassifgApplication *app) {
 	/* Add the graph widget */
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
 	app->graph = massifg_graph_new();
-	gtk_box_pack_start(GTK_BOX (vbox), app->graph->widget, TRUE, TRUE, 1);
+	graph_widget = massifg_graph_get_widget(app->graph);
+	gtk_box_pack_start(GTK_BOX (vbox), graph_widget, TRUE, TRUE, 1);
 
 	/* Cleanup */
 	g_free((gpointer)gladefile_path);
