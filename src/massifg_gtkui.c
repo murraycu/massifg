@@ -32,6 +32,7 @@
 #define MAIN_WINDOW "mainwindow"
 #define MAIN_WINDOW_VBOX "mainvbox"
 #define OPEN_DIALOG "openfiledialog"
+#define SAVE_DIALOG "savefiledialog"
 
 #define MAIN_WINDOW_MENU "/MainMenu"
 
@@ -152,6 +153,35 @@ open_file_action(GtkAction *action, gpointer data) {
 	}
 }
 
+void
+save_file_action(GtkAction *action, gpointer data) {
+	/* TODO: support a way to set the size */
+	int width = 2000;
+	int height = 1000;
+	static gboolean buttons_added = FALSE;
+	GtkWidget *save_dialog = NULL;
+	MassifgApplication *app = (MassifgApplication *)data;
+	gchar *filename = NULL;
+
+	save_dialog = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, SAVE_DIALOG));
+
+	if (!buttons_added) {
+		gtk_dialog_add_buttons(GTK_DIALOG(save_dialog),
+				GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+		buttons_added = TRUE;
+	}
+
+
+	/* Run the dialog, get the chosen filename */
+	if (gtk_dialog_run(GTK_DIALOG(save_dialog)) == GTK_RESPONSE_OK) {
+		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (save_dialog));
+	}
+	gtk_widget_hide(save_dialog);
+
+	/* TODO: add .png to filename if not existing */
+	massifg_graph_render_to_png(app->graph, filename, width, height);
+}
 
 void
 print_action(GtkAction *action, gpointer data) {
@@ -217,6 +247,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
 	  { "QuitAction", GTK_STOCK_QUIT, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
 	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open", NULL, NULL, G_CALLBACK(open_file_action)},
+	  { "SaveFileAction", GTK_STOCK_SAVE, "_Save", NULL, NULL, G_CALLBACK(save_file_action)},
 	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
 
 	  { "ViewMenuAction", NULL, "_View", NULL, NULL, NULL},

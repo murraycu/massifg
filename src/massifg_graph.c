@@ -353,3 +353,13 @@ massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
 	return retval;
 }
 
+
+/* Render the graph to a png file */
+gboolean
+massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h) {
+	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+	cairo_t *cr = cairo_create(surface);
+
+	massifg_graph_render_to_cairo(graph, cr, w, h);
+	cairo_surface_write_to_png(surface, filename);
+}
