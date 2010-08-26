@@ -123,11 +123,14 @@ massifg_application_free(MassifgApplication *app) {
 
 /* Set the currently open file
  * Returns TRUE on success or FALSE on failure
+ * Passing NULL as filename is not valid
  * Internally this will copy the filename, so it is safe to use with temporary strings */
 gboolean
 massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **error) {
 	MassifgOutputData *new_data = NULL;
 	gchar *filename_copy = g_strdup(filename);
+
+	g_return_if_fail(filename != NULL);
 
 	/* Try to parse the file */
 	new_data = massifg_parse_file(filename_copy, error);

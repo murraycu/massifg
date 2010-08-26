@@ -489,11 +489,14 @@ MassifgOutputData
 }
 
 /* Utility function for parsing a file, see massifg_parse_iochannel() for details
- * Returns NULL on failure */
+ * Returns NULL on failure
+ * filename may not be NULL*/
 MassifgOutputData
 *massifg_parse_file(gchar *filename, GError **error) {
 	MassifgOutputData *output_data = NULL;
 	GIOChannel *io_channel = NULL;
+
+	g_return_if_fail(filename != NULL);
 
 	g_debug("Parsing file: %s", filename);
 

@@ -146,6 +146,11 @@ open_file_action(GtkAction *action, gpointer data) {
 	}
 	gtk_widget_hide(open_dialog);
 
+	if (!filename) {
+		/* User did not select a file */
+		return;
+	}
+
 	if (!massifg_application_set_file(app, filename, &error)) {
 		massifg_gtkui_errormsg(app, "Unable to parse file %s: %s",
 				filename, error->message);
