@@ -26,15 +26,40 @@
 #include "massifg_parser.h"
 #include "massifg_graph.h"
 
-/* Datastructure containing shared application state */
-typedef struct {
+
+#include <glib-object.h>
+
+/*
+ * Type macros.
+ */
+#define MASSIFG_TYPE_APPLICATION                  (massifg_application_get_type ())
+#define MASSIFG_APPLICATION(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), MASSIFG_TYPE_APPLICATION, MassifgApplication))
+#define MASSIFG_IS_APPLICATION(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MASSIFG_TYPE_APPLICATION))
+#define MASSIFG_APPLICATION_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), MASSIFG_TYPE_APPLICATION, MassifgApplicationClass))
+#define MASSIFG_IS_APPLICATION_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), MASSIFG_TYPE_APPLICATION))
+#define MASSIFG_APPLICATION_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), MASSIFG_TYPE_APPLICATION, MassifgApplicationClass))
+
+typedef struct _MassifgApplication        MassifgApplication;
+typedef struct _MassifgApplicationClass   MassifgApplicationClass;
+
+struct _MassifgApplication {
+	GObject parent_instance;
+
 	int *argc_ptr;
 	char ***argv_ptr;
 	gchar *filename;
 	MassifgOutputData *output_data;
 	MassifgGraph *graph;
 	GtkBuilder *gtk_builder;
-} MassifgApplication;
+};
+
+struct _MassifgApplicationClass {
+	GObjectClass parent_class;
+
+};
+
+/* used by MASSIFG_TYPE_APPLICATION */
+GType massifg_application_get_type (void);
 
 MassifgApplication *massifg_application_new(int *argc_ptr, char ***argv_ptr);
 void massifg_application_free(MassifgApplication *app);

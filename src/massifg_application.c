@@ -21,37 +21,81 @@
 
 #include <gtk/gtk.h>
 
+#include "massifg_application.h"
 #include "massifg_parser.h"
 #include "massifg_graph.h"
 #include "massifg_utils.h"
 #include "massifg_gtkui.h"
 
 
-/* Initialize application data structure */
+G_DEFINE_TYPE (MassifgApplication, massifg_application, G_TYPE_OBJECT);
+
+/* Unref object once and only once, to avoid trying to unref an invalid object */
+void
+gobject_safe_unref(GObject *object) {
+	if (object) {
+		g_object_unref(object);
+		object = NULL;
+	}
+}
+
+/* Get a new MassifgApplication instance */
 MassifgApplication *
 massifg_application_new(int *argc_ptr, char ***argv_ptr) {
-	MassifgApplication *app = g_new(MassifgApplication, 1);
+	g_type_init();
+	MassifgApplication *app = g_object_new(MASSIFG_TYPE_APPLICATION, NULL);
 
 	app->argc_ptr = argc_ptr;
 	app->argv_ptr = argv_ptr;
-
-	app->output_data = NULL;
-	app->graph = NULL;
-	app->filename = NULL;
-	app->gtk_builder = NULL;
-
 	return app;
+}
+
+/* Initialize application data structure */
+static void
+massifg_application_init(MassifgApplication *self) {
+	self->argc_ptr = NULL;
+	self->argv_ptr = NULL;
+
+	self->output_data = NULL;
+	self->graph = NULL;
+	self->filename = NULL;
+	self->gtk_builder = NULL;
+}
+
+
+/* Free simple types */
+static void
+massifg_application_finalize(GObject *gobject) {
+	;
+}
+
+/* Free all references to objects */
+static void
+massifg_application_dispose(GObject *gobject) {
+	MassifgApplication *app = MASSIFG_APPLICATION(gobject);
+
+	if (app->output_data != NULL) {
+		massifg_output_data_free(app->output_data);
+	}
+	gobject_safe_unref(G_OBJECT(app->gtk_builder));
+
+	/* FIXME: free graph, and possibly filename */
+}
+
+static void
+massifg_application_class_init(MassifgApplicationClass *klass)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+
+  gobject_class->dispose = massifg_application_dispose;
+  gobject_class->finalize = massifg_application_finalize;
+
 }
 
 /* Free a MassifgApplication */
 void
 massifg_application_free(MassifgApplication *app) {
-	if (app->output_data != NULL) {
-		massifg_output_data_free(app->output_data);
-	}
-	g_object_unref(G_OBJECT(app->gtk_builder));
-
-	/* FIXME: free graph, and possibly filename */
+	g_object_unref(G_OBJECT(app));
 }
 
 
