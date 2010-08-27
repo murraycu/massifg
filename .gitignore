@@ -7,8 +7,7 @@ autom4te.cache/*
 bin/*
 compile
 config.h*
-config.log
-config.status
+config.*
 configure
 depcomp
 install-sh
@@ -25,5 +24,7 @@ docs/gtk-doc.make
 .libs/
 libmassifg.la
 libtool
+ltmain.sh
 libtoolsrc/*.lo
 src/*.lo
+.testlogs*
