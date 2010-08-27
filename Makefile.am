@@ -1,19 +1,23 @@
-AUTOMAKE_OPTIONS = subdir-objects
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 AM_CPPFLAGS = $(DEPS_CFLAGS) $(MASSIFG_WARNING_FLAGS)
 
+DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
+
 # Building of main application
 bin_PROGRAMS = bin/massifg
-bin_massifg_SOURCES = src/massifg.c \
+bin_massifg_SOURCES = src/massifg.c
+bin_massifg_LDADD = $(DEPS_LIBS) libmassifg.la
+
+# Temporary library
+noinst_LTLIBRARIES = libmassifg.la
+libmassifg_la_SOURCES = \
 		src/massifg_application.c src/massifg_application.h \
 		src/massifg_parser.c src/massifg_parser.h \
                 src/massifg_graph.c src/massifg_graph.h \
 		src/massifg_utils.c src/massifg_utils.h \
 		src/massifg_gtkui.c src/massifg_gtkui.h
-
-bin_massifg_LDADD = $(DEPS_LIBS)
 
 # Distribution
 dist_noinst_SCRIPTS = autogen.sh
@@ -43,6 +47,39 @@ tests_application_SOURCES = tests/application.c
 tests_application_CPPFLAGS = $(DEPS_CFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
 tests_application_LDADD = $(DEPS_LIBS)
 
+# Documentation
+gtkdoc_builddir=$(top_builddir)/docs/reference/
+gtkdoc_distdir=$(top_distdir)/docs/reference/
+gtkdoc_srcdir=$(top_srcdir)/docs/reference/
+
+all-local: $(noinst_LTLIBRARIES)
+	cd $(gtkdoc_builddir) && $(MAKE) $(AM_MAKEFLAGS) all
+
+clean-local:
+	cd $(gtkdoc_builddir) && $(MAKE) $(AM_MAKEFLAGS) clean
+	rm -f src/*.stamp src/*.tmp
+
+distclean-local:
+	cd $(gtkdoc_builddir) && $(MAKE) $(AM_MAKEFLAGS) distclean
+
+docs: $(noinst_LTLIBRARIES)
+	cd $(gtkdoc_builddir) && $(MAKE) $(AM_MAKEFLAGS) docs
+
+install-data-local:
+	cd $(gtkdoc_builddir) && $(MAKE) $(AM_MAKEFLAGS) install-data
+
+uninstall-local:
+	cd $(gtkdoc_builddir) && $(MAKE) $(AM_MAKEFLAGS) uninstall
+
+dist-hook:
+	mkdir -p $(gtkdoc_distdir)
+	cp $(gtkdoc_srcdir)/Makefile.am $(gtkdoc_srcdir)/Makefile.in $(gtkdoc_distdir)
+	cd $(gtkdoc_builddir) && $(MAKE) $(AM_MAKEFLAGS) \
+	distdir="../../$(gtkdoc_distdir)" \
+	top_distdir="../../$(top_distdir)" \
+	dist-hook
+
+.PHONY: docs
 
 # ----------------------------------------------
 # Rules for hooking up the unit/functional tests

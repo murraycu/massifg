@@ -21,3 +21,9 @@ INSTALL
 COPYING
 *stamp-h1
 massifg-*
+docs/gtk-doc.make
+.libs/
+libmassifg.la
+libtool
+libtoolsrc/*.lo
+src/*.lo

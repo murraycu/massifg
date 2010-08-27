@@ -1,0 +1,6 @@
+html/*
+xml/*
+*.in
+massifg*
+*.stamp
+Makefile
