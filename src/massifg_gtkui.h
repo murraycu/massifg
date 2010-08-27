@@ -22,6 +22,8 @@
 #ifndef __MASSIFG_GTKUI_H__
 #define __MASSIFG_GTKUI_H__
 
+#define MASSIFG_GTKUI_MAIN_WINDOW "mainwindow"
+
 #include "massifg_application.h"
 
 gint massifg_gtkui_init(MassifgApplication *app);

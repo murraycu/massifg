@@ -17,7 +17,6 @@ AC_CONFIG_MACRO_DIR(m4)
 AC_DEFINE_UNQUOTED([INSTALL_PREFIX], ["$prefix"], [Define to the installation prefix])
 
 PKG_CHECK_MODULES([DEPS], [gtk+-2.0 >= 2.20 gmodule-export-2.0 libgoffice-0.8])
-PKG_CHECK_MODULES([PARSER_DEPS], [glib-2.0 >= 2.6.0])
 
 # For --enable-warnings*
 DK_ARG_ENABLE_WARNINGS([MASSIFG_WARNING_FLAGS],

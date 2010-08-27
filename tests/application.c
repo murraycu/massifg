@@ -2,14 +2,12 @@
 
 #include <glib.h>
 
-/* FIXME: import headers instead */
-#include "../src/massifg_application.c"
-#include "../src/massifg_gtkui.c"
-#include "../src/massifg_utils.c"
-#include "../src/massifg_graph.c"
-#include "../src/massifg_parser.c"
+#include <massifg_application.h>
+#include <massifg_gtkui.h>
 
 #include "common.h"
+
+
 
 
 int open_files_cb_repeat_count = 5;
@@ -20,7 +18,8 @@ int open_files_cb_repeat_count = 5;
 void
 massifg_application_destroy(MassifgApplication *app) {
 	GtkWidget *main_window = NULL;
-	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder,
+		 MASSIFG_GTKUI_MAIN_WINDOW));
 
 	gtk_widget_destroy(main_window);
 

@@ -1,13 +1,14 @@
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
-AM_CPPFLAGS = $(DEPS_CFLAGS) $(MASSIFG_WARNING_FLAGS)
+AM_CPPFLAGS = $(MASSIFG_WARNING_FLAGS)
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
 
 # Building of main application
 bin_PROGRAMS = bin/massifg
 bin_massifg_SOURCES = src/massifg.c
+bin_massifg_CPPFLAGS = $(DEPS_CFLAGS)
 bin_massifg_LDADD = $(DEPS_LIBS) libmassifg.la
 
 # Temporary library
@@ -18,6 +19,7 @@ libmassifg_la_SOURCES = \
                 src/massifg_graph.c src/massifg_graph.h \
 		src/massifg_utils.c src/massifg_utils.h \
 		src/massifg_gtkui.c src/massifg_gtkui.h
+libmassifg_la_CPPFLAGS = ${bin_massifg_CPPFLAGS}
 
 # Distribution
 dist_noinst_SCRIPTS = autogen.sh
@@ -36,16 +38,16 @@ dist_noinst_DATA = tests/massif-output-2snapshots.txt \
 check_PROGRAMS = tests/common tests/parser tests/application
 
 tests_common_SOURCES = tests/common.c tests/common.h
-tests_common_CPPFLAGS = $(DEPS_CFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
-tests_common_LDADD = $(DEPS_LIBS)
+tests_common_CPPFLAGS = $(bin_massifg_CPPFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
+tests_common_LDADD = $(bin_massifg_LDADD)
 
 tests_parser_SOURCES = tests/parser.c
-tests_parser_CPPFLAGS = $(PARSER_DEPS_CFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
-tests_parser_LDADD = ${PARSER_DEPS_LIBS}
+tests_parser_CPPFLAGS = $(bin_massifg_CPPFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
+tests_parser_LDADD = $(bin_massifg_LDADD)
 
 tests_application_SOURCES = tests/application.c
-tests_application_CPPFLAGS = $(DEPS_CFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
-tests_application_LDADD = $(DEPS_LIBS)
+tests_application_CPPFLAGS = $(bin_massifg_CPPFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
+tests_application_LDADD = $(bin_massifg_LDADD)
 
 # Documentation
 gtkdoc_builddir=$(top_builddir)/docs/reference/

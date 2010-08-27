@@ -1,9 +1,7 @@
 
 #include <glib.h>
 
-/* FIXME: import headers instead */
-#include "../src/massifg_utils.c"
-#include "../src/massifg_parser.c"
+#include <massifg_parser.h>
 
 #include "common.h"
 

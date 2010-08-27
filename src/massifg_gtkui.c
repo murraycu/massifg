@@ -29,7 +29,6 @@
 #include "massifg_graph.h"
 #include "massifg_utils.h"
 
-#define MAIN_WINDOW "mainwindow"
 #define MAIN_WINDOW_VBOX "mainvbox"
 #define OPEN_DIALOG "openfiledialog"
 #define SAVE_DIALOG "savefiledialog"
@@ -49,7 +48,7 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 	va_list argp;
 
 	/* Initialize */
-	main_window = GTK_WINDOW(gtk_builder_get_object(app->gtk_builder, MAIN_WINDOW));
+	main_window = GTK_WINDOW(gtk_builder_get_object(app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 	error_dialog = gtk_message_dialog_new(main_window,
                                  GTK_DIALOG_DESTROY_WITH_PARENT,
                                  GTK_MESSAGE_ERROR,
@@ -105,7 +104,7 @@ void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
 
 void mainwindow_update_title(MassifgApplication *app, gpointer user_data) {
 	GtkWindow *main_window = NULL;
-	main_window = GTK_WINDOW(gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+	main_window = GTK_WINDOW(gtk_builder_get_object (app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 
 	/* TODO: include application name */
 	if (app->filename) {
@@ -192,7 +191,7 @@ void
 print_action(GtkAction *action, gpointer data) {
 	GtkWidget *main_window = NULL;
 	MassifgApplication *app = (MassifgApplication *)data;
-	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 	GError *error = NULL;
 	GtkPrintOperationResult result;
 	GtkPrintOperation* print_op = NULL;
@@ -267,7 +266,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 
 	/* Initialize */
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
-	window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+	window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 
 	uifile_path = massifg_utils_get_resource_file("menu.ui");
 	action_group = gtk_action_group_new ("action group");
@@ -342,7 +341,7 @@ massifg_gtkui_init(MassifgApplication *app) {
 void
 massifg_gtkui_start(MassifgApplication *app) {
 	GtkWidget *main_window = NULL;
-	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW));
+	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 
 	gtk_widget_show_all(main_window);
 	gtk_main();
