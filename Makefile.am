@@ -15,8 +15,8 @@ bin_massifg_LDADD = $(DEPS_LIBS) libmassifg.la
 noinst_LTLIBRARIES = libmassifg.la
 libmassifg_la_SOURCES = \
 		src/massifg_application.c src/massifg_application.h \
-		src/massifg_parser.c src/massifg_parser.h \
-                src/massifg_graph.c src/massifg_graph.h \
+		src/massifg_parser.c src/massifg_parser.h src/massifg_parser_private.h\
+                src/massifg_graph.c src/massifg_graph.h src/massifg_graph_private.h\
 		src/massifg_utils.c src/massifg_utils.h \
 		src/massifg_gtkui.c src/massifg_gtkui.h
 libmassifg_la_CPPFLAGS = ${bin_massifg_CPPFLAGS}
@@ -32,7 +32,8 @@ dist_ui_DATA = data/massifg.glade \
                data/menu.ui
 
 dist_noinst_DATA = tests/massif-output-2snapshots.txt \
-		   tests/massif-output-glom.txt
+		tests/massif-output-glom.txt \
+		tests/massif-output-broken-800.txt
 
 # Unit/Functional tests setup
 check_PROGRAMS = tests/common tests/utils tests/parser tests/graph tests/application
