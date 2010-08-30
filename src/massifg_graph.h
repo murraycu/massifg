@@ -42,7 +42,10 @@
 
 /* Data structures */
 
-/* Holds the shared state used in the graph
+/**
+ * MassifgGraph:
+ *
+ * Holds the shared state used in the graph.
  * All fields in this structure should be considered private */
 typedef struct {
 	MassifgOutputData *data;

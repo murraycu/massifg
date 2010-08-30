@@ -22,6 +22,11 @@
 #ifndef __MASSIFG_GTKUI_H__
 #define __MASSIFG_GTKUI_H__
 
+/**
+ * MASSIFG_GTKUI_MAIN_WINDOW:
+ *
+ * String identifier for the main window in the gtkbuilder
+ */
 #define MASSIFG_GTKUI_MAIN_WINDOW "mainwindow"
 
 #include "massifg_application.h"

@@ -39,7 +39,18 @@
 #define MASSIFG_IS_APPLICATION_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), MASSIFG_TYPE_APPLICATION))
 #define MASSIFG_APPLICATION_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), MASSIFG_TYPE_APPLICATION, MassifgApplicationClass))
 
+/**
+ * MassifgApplication:
+ *
+ * Instance structure for a #MassifgApplication object
+ */
 typedef struct _MassifgApplication        MassifgApplication;
+
+/**
+ * MassifgApplicationClass
+ *
+ * Class structure for a #MassifgApplication object
+ */
 typedef struct _MassifgApplicationClass   MassifgApplicationClass;
 
 struct _MassifgApplication {
@@ -53,6 +64,11 @@ struct _MassifgApplication {
 	GtkBuilder *gtk_builder;
 };
 
+/**
+ * MassifgApplication::file-changed
+ *
+ * This signal is emitted when the current active file is changed
+ */
 struct _MassifgApplicationClass {
 	GObjectClass parent_class;
 

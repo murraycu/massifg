@@ -110,10 +110,10 @@ massifg_utils_get_resource_file(const gchar *filename) {
 
 /**
  * massifg_utils_log_ignore:
- * @log_domain:
- * @log_level:
- * @message:
- * @user_data:
+ * @log_domain: log_domain
+ * @log_level: log_level
+ * @message: message
+ * @user_data: user_data
  *
  * Log function for use with glib logging facilities that just ignores input.
  * Can be used to silence messages of a certain type, see massifg_utils_configure_debug_output()
@@ -126,8 +126,8 @@ void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 
 /**
  * massifg_utils_free_foreach:
- * @data:
- * @user_data:
+ * @data: data
+ * @user_data: user_data
  *
  * Utility function for freeing each element in a GList.
  *
@@ -190,6 +190,8 @@ massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
  * @str: String to search in. Must be NULL terminated.
  * @c: Character to count
  * @Returns: the number of occurrences of @c in @str
+ *
+ * Count the number of time a character appears in a string
  */
 int
 massifg_str_count_char(gchar *str, gchar c) {
