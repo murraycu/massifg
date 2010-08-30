@@ -19,6 +19,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * SECTION:massifg_graph
+ * @short_description: A graph visualizing massif output over time
+ * @title: MassifG Overview Graph
+ *
+ * Implements the graphing functionality of MassifG
+ *
+ * Currently two modes are supported by the graph, one "simple" and one "detailed".
+ * The "simple" mode shows an area plot over stack, heap and heap allocation overhead
+ * memory usage for each snapshot.
+ *  
+ * The "detailed" mode shows an area plot, which is broken down
+ * to show how different functions contribute to the heap memory usage
+ * for each snapshot. Currently only the first children of the heap tree is displayed
+ * in detailed mode
+ *
+ * Stability: Unstable
+ */
+
 #include <glib.h>
 
 #include <goffice/goffice.h>
@@ -40,13 +59,7 @@
 #include "massifg_utils.h"
 #include "massifg_parser.h"
 
-/* This file implements the graphing functionality of MassifG
- * Currently two modes are supported by the graph, one "simple" and one "detailed"
- * The "simple" mode shows an area plot over stack, heap and "heap extra" memory usage
- * for each snapshot
- * The "detailed" mode shows an area plot, which is broken down
- * to show how different functions contribute to the heap memory usage
- * for each snapshot. Currently only the first children of the heap tree is displayed */
+
 
 /* Data structures */
 /* Enum that represents the different possible simple data series */
@@ -276,16 +289,26 @@ massifg_graph_update(MassifgGraph *graph) {
 
 /* Public functions */
 
-/* Initialize.
- * Must be called before the first call to massifg_graph_new() */
+/**
+ * massifg_graph_init:
+ * @void
+ *
+ * Initialize what is neccesary to use the graph.
+ * Note: Must be called before the first call to massifg_graph_new() 
+ */
 void
 massifg_graph_init(void) {
 	libgoffice_init();
 	go_plugins_init(NULL, NULL, NULL, NULL, TRUE, GO_TYPE_PLUGIN_LOADER_MODULE);
 }
 
-/* Create a new graph.
- * Free with massifg_graph_free */
+/**
+ * massifg_graph_new:
+ * @void
+ * @Returns: A new #MassifgGraph. Free with massifg_graph_free()
+ *
+ * Create a new #MassifgGraph.
+ */
 MassifgGraph *
 massifg_graph_new(void) {
 	GogChart *chart = NULL;
@@ -310,14 +333,25 @@ massifg_graph_new(void) {
 	return graph;
 }
 
-/* Free a MassifgGraph */
+/**
+ * massifg_graph_free:
+ * @graph: A #MassifgGraph
+ *
+ * Free a #MassifgGraph 
+ */
 void massifg_graph_free(MassifgGraph *graph) {
 
 	/* FIXME: actually free the stuff used by graph */
 	g_free(graph);
 }
 
-/* Set the data to visualize */
+/**
+ * massifg_graph_set_data:
+ * @graph: A #MassifgGraph
+ * @data: #MassifgOutputData to visualize in graph
+ *
+ * Set the data to visualize
+ */
 void 
 massifg_graph_set_data(MassifgGraph *graph, MassifgOutputData *data) {
 	if (graph->data) {
@@ -328,17 +362,29 @@ massifg_graph_set_data(MassifgGraph *graph, MassifgOutputData *data) {
 }
 
 
-/* If the graph should be detailed or not */
+/**
+ * massifg_graph_set_show_details:
+ * @graph: A #MassifgGraph
+ * @show_details: %TRUE for detailed view, %FALSE for simple view
+ *
+ * Enable/disable detailed graph view
+ */
 void
-massifg_graph_set_show_details(MassifgGraph *graph, gboolean is_detailed) {
+massifg_graph_set_show_details(MassifgGraph *graph, gboolean show_details) {
 
-	graph->detailed = is_detailed;
+	graph->detailed = show_details;
 	if (graph->data) {
 		massifg_graph_update(graph);
 	}
 }
 
-/* Enable/disable display of legend */
+/**
+ * massifg_graph_set_show_legend:
+ * @graph: A #MassifgGraph
+ * @show_legend: %TRUE to enable, %FALSE to disable
+ *
+ * Enable/disable display of legend
+ */
 void
 massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend) {
 	GogObject *gog_object = NULL;
@@ -361,19 +407,41 @@ massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend) {
 
 }
 
-/* Get the widget which displays the graph */
-GtkWidget *massifg_graph_get_widget(MassifgGraph *graph) {
+/**
+ * massifg_graph_get_widget:
+ * @graph: A #MassifgGraph
+ * @Returns: The #GtkWidget that displays the graph
+ *
+ * Get the widget that displays the graph
+ */
+GtkWidget *
+massifg_graph_get_widget(MassifgGraph *graph) {
 	return graph->widget;
 }
 
-/* Get the data the graph represents */
-MassifgOutputData *massifg_graph_get_data(MassifgGraph *graph) {
+/**
+ * massifg_graph_get_data:
+ * @graph: A #MassifgGraph
+ * @Returns: the #MassifgOutputData the graph is visualizing
+ *
+ * Get the data the graph visualizes
+ */
+MassifgOutputData 
+*massifg_graph_get_data(MassifgGraph *graph) {
 	return graph->data;
 }
 
 
-/* Render graph to the cairo context cr,
- * with the specified width and height */
+/**
+ * massifg_graph_render_to_cairo:
+ * @graph: A #MassifgGraph to render
+ * @cr: #cairo_t context to render to
+ * @width: width of the rendered output
+ * @height: height of the rendered output
+ * @Returns: %TRUE on success, %FALSE on failure
+ *
+ * Render graph to a cairo context
+ */
 gboolean
 massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
 				gint width, gint height) {
@@ -388,7 +456,17 @@ massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
 }
 
 
-/* Render the graph to a png file */
+/** 
+ * massifg_graph_render_to_png:
+ * @graph: A #MassifgGraph to render
+ * @filename: Path to file to render to. Will be created if not existing,
+ * or overwritten if existing
+ * @w: width of the rendered output
+ * @h: height of the rendered output
+ * @Returns: %TRUE on success, %FALSE on failure
+ *
+ * Render the graph to a PNG file
+ */
 gboolean
 massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h) {
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);

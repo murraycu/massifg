@@ -19,6 +19,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * SECTION:massifg_parser
+ * @short_description: Functions for parsing massif output files
+ * @title: MassifG Parser
+ *
+ * These functions builds up a datastructure that represents
+ * the output from massif
+ *
+ * Stability: Unstable
+ */
+
 #include <stdlib.h> /* for atoi() / strtol() */
 #include <string.h>
 
@@ -434,8 +445,12 @@ MassifgOutputData *massifg_output_data_new() {
 
 /* Public functions */
 
-/* Free a MassifgOutputData structure, for instance as returned by
- * massifg_output_data_new() */
+/**
+ * massifg_output_data_free:
+ * @data: the MassifgOutputData to free
+ *
+ * Free a MassifgOutputData
+ */
 void massifg_output_data_free(MassifgOutputData *data) {
 
 	g_list_foreach(data->snapshots, massifg_utils_free_foreach, NULL);
@@ -448,10 +463,15 @@ void massifg_output_data_free(MassifgOutputData *data) {
 	g_free(data);
 }
 
-/* Parse the data in the given GIOChannel, returning a pointer to
- * the MassifgOutputData structure that represents this data
- * Returns NULL on failure
- * Use massifg_output_data_free() to free the return value */
+/**
+ * massifg_parse_iochannel:
+ * @io_channel: #GIOChannel to parse the data from
+ * @error: Location to store a #GError or %NULL
+ * @Returns: a #MassifgOutputData that represents this data, or %NULL on failure.
+ * Use massifg_output_data_free() to free
+ *
+ * Parse massif output data from a #GIOChannel
+ */
 MassifgOutputData
 *massifg_parse_iochannel(GIOChannel *io_channel, GError **error) {
 	MassifgOutputData *output_data = NULL;
@@ -490,9 +510,15 @@ MassifgOutputData
 
 }
 
-/* Utility function for parsing a file, see massifg_parse_iochannel() for details
- * Returns NULL on failure
- * filename may not be NULL*/
+/**
+ * massifg_parse_file:
+ * @filename: Path to file to parse. %NULL is invalid
+ * @error: Location to store a #GError or %NULL
+ * @Returns: a #MassifgOutputData that represents this data, or %NULL on failure.
+ *
+ * Parse massif output data from file.
+ * See also massifg_parse_iochannel()
+ */
 MassifgOutputData
 *massifg_parse_file(gchar *filename, GError **error) {
 	MassifgOutputData *output_data = NULL;

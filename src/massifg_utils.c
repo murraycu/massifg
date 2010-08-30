@@ -19,8 +19,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* This file contains utility functions used in MassifG that does not belong 
- * in a single component */
+/**
+ * SECTION:massifg_utils
+ * @short_description: Useful utility functions
+ * @title: MassifG Utility functions
+ *
+ * More or less generic functions that do not belong in one single component
+ */
 
 #include <string.h>
 
@@ -57,12 +62,18 @@ get_system_file(const gchar *progam_name, const gchar *filename)
 
 /* Public functions */
 
-/* Find a resource file
- * Returns the path to the file, or NULL on failing to find a matching file 
- * Caller is responsible for freeing the results with g_free
- * First checks ./data/ in case the program is running from the build dir
- * Second, INSTALL_PREFIX/share in case of running from a non-system prefix
+/**
+ * massifg_utils_get_resource_file:
+ * @filename: file to search for
+ * @Returns: the path to the file as a newly allocated string (free with g_free()), or NULL on failure
+ *
+ * Find a resource file
+ *
+ * First checks ./data/ in case the program is running from the build dir.
+ * Secondly, INSTALL_PREFIX/share in case of running from a non-system prefix.
  * Then, checks the system folders as given by g_get_system_data_dirs()
+ *
+ * Note: Not suitable for use in other applications, hardcodes the application name to "massifg"
  */
 gchar *
 massifg_utils_get_resource_file(const gchar *filename) {
@@ -97,22 +108,43 @@ massifg_utils_get_resource_file(const gchar *filename) {
 	return pathname;
 }
 
-/* Log function for use with glib logging facilities that just ignores input */
+/**
+ * massifg_utils_log_ignore:
+ * @log_domain:
+ * @log_level:
+ * @message:
+ * @user_data:
+ *
+ * Log function for use with glib logging facilities that just ignores input.
+ * Can be used to silence messages of a certain type, see massifg_utils_configure_debug_output()
+ */
 void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 			const gchar *message,
 			gpointer user_data) {
 	;
 }
 
-/* Function for freeing each element in a GList.
- * Elements freed using this function should have been allocated using g_alloc and derivatives
- * Meant to be used as a parameter to a g_(s)list_foreach call */
+/**
+ * massifg_utils_free_foreach:
+ * @data:
+ * @user_data:
+ *
+ * Utility function for freeing each element in a GList.
+ *
+ * Elements freed using this function should have been allocated using g_alloc and derivatives.
+ * Meant to be used as a parameter to a g_(s)list_foreach call
+ */
 void massifg_utils_free_foreach(gpointer data, gpointer user_data) {
 	g_free(data);
 }
 
-/* Check for the environment variable MASSIFG_DEBUG,
- * if it is not "enable" or "all", ignore debug output */
+/**
+ * massifg_utils_configure_debug_output:
+ * @void
+ *
+ * Checks for the environment variable MASSIFG_DEBUG,
+ * if it is not "enable" or "all", debug output will be ignored
+ */
 void
 massifg_utils_configure_debug_output(void) {
 	/* TODO: Allow enabling debug output for just the UI, grapher or parser */
@@ -127,10 +159,17 @@ massifg_utils_configure_debug_output(void) {
 }
 
 
-/* Return a new string that is a copy of src between indexes
- * start_idx and stop_idx. src has to be NULL terminated and stop_idx smaller than
- * the length of src
- * Free with g_free () */
+/** 
+ * massifg_str_copy_region:
+ * @src: String to copy from. Must be NULL terminated
+ * @start_idx: Index in @src to start copying from.
+ * @stop_idx: Index in @src to stop copying from. Must be smaller than the length of src
+ * @Returns: a newly allocated string. Free with g_free()
+ *
+ * Copy a region of a string
+ *
+ * Indexes start at 0
+ */
 gchar *
 massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
 	guint i, len;
@@ -146,7 +185,12 @@ massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
 	return str;
 }
 
-/* Count the number of occurrences of c in str */
+/**
+ * massifg_str_count_char:
+ * @str: String to search in. Must be NULL terminated.
+ * @c: Character to count
+ * @Returns: the number of occurrences of @c in @str
+ */
 int
 massifg_str_count_char(gchar *str, gchar c) {
 	int num_occurrences = 0;
@@ -159,9 +203,17 @@ massifg_str_count_char(gchar *str, gchar c) {
 	return num_occurrences;
 }
 
-/* Return a new string that is a copy of str, but without the region
- * defined by cut_start and cut_end 
- * Free with g_free () */
+/**
+ * massifg_str_cut_region:
+ * @src: String to copy from
+ * @cut_start: Index in @src to start excluding
+ * @cut_end: Index in @src to stop excluding
+ * @Returns: a newly allocated string. Free with g_free()
+ *
+ * Copy string, excluding a certain region
+ *
+ * Indexes start at 0
+ */
 gchar *
 massifg_str_cut_region(gchar *src, int cut_start, int cut_end) {
 	gchar *new_str = NULL;

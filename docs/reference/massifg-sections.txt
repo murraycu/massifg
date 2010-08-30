@@ -32,6 +32,9 @@ massifg_utils_get_resource_file
 massifg_utils_log_ignore
 massifg_utils_free_foreach
 massifg_utils_configure_debug_output
+massifg_str_copy_region
+massifg_str_count_char
+massifg_str_cut_region
 </SECTION>
 
 <SECTION>

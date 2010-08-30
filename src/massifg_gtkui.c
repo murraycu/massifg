@@ -19,7 +19,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* */
+/**
+ * SECTION:massifg_gtkui
+ * @short_description: Functions for creating and starting the GTK UI
+ * @title: MassifG GTK UI
+ *
+ * Note: These functions are meant to be used internally in MassifG
+ */
+
 
 #include <gtk/gtk.h>
 #include <stdarg.h>
@@ -37,38 +44,6 @@
 
 
 /* Private functions */
-/* Present a dialog to the user with the message given by msg_format and the following arguments
- * These arguments follow the same conventions as printf() and friends.
- * Note that the message can be formatted with Pango markup language, if wanted */
-void
-massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
-	GtkMessageDialog *error_dialog = NULL;
-	GString *markup_string = NULL;
-	GtkWindow *main_window = NULL;
-	va_list argp;
-
-	/* Initialize */
-	main_window = GTK_WINDOW(gtk_builder_get_object(app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
-	error_dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(main_window,
-                                 GTK_DIALOG_DESTROY_WITH_PARENT,
-                                 GTK_MESSAGE_ERROR,
-                                 GTK_BUTTONS_CLOSE,
-                                 NULL));
-	markup_string = g_string_new("");
-
-	/* Prepare markup string, */
-	va_start(argp, msg_format);
-	g_string_vprintf(markup_string, msg_format, argp);
-	va_end(argp);
-
-	/* Present the dialog to the user */
-	gtk_message_dialog_set_markup(error_dialog, markup_string->str);
-	gtk_dialog_run(GTK_DIALOG(error_dialog));
-
-	g_string_free(markup_string, TRUE);
-	gtk_widget_destroy(GTK_WIDGET(error_dialog));
-}
-
 static void
 print_op_begin_print(GtkPrintOperation *operation,
 		GtkPrintContext *context, gpointer user_data) {
@@ -300,8 +275,14 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 }
 
 /* Public functions */
-/* Initialize the whole UI. After calling this, the UI can be started by calling
- * massifg_gtkui_start () */
+
+/**
+ * massifg_gtkui_init:
+ * @app: A #MassifgApplication
+ *
+ * Initialize the whole UI.
+ * After calling this, the UI can be started by calling massifg_gtkui_start()
+ */
 gint
 massifg_gtkui_init(MassifgApplication *app) {
 	const gchar *gladefile_path = NULL;
@@ -337,7 +318,12 @@ massifg_gtkui_init(MassifgApplication *app) {
 	return massifg_gtkui_init_menus(app);
 }
 
-/* Present window, and start the gtk mainloop */
+/** 
+ * massifg_gtkui_start:
+ * @app: A #MassifgApplication
+ *
+ * Present the UI, and start the gtk mainloop.
+ */
 void
 massifg_gtkui_start(MassifgApplication *app) {
 	GtkWidget *main_window = NULL;
@@ -346,3 +332,42 @@ massifg_gtkui_start(MassifgApplication *app) {
 	gtk_widget_show_all(main_window);
 	gtk_main();
 }
+
+/** 
+ * massifg_gtkui_errormsg:
+ * @app: A #MassifgApplication
+ * @msg_format: printf() like format string
+ * @...: printf() like argument list
+ *
+ * Present a error message to the user.
+ * The message can be formatted with Pango markup language.
+ */
+void
+massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
+	GtkMessageDialog *error_dialog = NULL;
+	GString *markup_string = NULL;
+	GtkWindow *main_window = NULL;
+	va_list argp;
+
+	/* Initialize */
+	main_window = GTK_WINDOW(gtk_builder_get_object(app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
+	error_dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(main_window,
+                                 GTK_DIALOG_DESTROY_WITH_PARENT,
+                                 GTK_MESSAGE_ERROR,
+                                 GTK_BUTTONS_CLOSE,
+                                 NULL));
+	markup_string = g_string_new("");
+
+	/* Prepare markup string, */
+	va_start(argp, msg_format);
+	g_string_vprintf(markup_string, msg_format, argp);
+	va_end(argp);
+
+	/* Present the dialog to the user */
+	gtk_message_dialog_set_markup(error_dialog, markup_string->str);
+	gtk_dialog_run(GTK_DIALOG(error_dialog));
+
+	g_string_free(markup_string, TRUE);
+	gtk_widget_destroy(GTK_WIDGET(error_dialog));
+}
+

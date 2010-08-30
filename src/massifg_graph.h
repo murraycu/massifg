@@ -62,7 +62,7 @@ MassifgGraph *massifg_graph_new(void);
 void massifg_graph_free(MassifgGraph *graph);
 
 void massifg_graph_set_data(MassifgGraph *graph, MassifgOutputData *data);
-void massifg_graph_set_show_details(MassifgGraph *graph, gboolean is_detailed);
+void massifg_graph_set_show_details(MassifgGraph *graph, gboolean show_details);
 void massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend);
 
 GtkWidget *massifg_graph_get_widget(MassifgGraph *graph);
