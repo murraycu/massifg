@@ -108,13 +108,22 @@ data_from_snapshots(GList *snapshots, MassifgDataSeries series) {
 	return go_data_vector_val_new(array, length, NULL);
 }
 
+/* Utility function to add a serie to the plot */
+void
+massifg_graph_add_series(MassifgGraph *graph, GOData *name, GOData *x, GOData *y) {
+	GogSeries *gog_series = gog_plot_new_series(graph->plot);
+
+	gog_series_set_name(gog_series, (GODataScalar *)name, NULL);
+	gog_series_set_dim(gog_series, 0, x, NULL);
+	gog_series_set_dim(gog_series, 1, y, NULL);
+}
+
 /* Adds all the simple data series to graph
  * The graph should be cleared for data series before this is called */
 void
 massifg_graph_update_simple(MassifgGraph *graph) {
 	MassifgDataSeries ds;
 	for (ds=MASSIFG_DATA_SERIES_HEAP; ds<=MASSIFG_DATA_SERIES_STACKS; ds++) {
-		GogSeries *gog_series = gog_plot_new_series(graph->plot);
 		GOData *series_data = data_from_snapshots(graph->data->snapshots, ds);
 		GOData *series_name = go_data_scalar_str_new(MASSIFG_DATA_SERIES_DESC[ds], FALSE);
 
@@ -122,9 +131,7 @@ massifg_graph_update_simple(MassifgGraph *graph) {
 		 * The same object cannot be added to all of them because that screws up clearing the series (same object is freed several times) */
 		GOData *time_data = data_from_snapshots(graph->data->snapshots,	MASSIFG_DATA_SERIES_TIME);
 
-		gog_series_set_name(gog_series, (GODataScalar *)series_name, &graph->error);
-		gog_series_set_dim(gog_series, 0, time_data, &graph->error);
-		gog_series_set_dim(gog_series, 1, series_data, &graph->error);
+		massifg_graph_add_series(graph, series_name, time_data, series_data);
 	}
 }
 
@@ -139,6 +146,7 @@ add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 	gchar *label = (gchar *)key;
 	AddDetailsSerieArg *arg = (AddDetailsSerieArg *)user_data;
 	MassifgGraph *graph = arg->graph;
+	GOData *series_data, *time_data, *series_name;
 
 	/* Get the actual data series */
 	GList *l = arg->snapshot_details;
@@ -154,15 +162,12 @@ add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 		l = l->next;
 		i++;
 	}
-	GOData *series_data = go_data_vector_val_new(array, length, NULL);
-	GOData *time_data = data_from_snapshots(graph->data->snapshots,	MASSIFG_DATA_SERIES_TIME);
+	series_data = go_data_vector_val_new(array, length, NULL);
+	time_data = data_from_snapshots(graph->data->snapshots,	MASSIFG_DATA_SERIES_TIME);
+	series_name = go_data_scalar_str_new(label, FALSE);
 
 	/* Add it to the graph */
-	GogSeries *gog_series = gog_plot_new_series(graph->plot);
-	GOData *series_name = go_data_scalar_str_new(label, FALSE);
-	gog_series_set_name(gog_series, (GODataScalar *)series_name, &graph->error);
-	gog_series_set_dim(gog_series, 0, time_data, &graph->error);
-	gog_series_set_dim(gog_series, 1, series_data, &graph->error);
+	massifg_graph_add_series(graph, series_name, time_data, series_data);
 }
 
 
@@ -191,6 +196,7 @@ add_details_foreach(GNode *node, gpointer user_data) {
  * The graph should have been cleared for data series before this is called */
 void
 massifg_graph_update_detailed(MassifgGraph *graph) {
+	AddDetailsSerieArg serie_arg;
 	GHashTable *function_labels = g_hash_table_new(g_str_hash, g_str_equal);
 	/* List of GHashTables with "function_label": mem_B, needs to be freed */
 	GList *snapshot_details = NULL;
@@ -217,11 +223,10 @@ massifg_graph_update_detailed(MassifgGraph *graph) {
 	}
 
 	/* For each function, create and add a data serie to graph */
-	AddDetailsSerieArg arg;
-	arg.graph = graph;
-	arg.snapshot_details = snapshot_details;
+	serie_arg.graph = graph;
+	serie_arg.snapshot_details = snapshot_details;
 
-	g_hash_table_foreach(function_labels, add_details_serie_foreach, (gpointer)&arg);
+	g_hash_table_foreach(function_labels, add_details_serie_foreach, (gpointer)&serie_arg);
 
 	/* FIXME: free snapshot_details */
 	g_hash_table_destroy(function_labels);
@@ -360,6 +365,9 @@ massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h) 
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
 	cairo_t *cr = cairo_create(surface);
 
-	massifg_graph_render_to_cairo(graph, cr, w, h);
+	if (massifg_graph_render_to_cairo(graph, cr, w, h)) {
+		return FALSE;
+	}
 	cairo_surface_write_to_png(surface, filename);
+	return TRUE;
 }

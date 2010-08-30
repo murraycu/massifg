@@ -168,11 +168,13 @@ massifg_parse_snapshot_time(MassifgParser *parser, const gchar *line) {
 /* Parses the snapshot element "mem_stacks_B", and maintains a maximum value of the sum of memory */
 void
 massifg_parse_snapshot_mem_stacks(MassifgParser *parser, const gchar *line) {
+	gint total_mem_allocation = 0;
+
 	massifg_parse_snapshot_element(parser, line, "mem_stacks_B=",
 			&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT_HEAP_TREE);
 
 	/* Check if this snapshots values for memory allocation is larger than the ones before it */
-	gint total_mem_allocation = parser->current_snapshot->mem_heap_B + 
+	total_mem_allocation = parser->current_snapshot->mem_heap_B + 
 			parser->current_snapshot->mem_heap_extra_B +
 			parser->current_snapshot->mem_stacks_B;
 	if (total_mem_allocation > parser->output_data->max_mem_allocation) {
@@ -447,6 +449,7 @@ void massifg_output_data_free(MassifgOutputData *data) {
  * Use massifg_output_data_free() to free the return value */
 MassifgOutputData
 *massifg_parse_iochannel(GIOChannel *io_channel, GError **error) {
+	MassifgParser parser_onstack;
 	MassifgParser *parser = NULL;
 	MassifgOutputData *output_data = NULL;
 
@@ -456,7 +459,6 @@ MassifgOutputData
 	/* Initialize */
 	output_data = massifg_output_data_new();
 
-	MassifgParser parser_onstack;
 	parser = &parser_onstack;
 	parser->current_state = STATE_DESC;
 	parser->output_data = output_data;
@@ -496,7 +498,7 @@ MassifgOutputData
 	MassifgOutputData *output_data = NULL;
 	GIOChannel *io_channel = NULL;
 
-	g_return_if_fail(filename != NULL);
+	g_return_val_if_fail(filename != NULL, NULL);
 
 	g_debug("Parsing file: %s", filename);
 

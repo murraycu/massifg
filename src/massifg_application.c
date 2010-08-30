@@ -28,7 +28,7 @@
 #include "massifg_gtkui.h"
 
 
-G_DEFINE_TYPE (MassifgApplication, massifg_application, G_TYPE_OBJECT);
+G_DEFINE_TYPE (MassifgApplication, massifg_application, G_TYPE_OBJECT)
 
 enum
 {
@@ -51,8 +51,9 @@ gobject_safe_unref(GObject *object) {
 /* Get a new MassifgApplication instance */
 MassifgApplication *
 massifg_application_new(int *argc_ptr, char ***argv_ptr) {
+	MassifgApplication *app;
 	g_type_init();
-	MassifgApplication *app = g_object_new(MASSIFG_TYPE_APPLICATION, NULL);
+	app = g_object_new(MASSIFG_TYPE_APPLICATION, NULL);
 
 	app->argc_ptr = argc_ptr;
 	app->argv_ptr = argv_ptr;
@@ -130,7 +131,7 @@ massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **
 	MassifgOutputData *new_data = NULL;
 	gchar *filename_copy = g_strdup(filename);
 
-	g_return_if_fail(filename != NULL);
+	g_return_val_if_fail(filename != NULL, FALSE);
 
 	/* Try to parse the file */
 	new_data = massifg_parse_file(filename_copy, error);

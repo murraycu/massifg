@@ -20,8 +20,8 @@ PKG_CHECK_MODULES([DEPS], [gtk+-2.0 >= 2.20 gmodule-export-2.0 libgoffice-0.8])
 
 # For --enable-warnings*
 DK_ARG_ENABLE_WARNINGS([MASSIFG_WARNING_FLAGS],
-                       [-Wall -w1],
-                       [-pedantic -Wall -Wextra -w1],
+                       [-Wall -Wno-unused-parameter -w1],
+                       [-pedantic -Wall -Wextra -Wno-unused-parameter -w1],
                        [GTK GDK GDK_PIXBUF G])
 
 AC_OUTPUT

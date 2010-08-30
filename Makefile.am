@@ -8,7 +8,7 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
 # Building of main application
 bin_PROGRAMS = bin/massifg
 bin_massifg_SOURCES = src/massifg.c
-bin_massifg_CPPFLAGS = $(DEPS_CFLAGS)
+bin_massifg_CPPFLAGS = $(DEPS_CFLAGS) $(MASSIFG_WARNING_FLAGS)
 bin_massifg_LDADD = $(DEPS_LIBS) libmassifg.la
 
 # Temporary library

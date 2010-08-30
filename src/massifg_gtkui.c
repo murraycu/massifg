@@ -83,7 +83,6 @@ print_op_draw_page(GtkPrintOperation *operation,
 	MassifgApplication *app = (MassifgApplication *)data;
 	cairo_t *cr;
 	gdouble width, height;
-	MassifgGraph *graph;
 
 	cr = gtk_print_context_get_cairo_context (context);
 	width = gtk_print_context_get_width (context);
@@ -191,10 +190,11 @@ void
 print_action(GtkAction *action, gpointer data) {
 	GtkWidget *main_window = NULL;
 	MassifgApplication *app = (MassifgApplication *)data;
-	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 	GError *error = NULL;
 	GtkPrintOperationResult result;
 	GtkPrintOperation* print_op = NULL;
+
+	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 
 	print_op = gtk_print_operation_new();
 	g_signal_connect(print_op, "begin-print",
