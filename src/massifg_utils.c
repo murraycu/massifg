@@ -22,6 +22,8 @@
 /* This file contains utility functions used in MassifG that does not belong 
  * in a single component */
 
+#include <string.h>
+
 #include <glib.h>
 #include "config.h"
 
@@ -148,7 +150,7 @@ massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
 int
 massifg_str_count_char(gchar *str, gchar c) {
 	int num_occurrences = 0;
-	int i;
+	guint i;
 	for (i=0; i<strlen(str); i++) {
 		if (str[i] == c) {
 			num_occurrences++;

@@ -49,11 +49,11 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 
 	/* Initialize */
 	main_window = GTK_WINDOW(gtk_builder_get_object(app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
-	error_dialog = gtk_message_dialog_new(main_window,
+	error_dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(main_window,
                                  GTK_DIALOG_DESTROY_WITH_PARENT,
                                  GTK_MESSAGE_ERROR,
                                  GTK_BUTTONS_CLOSE,
-                                 NULL);
+                                 NULL));
 	markup_string = g_string_new("");
 
 	/* Prepare markup string, */
