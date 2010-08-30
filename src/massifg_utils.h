@@ -29,5 +29,9 @@ void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
 void massifg_utils_free_foreach(gpointer data, gpointer user_data);
 void massifg_utils_configure_debug_output(void);
 
+gchar *massifg_str_cut_region(gchar *str, int cut_start, int cut_end);
+int massifg_str_count_char(gchar *str, gchar c);
+gchar *massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx);
+
 #endif /* __MASSIFG_UTILS_H__ */
 

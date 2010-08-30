@@ -36,6 +36,7 @@
 
 #include "massifg_parser.h"
 #include "massifg_graph.h"
+#include "massifg_utils.h"
 
 /* This file implements the graphing functionality of MassifG
  * Currently two modes are supported by the graph, one "simple" and one "detailed"
@@ -135,6 +136,32 @@ massifg_graph_update_simple(MassifgGraph *graph) {
 	}
 }
 
+/* 
+ * Currently shortens by stripping the function arguments of overloaded C++
+ * functions.
+ * Example: "std::string::_Rep::_S_create(unsigned int, unsigned int, std::allocator<char> const&) (in /usr/lib/libstdc++.so.6.0.13)" -> "std::string::_Rep::_S_create (in /usr/lib/libstdc++.so.6.0.13)"
+ * Result should be freed with g_free */
+gchar *
+get_short_function_label(gchar *label) {
+	gchar *short_label = NULL;
+	int args_start_idx;
+	int args_end_idx;
+
+	if (massifg_str_count_char(label, '(') == 1) {
+		/* No need to shorten */
+		short_label = g_strdup(label);
+		return short_label;
+	}
+
+	args_start_idx = (int)(g_strstr_len(label, -1, "(")-label);
+	args_end_idx = (int)(g_strstr_len(label, -1, ")")-label);
+
+
+	short_label = massifg_str_cut_region(label, args_start_idx, args_end_idx);
+
+	return short_label;
+}
+
 typedef struct {
 	MassifgGraph *graph;
 	GList *snapshot_details;
@@ -164,7 +191,7 @@ add_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 	}
 	series_data = go_data_vector_val_new(array, length, NULL);
 	time_data = data_from_snapshots(graph->data->snapshots,	MASSIFG_DATA_SERIES_TIME);
-	series_name = go_data_scalar_str_new(label, FALSE);
+	series_name = go_data_scalar_str_new(get_short_function_label(label), TRUE);
 
 	/* Add it to the graph */
 	massifg_graph_add_series(graph, series_name, time_data, series_data);

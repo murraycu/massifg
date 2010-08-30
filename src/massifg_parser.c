@@ -232,21 +232,6 @@ massifg_str_count_leading_spaces(const gchar *str) {
 	return num_spaces;
 }
 
-/* Return a new string that is a copy of src between indexes
- * start_idx and stop_idx
- * Free with g_free () */
-gchar *
-massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
-	int i;
-	gchar *str;
-
-	str = g_new0(gchar, stop_idx-start_idx+1); /* 1 for the \0 byte*/
-	for (i=0; i<stop_idx-1; i++) {
-		str[i] = src[i+start_idx];
-	}
-	return str;
-}
-
 /* Set simple node attributes.
  * Simple attributes are those that can be found just by parsing the line,
  * without considering context */

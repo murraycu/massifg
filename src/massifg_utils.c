@@ -53,6 +53,8 @@ get_system_file(const gchar *progam_name, const gchar *filename)
    return pathname;
 }
 
+/* Public functions */
+
 /* Find a resource file
  * Returns the path to the file, or NULL on failing to find a matching file 
  * Caller is responsible for freeing the results with g_free
@@ -122,3 +124,52 @@ massifg_utils_configure_debug_output(void) {
 	}
 }
 
+
+/* Return a new string that is a copy of src between indexes
+ * start_idx and stop_idx. src has to be NULL terminated and stop_idx smaller than
+ * the length of src
+ * Free with g_free () */
+gchar *
+massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
+	guint i, len;
+	gchar *str;
+
+	len = stop_idx-start_idx;
+	g_return_val_if_fail(len <= strlen(src), NULL);
+
+	str = g_new0(gchar, len+1); /* 1 for the \0 byte*/
+	for (i=0; i<len; i++) {
+		str[i] = src[i+start_idx];
+	}
+	return str;
+}
+
+/* Count the number of occurrences of c in str */
+int
+massifg_str_count_char(gchar *str, gchar c) {
+	int num_occurrences = 0;
+	int i;
+	for (i=0; i<strlen(str); i++) {
+		if (str[i] == c) {
+			num_occurrences++;
+		}
+	}
+	return num_occurrences;
+}
+
+/* Return a new string that is a copy of str, but without the region
+ * defined by cut_start and cut_end 
+ * Free with g_free () */
+gchar *
+massifg_str_cut_region(gchar *src, int cut_start, int cut_end) {
+	gchar *new_str = NULL;
+	gchar *start_str = g_strndup(src, cut_start);
+	gchar *end_str = massifg_str_copy_region(src, cut_end+1, strlen(src));
+
+	new_str = g_strconcat(start_str, end_str, NULL);
+
+	g_free(start_str);
+	g_free(end_str);
+
+	return new_str;
+}
