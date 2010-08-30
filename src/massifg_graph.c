@@ -34,9 +34,11 @@
 #include <goffice/utils/go-styled-object.h>
 #include <goffice/gtk/go-graph-widget.h>
 
-#include "massifg_parser.h"
 #include "massifg_graph.h"
+#include "massifg_graph_private.h"
+
 #include "massifg_utils.h"
+#include "massifg_parser.h"
 
 /* This file implements the graphing functionality of MassifG
  * Currently two modes are supported by the graph, one "simple" and one "detailed"

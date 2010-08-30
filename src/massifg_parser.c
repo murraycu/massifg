@@ -25,6 +25,7 @@
 #include <glib.h>
 
 #include "massifg_parser.h"
+#include "massifg_parser_private.h"
 #include "massifg_utils.h"
 
 /* Private datastructures */

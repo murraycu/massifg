@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <glib.h>
 
 #include <massifg_utils.h>

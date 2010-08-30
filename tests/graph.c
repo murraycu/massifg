@@ -2,6 +2,7 @@
 #include <glib.h>
 
 #include <massifg_graph.h>
+#include <massifg_graph_private.h>
 #include <massifg_utils.h>
 
 void

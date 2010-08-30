@@ -2,6 +2,8 @@
 #include <glib.h>
 
 #include <massifg_parser.h>
+#include <massifg_parser_private.h>
+#include <massifg_utils.h>
 
 #include "common.h"
 
@@ -234,8 +236,8 @@ main (int argc, char **argv) {
 	g_test_add_func("/parser/bogus-data", parser_return_null_on_bogus_data);
 	g_test_add_func("/parser/max-values", parser_maxvalues);
 
-	g_test_add_func("/parser/heaptree/attributes/1", parser_heaptree_attributes_1);
-	g_test_add_func("/parser/heaptree/attributes/2", parser_heaptree_attributes_2);
+	g_test_add_func("/parser/internal/heaptree-attributes-1", parser_heaptree_attributes_1);
+	g_test_add_func("/parser/internal/heaptree-attributes-2", parser_heaptree_attributes_2);
 
 	massifg_utils_configure_debug_output();
 	return g_test_run();

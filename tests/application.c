@@ -4,6 +4,7 @@
 
 #include <massifg_application.h>
 #include <massifg_gtkui.h>
+#include <massifg_utils.h>
 
 #include "common.h"
 
@@ -86,11 +87,12 @@ disable_details_cb(gpointer data) {
 /* Tests */
 void
 application_start_quit(void) {
+	MassifgApplication *app;
 	int argc = 1;
 	char **argv = g_new(char *, argc);
 	argv[0] = "bin/massifg";
 
-	MassifgApplication *app = massifg_application_new(&argc, &argv);
+	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, quit_gtkmain_cb, NULL);
 
 	massifg_application_run(app);
@@ -103,12 +105,13 @@ application_start_quit(void) {
 
 void
 application_start_open_file(void) {
+	MassifgApplication *app;
 	int argc = 2;
 	char **argv = g_new(char *, argc);
 	argv[0] = "bin/massifg";
 	argv[1] = get_test_file(TEST_INPUT_LONG);
 
-	MassifgApplication *app = massifg_application_new(&argc, &argv);
+	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, quit_gtkmain_cb, NULL);
 
 	massifg_application_run(app);
@@ -122,11 +125,12 @@ application_start_open_file(void) {
 
 void
 application_open_many_files(void) {
+	MassifgApplication *app;
 	int argc = 1;
 	char **argv = g_new(char *, argc);
 	argv[0] = "bin/massifg";
 
-	MassifgApplication *app = massifg_application_new(&argc, &argv);
+	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, open_files_cb, app);
 	g_timeout_add_seconds(open_files_cb_repeat_count+2, quit_gtkmain_cb, NULL);
 
@@ -139,12 +143,13 @@ application_open_many_files(void) {
 
 void
 application_toogle_detailed_view(void) {
+	MassifgApplication *app;
 	int argc = 2;
 	char **argv = g_new(char *, argc);
 	argv[0] = "bin/massifg";
 	argv[1] = get_test_file(TEST_INPUT_LONG);
 
-	MassifgApplication *app = massifg_application_new(&argc, &argv);
+	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, enable_details_cb, app);
 	g_timeout_add_seconds(2, disable_details_cb, app);
 	g_timeout_add_seconds(3, quit_gtkmain_cb, NULL);
@@ -160,12 +165,13 @@ application_toogle_detailed_view(void) {
 
 void
 application_toogle_legend(void) {
+	MassifgApplication *app;
 	int argc = 2;
 	char **argv = g_new(char *, argc);
 	argv[0] = "bin/massifg";
 	argv[1] = get_test_file(TEST_INPUT_LONG);
 
-	MassifgApplication *app = massifg_application_new(&argc, &argv);
+	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, disable_legend_cb, app);
 	g_timeout_add_seconds(2, enable_legend_cb, app);
 	g_timeout_add_seconds(3, quit_gtkmain_cb, NULL);
