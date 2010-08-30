@@ -58,8 +58,28 @@ struct _MassifgParser {
 };
 typedef struct _MassifgParser MassifgParser;
 
-
 /* Private functions */
+
+MassifgParser *
+massifg_parser_new(void) {
+	MassifgParser *parser = g_new(MassifgParser, 1);
+
+	parser->current_state = STATE_DESC;
+	parser->current_line_number = 0;
+	parser->current_snapshot = NULL;
+	parser->output_data = NULL;
+	parser->ht_current_parent = NULL;
+
+	return parser;
+}
+
+void
+massifg_parser_free(MassifgParser *parser) {
+	/* Currently all pointers point to data which is owned by someone else
+	 * so we only free the MassifgParser structure */
+	g_free(parser);
+
+}
 
 /* Turn the line into tokens, splitting on delim
  * Caller is responsible for freeing return value with g_strfreev () */
@@ -442,28 +462,21 @@ void massifg_output_data_free(MassifgOutputData *data) {
 	g_free(data);
 }
 
-
 /* Parse the data in the given GIOChannel, returning a pointer to
  * the MassifgOutputData structure that represents this data
  * Returns NULL on failure
  * Use massifg_output_data_free() to free the return value */
 MassifgOutputData
 *massifg_parse_iochannel(GIOChannel *io_channel, GError **error) {
-	MassifgParser parser_onstack;
-	MassifgParser *parser = NULL;
 	MassifgOutputData *output_data = NULL;
+	MassifgParser *parser = massifg_parser_new();
 
 	GString *line_string = NULL;
 	GIOStatus io_status = G_IO_STATUS_NORMAL;
 
 	/* Initialize */
 	output_data = massifg_output_data_new();
-
-	parser = &parser_onstack;
-	parser->current_state = STATE_DESC;
 	parser->output_data = output_data;
-	parser->ht_current_parent = NULL;
-	parser->current_line_number = 0;
 
 	line_string = g_string_new("initial string");
 
@@ -485,6 +498,7 @@ MassifgOutputData
 	}
 
 	g_string_free(line_string, TRUE);
+	massifg_parser_free(parser);
 
 	return output_data;
 
