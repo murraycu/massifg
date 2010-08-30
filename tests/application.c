@@ -166,8 +166,8 @@ application_toogle_legend(void) {
 	argv[1] = get_test_file(TEST_INPUT_LONG);
 
 	MassifgApplication *app = massifg_application_new(&argc, &argv);
-	g_timeout_add_seconds(1, enable_legend_cb, app);
-	g_timeout_add_seconds(2, disable_legend_cb, app);
+	g_timeout_add_seconds(1, disable_legend_cb, app);
+	g_timeout_add_seconds(2, enable_legend_cb, app);
 	g_timeout_add_seconds(3, quit_gtkmain_cb, NULL);
 
 	massifg_application_run(app);

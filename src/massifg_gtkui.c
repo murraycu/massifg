@@ -260,7 +260,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 
 	GtkToggleActionEntry view_actions[] = {
 	  {"ToggleDetailsAction", NULL, "_Detailed", NULL, NULL, G_CALLBACK(toggle_details_action), FALSE},
-	  {"ToggleLegendAction", NULL, "_Legend", NULL, NULL, G_CALLBACK(toggle_legend_action), FALSE}
+	  {"ToggleLegendAction", NULL, "_Legend", NULL, NULL, G_CALLBACK(toggle_legend_action), TRUE}
 	};
 	const int num_view_actions = G_N_ELEMENTS(view_actions);
 

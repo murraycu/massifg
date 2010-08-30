@@ -291,10 +291,6 @@ massifg_graph_new(void) {
 	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
 	graph->data = NULL;
 
-	/* Defaul settings */
-	graph->detailed = FALSE;
-	graph->has_legend = FALSE;
-
 	/* Create a graph widget, and get the embedded graph and chart */
 	graph->widget = go_graph_widget_new(NULL);
 	chart = go_graph_widget_get_chart(GO_GRAPH_WIDGET(graph->widget));
@@ -304,6 +300,10 @@ massifg_graph_new(void) {
 	g_object_set (G_OBJECT (graph->plot), "type", "stacked", NULL);
 
 	gog_object_add_by_name(GOG_OBJECT (chart), "Plot", GOG_OBJECT(graph->plot));
+
+	/* Default settings */
+	massifg_graph_set_show_details(graph, FALSE);
+	massifg_graph_set_show_legend(graph, TRUE);
 
 	return graph;
 }
