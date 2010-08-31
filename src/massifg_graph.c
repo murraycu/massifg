@@ -314,7 +314,13 @@ massifg_graph_new(void) {
 	GogChart *chart = NULL;
 
 	MassifgGraph *graph = (MassifgGraph *)g_malloc(sizeof(MassifgGraph));
+
+	/* Initialize members */
 	graph->data = NULL;
+	graph->error = NULL;
+
+	graph->has_legend = FALSE;
+	graph->detailed = FALSE;
 
 	/* Create a graph widget, and get the embedded graph and chart */
 	graph->widget = go_graph_widget_new(NULL);
@@ -326,7 +332,7 @@ massifg_graph_new(void) {
 
 	gog_object_add_by_name(GOG_OBJECT (chart), "Plot", GOG_OBJECT(graph->plot));
 
-	/* Default settings */
+	/* Set default settings */
 	massifg_graph_set_show_details(graph, FALSE);
 	massifg_graph_set_show_legend(graph, TRUE);
 
