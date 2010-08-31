@@ -304,7 +304,9 @@ massifg_gtkui_init(MassifgApplication *app) {
 		g_critical ("%s", error->message);
 		g_error_free (error);
 		return 1;
+
 	}
+	gtk_builder_connect_signals(app->gtk_builder, NULL);
 
 	/* Add the graph widget */
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));

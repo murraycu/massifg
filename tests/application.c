@@ -13,11 +13,10 @@
 
 int open_files_cb_repeat_count = 5;
 
-/* Forcefully destroy the main window 
- * Workaround because the window of test does not seem to be removed
- * before the window of the last test is */
+/* Quit the application by destroying the main window
+ * This will quit the gtk main loop of the application for us */
 void
-massifg_application_destroy(MassifgApplication *app) {
+massifg_application_quit(MassifgApplication *app) {
 	GtkWidget *main_window = NULL;
 	main_window = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder,
 		 MASSIFG_GTKUI_MAIN_WINDOW));
@@ -51,8 +50,9 @@ open_files_cb(gpointer data) {
 }
 
 gboolean
-quit_gtkmain_cb(gpointer data) {
-	gtk_main_quit();
+quit_app_cb(gpointer data) {
+	MassifgApplication *app = (MassifgApplication *)data;
+	massifg_application_quit(app);
 	return FALSE;
 }
 
@@ -93,11 +93,10 @@ application_start_quit(void) {
 	argv[0] = "bin/massifg";
 
 	app = massifg_application_new(&argc, &argv);
-	g_timeout_add_seconds(1, quit_gtkmain_cb, NULL);
+	g_timeout_add_seconds(1, quit_app_cb, app);
 
 	massifg_application_run(app);
 
-	massifg_application_destroy(app);
 	massifg_application_free(app);
 	g_usleep(G_USEC_PER_SEC*1);
 
@@ -112,11 +111,10 @@ application_start_open_file(void) {
 	argv[1] = get_test_file(TEST_INPUT_LONG);
 
 	app = massifg_application_new(&argc, &argv);
-	g_timeout_add_seconds(1, quit_gtkmain_cb, NULL);
+	g_timeout_add_seconds(1, quit_app_cb, app);
 
 	massifg_application_run(app);
 
-	massifg_application_destroy(app);
 	massifg_application_free(app);
 	g_free(argv[1]);
 	g_usleep(G_USEC_PER_SEC*1);
@@ -132,11 +130,10 @@ application_open_many_files(void) {
 
 	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, open_files_cb, app);
-	g_timeout_add_seconds(open_files_cb_repeat_count+2, quit_gtkmain_cb, NULL);
+	g_timeout_add_seconds(open_files_cb_repeat_count+2, quit_app_cb, app);
 
 	massifg_application_run(app);
 
-	massifg_application_destroy(app);
 	massifg_application_free(app);
 	g_usleep(G_USEC_PER_SEC*1);
 }
@@ -152,11 +149,10 @@ application_toogle_detailed_view(void) {
 	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, enable_details_cb, app);
 	g_timeout_add_seconds(2, disable_details_cb, app);
-	g_timeout_add_seconds(3, quit_gtkmain_cb, NULL);
+	g_timeout_add_seconds(3, quit_app_cb, app);
 
 	massifg_application_run(app);
 
-	massifg_application_destroy(app);
 	massifg_application_free(app);
 	g_free(argv[1]);
 	g_usleep(G_USEC_PER_SEC*1);
@@ -174,11 +170,10 @@ application_toogle_legend(void) {
 	app = massifg_application_new(&argc, &argv);
 	g_timeout_add_seconds(1, disable_legend_cb, app);
 	g_timeout_add_seconds(2, enable_legend_cb, app);
-	g_timeout_add_seconds(3, quit_gtkmain_cb, NULL);
+	g_timeout_add_seconds(3, quit_app_cb, app);
 
 	massifg_application_run(app);
 
-	massifg_application_destroy(app);
 	massifg_application_free(app);
 	g_free(argv[1]);
 	g_usleep(G_USEC_PER_SEC*1);
