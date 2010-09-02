@@ -31,9 +31,16 @@ uidir = $(pkgdatadir)
 dist_ui_DATA = data/massifg.glade \
                data/menu.ui
 
-dist_noinst_DATA = tests/massif-output-2snapshots.txt \
-		tests/massif-output-glom.txt \
-		tests/massif-output-broken-800.txt
+# XXX: docs/gtk-doc.make is disted explicitly because if that is not done,
+# make on the tarball fails (but not make distcheck !) because it is looking
+# for that file. However, docs/reference/Makefile.in in the tarball does actually
+# have the contents of gtk-doc.make included
+# Other projects using very similar setup like libepc seems to work when this file is not disted
+dist_noinst_DATA = \
+	docs/gtk-doc.make \
+	tests/massif-output-2snapshots.txt \
+	tests/massif-output-glom.txt \
+	tests/massif-output-broken-800.txt
 
 # Unit/Functional tests setup
 check_PROGRAMS = tests/common tests/utils tests/parser tests/graph tests/application
