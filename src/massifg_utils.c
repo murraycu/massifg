@@ -79,7 +79,7 @@ gchar *
 massifg_utils_get_resource_file(const gchar *filename) {
 	gchar *pathname = NULL;
 	const gchar *run_prefix = NULL;
-	const gchar *application_name = "massifg";
+	const gchar *application_name = PACKAGE_TARNAME;
 
 	/* Check in ./data/ */
 	run_prefix = g_get_current_dir();
