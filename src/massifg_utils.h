@@ -19,8 +19,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MASSIFG_UTILS_H__
-#define __MASSIFG_UTILS_H__
+#ifndef MASSIFG_UTILS_H__
+#define MASSIFG_UTILS_H__
 
 gchar *massifg_utils_get_resource_file(const gchar *filename);
 void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
@@ -33,5 +33,5 @@ gchar *massifg_str_cut_region(gchar *src, int cut_start, int cut_end);
 int massifg_str_count_char(gchar *str, gchar c);
 gchar *massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx);
 
-#endif /* __MASSIFG_UTILS_H__ */
+#endif /* MASSIFG_UTILS_H__ */
 

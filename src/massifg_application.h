@@ -19,8 +19,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MASSIFG_APPLICATION_H__
-#define __MASSIFG_APPLICATION_H__
+#ifndef MASSIFG_APPLICATION_H__
+#define MASSIFG_APPLICATION_H__
 
 #include <gtk/gtk.h>
 #include "massifg_parser.h"
@@ -84,4 +84,4 @@ void massifg_application_free(MassifgApplication *app);
 gboolean massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **error);
 int massifg_application_run(MassifgApplication *app);
 
-#endif /* __MASSIFG_APPLICATION_H__ */
+#endif /* MASSIFG_APPLICATION_H__ */

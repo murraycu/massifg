@@ -19,8 +19,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MASSIFG_GTKUI_H__
-#define __MASSIFG_GTKUI_H__
+#ifndef MASSIFG_GTKUI_H__
+#define MASSIFG_GTKUI_H__
 
 /**
  * MASSIFG_GTKUI_MAIN_WINDOW:
@@ -36,4 +36,4 @@ void massifg_gtkui_start(MassifgApplication *app);
 
 void massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...);
 
-#endif /* __MASSIFG_GTKUI_H__ */
+#endif /* MASSIFG_GTKUI_H__ */

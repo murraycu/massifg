@@ -37,8 +37,8 @@
 
 #include "massifg_parser.h"
 
-#ifndef __MASSIFG_GRAPH_H__
-#define __MASSIFG_GRAPH_H__
+#ifndef MASSIFG_GRAPH_H__
+#define MASSIFG_GRAPH_H__
 
 /* Data structures */
 
@@ -74,5 +74,4 @@ MassifgOutputData *massifg_graph_get_data(MassifgGraph *graph);
 gboolean massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr, gint width, gint height);
 gboolean massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h);
 
-#endif /* __MASSIFG_GRAPH_H__ */
-
+#endif /* MASSIFG_GRAPH_H__ */

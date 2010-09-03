@@ -19,8 +19,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MASSIFG_PARSER_H__
-#define __MASSIFG_PARSER_H__
+#ifndef MASSIFG_PARSER_H__
+#define MASSIFG_PARSER_H__
 
 #include <glib.h>
 
@@ -106,5 +106,4 @@ MassifgOutputData *massifg_parse_file(gchar *filename, GError **error);
 MassifgOutputData *massifg_parse_iochannel(GIOChannel *io_channel, GError **error);
 void massifg_output_data_free(MassifgOutputData *data);
 
-#endif /* __MASSIFG_PARSER_H__ */
-
+#endif /* MASSIFG_PARSER_H__ */
