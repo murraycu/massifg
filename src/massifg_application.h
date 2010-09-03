@@ -41,19 +41,26 @@
 
 /**
  * MassifgApplication:
+ * @parent_instance: the parent GObject
+ * @argc_ptr: number of command-line arguments
+ * @argv_ptr: array of strings holding command-line arguments
+ * @output_data: output data
+ * @graph: graph
+ * @gtk_builder: GtkBuilder object for retrieving application widgets
  *
- * Instance structure for a #MassifgApplication object
+ * Instance structure for a #MassifgApplication object.
  */
 typedef struct _MassifgApplication        MassifgApplication;
 
 /**
- * MassifgApplicationClass
+ * MassifgApplicationClass:
  *
- * Class structure for a #MassifgApplication object
+ * Class structure for a #MassifgApplication object.
  */
 typedef struct _MassifgApplicationClass   MassifgApplicationClass;
 
 struct _MassifgApplication {
+	/*< private >*/
 	GObject parent_instance;
 
 	int *argc_ptr;
@@ -64,11 +71,12 @@ struct _MassifgApplication {
 };
 
 /**
- * MassifgApplication::file-changed
+ * MassifgApplication::file-changed:
  *
- * This signal is emitted when the current active file is changed
+ * This signal is emitted when the current active file is changed.
  */
 struct _MassifgApplicationClass {
+	/*< private >*/
 	GObjectClass parent_class;
 
 	void (*file_changed) (MassifgApplication *app, gpointer user_data);

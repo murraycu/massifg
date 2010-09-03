@@ -129,10 +129,10 @@ void massifg_utils_log_ignore(const gchar *log_domain, GLogLevelFlags log_level,
  * @data: data
  * @user_data: user_data
  *
- * Utility function for freeing each element in a GList.
+ * Utility function for freeing each element in a #GList.
  *
- * Elements freed using this function should have been allocated using g_alloc and derivatives.
- * Meant to be used as a parameter to a g_(s)list_foreach call
+ * Elements freed using this function should have been allocated using g_malloc() and derivatives.
+ * Intended to be used as a parameter to a g_(s)list_foreach call.
  */
 void massifg_utils_free_foreach(gpointer data, gpointer user_data) {
 	g_free(data);
@@ -140,10 +140,9 @@ void massifg_utils_free_foreach(gpointer data, gpointer user_data) {
 
 /**
  * massifg_utils_configure_debug_output:
- * @void
  *
  * Checks for the environment variable MASSIFG_DEBUG,
- * if it is not "enable" or "all", debug output will be ignored
+ * if it is not "enable" or "all", debug output will be ignored.
  */
 void
 massifg_utils_configure_debug_output(void) {
@@ -161,14 +160,14 @@ massifg_utils_configure_debug_output(void) {
 
 /** 
  * massifg_str_copy_region:
- * @src: String to copy from. Must be NULL terminated
+ * @src: String to copy from. Must be %NULL terminated
  * @start_idx: Index in @src to start copying from.
  * @stop_idx: Index in @src to stop copying from. Must be smaller than the length of src
  * @Returns: a newly allocated string. Free with g_free()
  *
- * Copy a region of a string
+ * Copy a region of a string.
  *
- * Indexes start at 0
+ * Indexes start at 0.
  */
 gchar *
 massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
@@ -187,11 +186,11 @@ massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
 
 /**
  * massifg_str_count_char:
- * @str: String to search in. Must be NULL terminated.
+ * @str: String to search in. Must be %NULL terminated.
  * @c: Character to count
  * @Returns: the number of occurrences of @c in @str
  *
- * Count the number of time a character appears in a string
+ * Count the number of times a character appears in a string.
  */
 int
 massifg_str_count_char(gchar *str, gchar c) {
@@ -212,9 +211,9 @@ massifg_str_count_char(gchar *str, gchar c) {
  * @cut_end: Index in @src to stop excluding
  * @Returns: a newly allocated string. Free with g_free()
  *
- * Copy string, excluding a certain region
+ * Copy string, excluding a certain region.
  *
- * Indexes start at 0
+ * Indexes start at 0.
  */
 gchar *
 massifg_str_cut_region(gchar *src, int cut_start, int cut_end) {

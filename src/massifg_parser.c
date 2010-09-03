@@ -21,13 +21,12 @@
 
 /**
  * SECTION:massifg_parser
- * @short_description: Functions for parsing massif output files
+ * @short_description: Functions for parsing massif output files.
  * @title: MassifG Parser
+ * @stability: Unstable
  *
  * These functions builds up a datastructure that represents
- * the output from massif
- *
- * Stability: Unstable
+ * the output from massif.
  */
 
 #include <stdlib.h> /* for atoi() / strtol() */
@@ -449,7 +448,7 @@ MassifgOutputData *massifg_output_data_new() {
  * massifg_output_data_free:
  * @data: the MassifgOutputData to free
  *
- * Free a MassifgOutputData
+ * Free a #MassifgOutputData.
  */
 void massifg_output_data_free(MassifgOutputData *data) {
 
@@ -468,9 +467,9 @@ void massifg_output_data_free(MassifgOutputData *data) {
  * @io_channel: #GIOChannel to parse the data from
  * @error: Location to store a #GError or %NULL
  * @Returns: a #MassifgOutputData that represents this data, or %NULL on failure.
- * Use massifg_output_data_free() to free
+ * Use massifg_output_data_free() to free.
  *
- * Parse massif output data from a #GIOChannel
+ * Parse massif output data from a #GIOChannel.
  */
 MassifgOutputData
 *massifg_parse_iochannel(GIOChannel *io_channel, GError **error) {
@@ -516,8 +515,7 @@ MassifgOutputData
  * @error: Location to store a #GError or %NULL
  * @Returns: a #MassifgOutputData that represents this data, or %NULL on failure.
  *
- * Parse massif output data from file.
- * See also massifg_parse_iochannel()
+ * Parse massif output data from file. See also massifg_parse_iochannel().
  */
 MassifgOutputData
 *massifg_parse_file(gchar *filename, GError **error) {
@@ -537,5 +535,3 @@ MassifgOutputData
 	g_io_channel_unref(io_channel);
 	return output_data;
 }
-
-

@@ -23,8 +23,9 @@
  * SECTION:massifg_application
  * @short_description: the main application object
  * @title: MassifG Application
+ * @stability: Unstable
  *
- * Note: These functions are meant to be used internally in MassifG
+ * Note: These functions are meant to be used internally in MassifG.
  */
 
 #include <gtk/gtk.h>
@@ -115,7 +116,7 @@ massifg_application_class_init(MassifgApplicationClass *klass)
  *
  * Get a new #MassifgApplication instance.
  * Arguments are typically gotten from main(), but can for testing purposes
- * for instance be provided manually or by g_shell_parse_argv()
+ * for instance be provided manually or by g_shell_parse_argv().
  */
 MassifgApplication *
 massifg_application_new(int *argc_ptr, char ***argv_ptr) {
@@ -132,7 +133,7 @@ massifg_application_new(int *argc_ptr, char ***argv_ptr) {
  * massifg_application_free:
  * @app: The #MassifgApplication to free
  *
- * Free a #MassifgApplication
+ * Free a #MassifgApplication.
  */
 void
 massifg_application_free(MassifgApplication *app) {
@@ -147,7 +148,7 @@ massifg_application_free(MassifgApplication *app) {
  * @error: A place to return a #GError or %NULL
  * @Returns: %TRUE on success or %FALSE on failure
  *
- * Set the currently active file
+ * Set the currently active file.
  */
 gboolean
 massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **error) {
@@ -179,7 +180,7 @@ massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **
  * @app: The #MassifgApplication to run
  * @Returns: The applications exit status. Non-zero indicates failure
  *
- * This function will block until the application quits. It is separate from main() so that the application can be tested more easily
+ * This function will block until the application quits. It is separate from main() so that the application can be tested more easily.
  */
 int
 massifg_application_run(MassifgApplication *app) {

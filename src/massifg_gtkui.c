@@ -283,7 +283,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
  * @app: A #MassifgApplication
  *
  * Initialize the whole UI.
- * After calling this, the UI can be started by calling massifg_gtkui_start()
+ * After calling this, the UI can be started by calling massifg_gtkui_start().
  */
 gint
 massifg_gtkui_init(MassifgApplication *app) {
@@ -374,4 +374,3 @@ massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...) {
 	g_string_free(markup_string, TRUE);
 	gtk_widget_destroy(GTK_WIDGET(error_dialog));
 }
-

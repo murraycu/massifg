@@ -34,4 +34,3 @@ int massifg_str_count_char(gchar *str, gchar c);
 gchar *massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx);
 
 #endif /* MASSIFG_UTILS_H__ */
-

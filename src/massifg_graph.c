@@ -23,6 +23,7 @@
  * SECTION:massifg_graph
  * @short_description: A graph visualizing massif output over time
  * @title: MassifG Overview Graph
+ * @stability: Unstable
  *
  * Implements the graphing functionality of MassifG
  *
@@ -34,8 +35,6 @@
  * to show how different functions contribute to the heap memory usage
  * for each snapshot. Currently only the first children of the heap tree is displayed
  * in detailed mode
- *
- * Stability: Unstable
  */
 
 #include <glib.h>
@@ -62,12 +61,22 @@
 
 
 /* Data structures */
-/* Enum that represents the different possible simple data series */
+
+/**
+ * MassifgDataSeries:
+ * @MASSIFG_DATA_SERIES_TIME: data series of time
+ * @MASSIFG_DATA_SERIES_HEAP: data series of heap memory
+ * @MASSIFG_DATA_SERIES_HEAP_EXTRA: data series of extra heap memory
+ * @MASSIFG_DATA_SERIES_STACKS: data series of stack memory
+ *
+ * Enum that represents the different possible simple data series.
+ */
 typedef enum {
 	MASSIFG_DATA_SERIES_TIME,
 	MASSIFG_DATA_SERIES_HEAP,
 	MASSIFG_DATA_SERIES_HEAP_EXTRA,
 	MASSIFG_DATA_SERIES_STACKS,
+	/*< private >*/
 	MASSIFG_DATA_SERIES_LAST /* NOTE: only used to calculate the number of elements in the enum */
 } MassifgDataSeries;
 
@@ -253,11 +262,14 @@ add_details_foreach(GNode *node, gpointer user_data) {
 
 /**
  * sort_func_label:
+ * @a: a value
+ * @b: a value to compare with
+ * @user_data: user data
  * @Returns: +1 if function @a appears in less snapshots than @b,
  * -1 if function @a appears in more snapshots than @b and 0
  * if @a appears in as many as @b
  *
- * A #GCompareDataFunc to sort snapshots
+ * A #GCompareDataFunc to sort snapshots.
  */
 gint
 sort_func_label(gconstpointer a, gconstpointer b, gpointer user_data) {
@@ -355,7 +367,6 @@ massifg_graph_update(MassifgGraph *graph) {
 
 /**
  * massifg_graph_init:
- * @void
  *
  * Initialize what is neccesary to use the graph.
  * Note: Must be called before the first call to massifg_graph_new() 
@@ -368,7 +379,6 @@ massifg_graph_init(void) {
 
 /**
  * massifg_graph_new:
- * @void
  * @Returns: A new #MassifgGraph. Free with massifg_graph_free()
  *
  * Create a new #MassifgGraph.
@@ -407,7 +417,7 @@ massifg_graph_new(void) {
  * massifg_graph_free:
  * @graph: A #MassifgGraph
  *
- * Free a #MassifgGraph 
+ * Free a #MassifgGraph.
  */
 void massifg_graph_free(MassifgGraph *graph) {
 
@@ -420,7 +430,7 @@ void massifg_graph_free(MassifgGraph *graph) {
  * @graph: A #MassifgGraph
  * @data: #MassifgOutputData to visualize in graph
  *
- * Set the data to visualize
+ * Set the data to visualize.
  */
 void 
 massifg_graph_set_data(MassifgGraph *graph, MassifgOutputData *data) {
@@ -437,7 +447,7 @@ massifg_graph_set_data(MassifgGraph *graph, MassifgOutputData *data) {
  * @graph: A #MassifgGraph
  * @show_details: %TRUE for detailed view, %FALSE for simple view
  *
- * Enable/disable detailed graph view
+ * Enable/disable detailed graph view.
  */
 void
 massifg_graph_set_show_details(MassifgGraph *graph, gboolean show_details) {
@@ -453,7 +463,7 @@ massifg_graph_set_show_details(MassifgGraph *graph, gboolean show_details) {
  * @graph: A #MassifgGraph
  * @show_legend: %TRUE to enable, %FALSE to disable
  *
- * Enable/disable display of legend
+ * Enable/disable display of legend.
  */
 void
 massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend) {
@@ -482,7 +492,7 @@ massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend) {
  * @graph: A #MassifgGraph
  * @Returns: The #GtkWidget that displays the graph
  *
- * Get the widget that displays the graph
+ * Get the widget that displays the graph.
  */
 GtkWidget *
 massifg_graph_get_widget(MassifgGraph *graph) {
@@ -494,7 +504,7 @@ massifg_graph_get_widget(MassifgGraph *graph) {
  * @graph: A #MassifgGraph
  * @Returns: the #MassifgOutputData the graph is visualizing
  *
- * Get the data the graph visualizes
+ * Get the data the graph visualizes.
  */
 MassifgOutputData 
 *massifg_graph_get_data(MassifgGraph *graph) {
@@ -510,7 +520,7 @@ MassifgOutputData
  * @height: height of the rendered output
  * @Returns: %TRUE on success, %FALSE on failure
  *
- * Render graph to a cairo context
+ * Render graph to a cairo context.
  */
 gboolean
 massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
@@ -535,7 +545,7 @@ massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
  * @h: height of the rendered output
  * @Returns: %TRUE on success, %FALSE on failure
  *
- * Render the graph to a PNG file
+ * Render the graph to a PNG file.
  */
 gboolean
 massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h) {

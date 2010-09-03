@@ -25,7 +25,7 @@
 /**
  * MASSIFG_GTKUI_MAIN_WINDOW:
  *
- * String identifier for the main window in the gtkbuilder
+ * String identifier for the main window in the gtkbuilder.
  */
 static const gchar MASSIFG_GTKUI_MAIN_WINDOW[] = "mainwindow";
 
