@@ -72,7 +72,7 @@ void massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend);
 GtkWidget *massifg_graph_get_widget(MassifgGraph *graph);
 MassifgOutputData *massifg_graph_get_data(MassifgGraph *graph);
 
-gboolean massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr, gint width, gint height);
-gboolean massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h);
+gboolean massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr, const guint width, const guint height);
+gboolean massifg_graph_render_to_png(MassifgGraph *graph, const gchar *filename, const guint width, const guint height);
 
 #endif /* MASSIFG_GRAPH_H__ */

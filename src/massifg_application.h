@@ -23,11 +23,10 @@
 #define MASSIFG_APPLICATION_H__
 
 #include <gtk/gtk.h>
+#include <glib-object.h>
+
 #include "massifg_parser.h"
 #include "massifg_graph.h"
-
-
-#include <glib-object.h>
 
 /*
  * Type macros.
@@ -89,7 +88,7 @@ GType massifg_application_get_type (void);
 MassifgApplication *massifg_application_new(int *argc_ptr, char ***argv_ptr);
 void massifg_application_free(MassifgApplication *app);
 
-gboolean massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **error);
-int massifg_application_run(MassifgApplication *app);
+gboolean massifg_application_set_file(MassifgApplication *app, const gchar *filename, GError **error);
+gint massifg_application_run(MassifgApplication *app);
 
 #endif /* MASSIFG_APPLICATION_H__ */

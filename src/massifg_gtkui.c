@@ -27,7 +27,6 @@
  * Note: These functions are meant to be used internally in MassifG
  */
 
-
 #include <gtk/gtk.h>
 #include <stdarg.h>
 
@@ -69,7 +68,6 @@ print_op_draw_page(GtkPrintOperation *operation,
 
 }
 
-
 /* Signal handlers */
 /* Destroy event handler for the main window, hooked up though glade/gtkbuilder */
 void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
@@ -85,7 +83,6 @@ void mainwindow_update_title(MassifgApplication *app, gpointer user_data) {
 		gtk_window_set_title(main_window, app->filename);
 	}
 }
-
 
 /* Actions */
 void
@@ -199,7 +196,6 @@ toggle_details_action(GtkToggleAction *action, gpointer data) {
 	MassifgApplication *app = (MassifgApplication *)data;
 
 	massifg_graph_set_show_details(app->graph, gtk_toggle_action_get_active(action));
-
 }
 
 void
@@ -209,11 +205,9 @@ toggle_legend_action(GtkToggleAction *action, gpointer data) {
 	massifg_graph_set_show_legend(app->graph, gtk_toggle_action_get_active(action));
 }
 
-
 /* Set up actions and menus */
 gint
 massifg_gtkui_init_menus(MassifgApplication *app) {
-
 	const gchar *uifile_path = NULL;
 	GtkActionGroup *action_group = NULL;
 	GtkWidget *vbox = NULL;
@@ -233,13 +227,13 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 
 	  { "ViewMenuAction", NULL, "_View", NULL, NULL, NULL},
 	};
-	const int num_actions = G_N_ELEMENTS(actions);
+	const guint num_actions = G_N_ELEMENTS(actions);
 
 	GtkToggleActionEntry view_actions[] = {
 	  {"ToggleDetailsAction", NULL, "_Detailed", NULL, NULL, G_CALLBACK(toggle_details_action), FALSE},
 	  {"ToggleLegendAction", NULL, "_Legend", NULL, NULL, G_CALLBACK(toggle_legend_action), TRUE}
 	};
-	const int num_view_actions = G_N_ELEMENTS(view_actions);
+	const guint num_view_actions = G_N_ELEMENTS(view_actions);
 
 	/* Initialize */
 	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));

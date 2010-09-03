@@ -78,7 +78,7 @@ get_system_file(const gchar *progam_name, const gchar *filename)
 gchar *
 massifg_utils_get_resource_file(const gchar *filename) {
 	gchar *pathname = NULL;
-	const gchar *run_prefix = NULL;
+	gchar *run_prefix = NULL;
 	const gchar *application_name = PACKAGE_TARNAME;
 
 	/* Check in ./data/ */
@@ -148,7 +148,7 @@ void
 massifg_utils_configure_debug_output(void) {
 	/* TODO: Allow enabling debug output for just the UI, grapher or parser */
 	GDebugKey debug_keys[] = { {"enable", 1<<0}, };
-	const int num_debug_keys = G_N_ELEMENTS(debug_keys);
+	const guint num_debug_keys = G_N_ELEMENTS(debug_keys);
 	const gchar* debug_string = g_getenv("MASSIFG_DEBUG");
 
 	guint debug = g_parse_debug_string(debug_string, debug_keys, num_debug_keys);
@@ -170,7 +170,7 @@ massifg_utils_configure_debug_output(void) {
  * Indexes start at 0.
  */
 gchar *
-massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
+massifg_str_copy_region(const gchar *src, const guint start_idx, const guint stop_idx) {
 	guint i, len;
 	gchar *str;
 
@@ -192,9 +192,9 @@ massifg_str_copy_region(gchar *src, gint start_idx, gint stop_idx) {
  *
  * Count the number of times a character appears in a string.
  */
-int
-massifg_str_count_char(gchar *str, gchar c) {
-	int num_occurrences = 0;
+guint
+massifg_str_count_char(const gchar *str, const gchar c) {
+	guint num_occurrences = 0;
 	guint i;
 	for (i=0; i<strlen(str); i++) {
 		if (str[i] == c) {
@@ -216,7 +216,7 @@ massifg_str_count_char(gchar *str, gchar c) {
  * Indexes start at 0.
  */
 gchar *
-massifg_str_cut_region(gchar *src, int cut_start, int cut_end) {
+massifg_str_cut_region(const gchar *src, const guint cut_start, const guint cut_end) {
 	gchar *new_str = NULL;
 	gchar *start_str = g_strndup(src, cut_start);
 	gchar *end_str = massifg_str_copy_region(src, cut_end+1, strlen(src));

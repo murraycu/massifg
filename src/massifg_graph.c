@@ -58,8 +58,6 @@
 #include "massifg_utils.h"
 #include "massifg_parser.h"
 
-
-
 /* Data structures */
 
 /**
@@ -85,7 +83,7 @@ gchar *MASSIFG_DATA_SERIES_DESC[] = {"Time", "Heap", "Heap Extra", "Stacks"};
 
 typedef struct {
 	MassifgDataSeries series;
-	double *data_array;
+	gdouble *data_array;
 	gint index;
 } FillDataArrayFuncArg;
 
@@ -95,20 +93,20 @@ void
 fill_data_array_func(gpointer data, gpointer user_data) {
 	MassifgSnapshot *snapshot = (MassifgSnapshot *)data;
 	FillDataArrayFuncArg *arg = (FillDataArrayFuncArg *)user_data;
-	double y_val = 0;
+	gdouble y_val = 0;
 
 	switch (arg->series) {
 	case MASSIFG_DATA_SERIES_TIME:
-		y_val = (double)snapshot->time;
+		y_val = (gdouble)snapshot->time;
 		break;
 	case MASSIFG_DATA_SERIES_HEAP:
-		y_val = (double)snapshot->mem_heap_B;
+		y_val = (gdouble)snapshot->mem_heap_B;
 		break;
 	case MASSIFG_DATA_SERIES_HEAP_EXTRA:
-		y_val = (double)snapshot->mem_heap_extra_B;
+		y_val = (gdouble)snapshot->mem_heap_extra_B;
 		break;
 	case MASSIFG_DATA_SERIES_STACKS:
-		y_val = (double)snapshot->mem_stacks_B;
+		y_val = (gdouble)snapshot->mem_stacks_B;
 		break;
 	case MASSIFG_DATA_SERIES_LAST:
 		g_assert_not_reached();
@@ -122,7 +120,7 @@ GOData *
 data_from_snapshots(GList *snapshots, MassifgDataSeries series) {
 	FillDataArrayFuncArg foreach_arg;
 	gint length = g_list_length(snapshots);
-	double *array = g_malloc_n(length, sizeof(double));
+	gdouble *array = g_malloc_n(length, sizeof(gdouble));
 
 	foreach_arg.series = series;
 	foreach_arg.data_array = array;
@@ -166,10 +164,10 @@ massifg_graph_update_simple(MassifgGraph *graph) {
  * Example: "std::string::_Rep::_S_create(unsigned int, unsigned int, std::allocator<char> const&) (in /usr/lib/libstdc++.so.6.0.13)" -> "std::string::_Rep::_S_create (in /usr/lib/libstdc++.so.6.0.13)"
  * Result should be freed with g_free */
 gchar *
-get_short_function_label(gchar *label) {
+get_short_function_label(const gchar *label) {
 	gchar *short_label = NULL;
-	int args_start_idx;
-	int args_end_idx;
+	guint args_start_idx;
+	guint args_end_idx;
 
 	if (massifg_str_count_char(label, '(') == 1) {
 		/* No need to shorten */
@@ -177,9 +175,8 @@ get_short_function_label(gchar *label) {
 		return short_label;
 	}
 
-	args_start_idx = (int)(g_strstr_len(label, -1, "(")-label);
-	args_end_idx = (int)(g_strstr_len(label, -1, ")")-label);
-
+	args_start_idx = (guint)(g_strstr_len(label, -1, "(")-label);
+	args_end_idx = (guint)(g_strstr_len(label, -1, ")")-label);
 
 	short_label = massifg_str_cut_region(label, args_start_idx, args_end_idx);
 
@@ -202,10 +199,10 @@ add_details_serie_foreach(gpointer data, gpointer user_data) {
 	/* Get the actual data series */
 	GList *l = arg->snapshot_details;
 	GHashTable *functions = NULL;
-	int i = 0;
-	int length = g_list_length(l);
+	gint i = 0;
+	const gint length = g_list_length(l);
 
-	double *array = g_new(double, length);
+	gdouble *array = g_new(double, length);
 
 	while (l) {
 		functions = (GHashTable *)l->data;
@@ -220,7 +217,6 @@ add_details_serie_foreach(gpointer data, gpointer user_data) {
 	/* Add it to the graph */
 	massifg_graph_add_series(graph, series_name, time_data, series_data);
 }
-
 
 /**
  * AddDetailsArg:
@@ -259,7 +255,6 @@ add_details_foreach(GNode *node, gpointer user_data) {
 	}
 }
 
-
 /**
  * sort_func_label:
  * @a: a value
@@ -297,8 +292,6 @@ sort_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 			arg->functions_sorted, key, sort_func_label,
 			arg->function_labels);
 }
-
-
 
 /* Build datastructures for the functions we want to show */
 void
@@ -484,7 +477,6 @@ massifg_graph_set_show_legend(MassifgGraph *graph, gboolean show_legend) {
 
 	}
 	graph->has_legend = show_legend;
-
 }
 
 /**
@@ -511,7 +503,6 @@ MassifgOutputData
 	return graph->data;
 }
 
-
 /**
  * massifg_graph_render_to_cairo:
  * @graph: A #MassifgGraph to render
@@ -524,7 +515,7 @@ MassifgOutputData
  */
 gboolean
 massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
-				gint width, gint height) {
+				const guint width, const guint height) {
 	gboolean retval;
 
 	GogGraph *go_graph = go_graph_widget_get_graph(GO_GRAPH_WIDGET(graph->widget));
@@ -535,24 +526,23 @@ massifg_graph_render_to_cairo(MassifgGraph *graph, cairo_t *cr,
 	return retval;
 }
 
-
 /** 
  * massifg_graph_render_to_png:
  * @graph: A #MassifgGraph to render
  * @filename: Path to file to render to. Will be created if not existing,
  * or overwritten if existing
- * @w: width of the rendered output
- * @h: height of the rendered output
+ * @width: width of the rendered output
+ * @height: height of the rendered output
  * @Returns: %TRUE on success, %FALSE on failure
  *
  * Render the graph to a PNG file.
  */
 gboolean
-massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h) {
-	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
+massifg_graph_render_to_png(MassifgGraph *graph, const gchar *filename, const guint width, const guint height) {
+	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 	cairo_t *cr = cairo_create(surface);
 
-	if (!massifg_graph_render_to_cairo(graph, cr, w, h)) {
+	if (!massifg_graph_render_to_cairo(graph, cr, width, height)) {
 		return FALSE;
 	}
 

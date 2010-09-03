@@ -47,7 +47,6 @@ enum
 
 static guint massifg_application_signals[N_SIGNALS];
 
-
 /* Unref object once and only once, to avoid trying to unref an invalid object */
 void
 gobject_safe_unref(GObject *object) {
@@ -67,7 +66,6 @@ massifg_application_init(MassifgApplication *self) {
 	self->filename = NULL;
 	self->gtk_builder = NULL;
 }
-
 
 /* Free simple types */
 static void
@@ -105,7 +103,6 @@ massifg_application_class_init(MassifgApplicationClass *klass)
 		G_TYPE_NONE /* return_type */,
 		0     /* n_params */,
 		NULL  /* param_types */);
-
 }
 
 /**
@@ -140,7 +137,6 @@ massifg_application_free(MassifgApplication *app) {
 	g_object_unref(G_OBJECT(app));
 }
 
-
 /** 
  * massifg_application_set_file:
  * @app: A #MassifgApplication
@@ -151,7 +147,7 @@ massifg_application_free(MassifgApplication *app) {
  * Set the currently active file.
  */
 gboolean
-massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **error) {
+massifg_application_set_file(MassifgApplication *app, const gchar *filename, GError **error) {
 	MassifgOutputData *new_data = NULL;
 	gchar *filename_copy = g_strdup(filename);
 
@@ -171,8 +167,6 @@ massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **
 
 	/* Parsing failed */
 	return FALSE;
-
-
 }
 
 /**
@@ -182,7 +176,7 @@ massifg_application_set_file(MassifgApplication *app, gchar *filename, GError **
  *
  * This function will block until the application quits. It is separate from main() so that the application can be tested more easily.
  */
-int
+gint
 massifg_application_run(MassifgApplication *app) {
 	GError *error = NULL;
 	gchar *filename = NULL;
@@ -212,4 +206,3 @@ massifg_application_run(MassifgApplication *app) {
 	massifg_gtkui_start(app);
 	return 0;
 }
-

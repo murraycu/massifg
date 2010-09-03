@@ -89,7 +89,6 @@ massifg_parser_free(MassifgParser *parser) {
 	/* Currently all pointers point to data which is owned by someone else
 	 * so we only free the MassifgParser structure */
 	g_free(parser);
-
 }
 
 /* Turn the line into tokens, splitting on delim
@@ -138,9 +137,7 @@ massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
 		g_strfreev(kv_tokens);
 		parser->current_state = next_state;
 	}
-
 }
-
 
 MassifgSnapshot *
 massifg_snapshot_new() {
@@ -230,10 +227,10 @@ massifg_parse_heap_tree_desc(MassifgParser *parser, const gchar *line) {
 	}
 }
 
-gint
+guint
 massifg_str_count_leading_spaces(const gchar *str) {
 	guint i = 0;
-	gint num_spaces = 0;
+	guint num_spaces = 0;
 
 	for (i=0; i<strlen(str); i++) {
 		if (str[i] != ' ')
@@ -261,7 +258,7 @@ massifg_heap_tree_node_init_simple_attributes(MassifgHeapTreeNode *node, const g
 	/* Copy, dropping the leading n and the trailing : character */
 	tmp_str = massifg_str_copy_region(tokens[0], 1, strlen(tokens[0])-1);
 
-	node->num_children = (int)strtol(tmp_str, NULL, 10);
+	node->num_children = (gint)strtol(tmp_str, NULL, 10);
 	g_free(tmp_str);
 
 	node->total_mem_B = strtol(tokens[1], NULL, 10);
@@ -290,7 +287,6 @@ massifg_heap_tree_node_free(MassifgHeapTreeNode *node) {
 	g_string_free(node->label, TRUE);
 	g_free(node);
 }
-
 
 /* Find the parent the next node should go to after the end of a subtree has been reached
  * Returns NULL if no suitable parent can be found */
@@ -370,7 +366,7 @@ massifg_parse_heap_tree_node(MassifgParser *parser, const gchar *line) {
 /* Parse a single line, based on the current state of the parser
  * NOTE: function assumes that the line does not contain any trailing newline character */
 static void 
-massifg_parse_line(MassifgParser *parser, gchar *line) {
+massifg_parse_line(MassifgParser *parser, gchar const *line) {
 	g_debug("Parsing line %d: \"%s\". Parser state: %d", parser->current_line_number,
 		line, parser->current_state);
 
@@ -421,7 +417,6 @@ massifg_parse_line(MassifgParser *parser, gchar *line) {
 		massifg_parse_heap_tree_node(parser, line);
 		break;
 	}
-
 }
 
 /* Allocate and initialize a MassifgOutputData structure, returning a pointer to it
@@ -506,7 +501,6 @@ MassifgOutputData
 	massifg_parser_free(parser);
 
 	return output_data;
-
 }
 
 /**
@@ -518,7 +512,7 @@ MassifgOutputData
  * Parse massif output data from file. See also massifg_parse_iochannel().
  */
 MassifgOutputData
-*massifg_parse_file(gchar *filename, GError **error) {
+*massifg_parse_file(const gchar *filename, GError **error) {
 	MassifgOutputData *output_data = NULL;
 	GIOChannel *io_channel = NULL;
 
