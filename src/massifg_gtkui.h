@@ -27,7 +27,7 @@
  *
  * String identifier for the main window in the gtkbuilder
  */
-#define MASSIFG_GTKUI_MAIN_WINDOW "mainwindow"
+static const gchar MASSIFG_GTKUI_MAIN_WINDOW[] = "mainwindow";
 
 #include "massifg_application.h"
 

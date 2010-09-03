@@ -41,7 +41,7 @@
 
 /* Private datastructures */
 #define MASSIFG_PARSE_ERROR g_quark_from_string("MASSIFG_PARSE_ERROR")
-#define MASSIFG_PARSE_ERROR_NOSNAPSHOTS 1
+static const gint MASSIFG_PARSE_ERROR_NOSNAPSHOTS = 1;
 
 /* Enum for the different possible states the parser state-machine can be in */
 typedef enum {

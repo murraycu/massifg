@@ -36,12 +36,10 @@
 #include "massifg_graph.h"
 #include "massifg_utils.h"
 
-#define MAIN_WINDOW_VBOX "mainvbox"
-#define OPEN_DIALOG "openfiledialog"
-#define SAVE_DIALOG "savefiledialog"
-
-#define MAIN_WINDOW_MENU "/MainMenu"
-
+static const gchar MAIN_WINDOW_VBOX[] = "mainvbox";
+static const gchar OPEN_DIALOG[] = "openfiledialog";
+static const gchar SAVE_DIALOG[] = "savefiledialog";
+static const gchar MAIN_WINDOW_MENU[] = "/MainMenu";
 
 /* Private functions */
 static void
