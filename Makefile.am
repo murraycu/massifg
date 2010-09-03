@@ -38,6 +38,7 @@ dist_ui_DATA = data/massifg.glade \
 # Other projects using very similar setup like libepc seems to work when this file is not disted
 dist_noinst_DATA = \
 	docs/gtk-doc.make \
+	docs/reference/massifg-docs.xml.in \
 	tests/massif-output-2snapshots.txt \
 	tests/massif-output-glom.txt \
 	tests/massif-output-broken-800.txt

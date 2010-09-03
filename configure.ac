@@ -23,5 +23,5 @@ DK_ARG_ENABLE_WARNINGS([MASSIFG_WARNING_FLAGS],
                        [-pedantic -Wall -Wextra -Wno-unused-parameter -w1],
                        [GTK GDK GDK_PIXBUF G])
 
-AC_CONFIG_FILES([Makefile docs/reference/Makefile])
+AC_CONFIG_FILES([Makefile docs/reference/Makefile docs/reference/massifg-docs.xml])
 AC_OUTPUT

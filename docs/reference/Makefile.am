@@ -15,7 +15,7 @@ DOC_MODULE=massifg
 #DOC_MODULE_VERSION=2
 
 # The top-level SGML file. You can change this if you want to.
-DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.sgml
+DOC_MAIN_SGML_FILE=$(DOC_MODULE)-docs.xml
 
 # Rule for generating DOC_MAIN_SGML_FILE
 sgml.stamp: $(DOC_MODULE)-sections.txt
@@ -61,7 +61,7 @@ EXTRA_HFILES=
 
 # Header files to ignore when scanning. Use base file name, no paths
 # e.g. IGNORE_HFILES=gtkdebug.h gtkintl.h
-IGNORE_HFILES =config.h
+IGNORE_HFILES=config.h
 
 # Images to copy into HTML directory.
 # e.g. HTML_IMAGES=$(top_srcdir)/gtk/stock-icons/stock_about_24.png
