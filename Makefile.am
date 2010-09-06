@@ -43,7 +43,9 @@ dist_noinst_DATA = \
 	tests/massif-output-broken-800.txt
 
 # Unit/Functional tests setup
-check_PROGRAMS = tests/common tests/utils tests/parser tests/graph tests/application
+apptest_PROGRAMS = tests/application
+apptestdir = $(checkdir)
+check_PROGRAMS = tests/common tests/utils tests/parser tests/graph
 
 tests_common_SOURCES = tests/common.c tests/common.h
 tests_common_CPPFLAGS = $(bin_massifg_CPPFLAGS) $(CUSTOM_WFLAGS) -I$(top_srcdir)/src
@@ -103,6 +105,11 @@ dist-hook:
 # Rules for hooking up the unit/functional tests
 GTESTER = gtester
 GTESTER_REPORT = gtester-report
+
+# app-test: run application tests. This is separate from test/check because these tests
+# require an X-server, and should be verified manually
+app-test: ${check_PROGRAMS}
+	@test -z "${apptest_PROGRAMS}" || top_srcdir=${top_srcdir} ${GTESTER} --verbose ${apptest_PROGRAMS}
 
 # test: run all tests
 test: ${check_PROGRAMS}
