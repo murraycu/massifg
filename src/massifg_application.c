@@ -62,7 +62,6 @@ massifg_application_init(MassifgApplication *self) {
 	self->argc_ptr = NULL;
 	self->argv_ptr = NULL;
 
-	self->output_data = NULL;
 	self->graph = NULL;
 	self->filename = NULL;
 	self->gtk_builder = NULL;
@@ -81,9 +80,6 @@ static void
 massifg_application_dispose(GObject *gobject) {
 	MassifgApplication *app = MASSIFG_APPLICATION(gobject);
 
-	if (app->output_data) {
-		massifg_output_data_free(app->output_data);
-	}
 	massifg_graph_free(app->graph);
 
 	gobject_safe_unref(G_OBJECT(app->gtk_builder));

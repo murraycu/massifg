@@ -59,7 +59,6 @@ struct _MassifgApplication {
 	int *argc_ptr;
 	char ***argv_ptr;
 	gchar *filename;
-	MassifgOutputData *output_data;
 	MassifgGraph *graph;
 	GtkBuilder *gtk_builder;
 };

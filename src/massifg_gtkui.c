@@ -55,6 +55,7 @@ static void
 print_op_draw_page(GtkPrintOperation *operation,
 		GtkPrintContext *context, gint page_nr, gpointer data) {
 
+	gboolean render_success = FALSE;
 	MassifgApplication *app = (MassifgApplication *)data;
 	cairo_t *cr;
 	gdouble width, height;
@@ -63,10 +64,11 @@ print_op_draw_page(GtkPrintOperation *operation,
 	width = gtk_print_context_get_width (context);
 	height = gtk_print_context_get_width (context);
 
-	/* TODO: move this logic up to print_action */
-	if (app->output_data != NULL) {
-		massifg_graph_render_to_cairo(app->graph, cr, width, height);
+	render_success = massifg_graph_render_to_cairo(app->graph, cr, width, height);
+	if (!render_success) {
+		g_critical("Rendering graph failed");
 	}
+
 }
 
 
