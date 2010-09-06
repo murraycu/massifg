@@ -145,7 +145,7 @@ save_file_action(GtkAction *action, gpointer data) {
 
 	if (!buttons_added) {
 		gtk_dialog_add_buttons(GTK_DIALOG(save_dialog),
-				GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+				GTK_STOCK_SAVE, GTK_RESPONSE_OK,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
 		buttons_added = TRUE;
 	}
