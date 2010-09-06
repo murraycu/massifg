@@ -158,7 +158,9 @@ save_file_action(GtkAction *action, gpointer data) {
 	gtk_widget_hide(save_dialog);
 
 	/* TODO: add .png to filename if not existing */
-	massifg_graph_render_to_png(app->graph, filename, width, height);
+	if (!massifg_graph_render_to_png(app->graph, filename, width, height)) {
+		massifg_gtkui_errormsg(app, "%s", "Error: Could not save PNG file");
+	}
 }
 
 void

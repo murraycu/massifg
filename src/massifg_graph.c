@@ -542,9 +542,14 @@ massifg_graph_render_to_png(MassifgGraph *graph, gchar *filename, int w, int h) 
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
 	cairo_t *cr = cairo_create(surface);
 
-	if (massifg_graph_render_to_cairo(graph, cr, w, h)) {
+	if (!massifg_graph_render_to_cairo(graph, cr, w, h)) {
 		return FALSE;
 	}
-	cairo_surface_write_to_png(surface, filename);
+
+	/* TODO: propagate error up to caller */
+	if (cairo_surface_write_to_png(surface, filename) != CAIRO_STATUS_SUCCESS) {
+		return FALSE;
+	}
+
 	return TRUE;
 }
