@@ -130,12 +130,12 @@ massifg_parse_header_element(MassifgParser *parser, const gchar *line,
  * If line does not start with prefix, this function does nothing */
 static void
 massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
-				const gchar *prefix, glong *element,
+				const gchar *prefix, gint64 *element,
 				MassifgParserState next_state) {
 	gchar **kv_tokens;
 	if (g_str_has_prefix(line, prefix)) {
 		kv_tokens = massifg_tokenify_line(line, "=");
-		*element = strtol(kv_tokens[1], NULL, 10);
+		*element = (gint64)strtoll(kv_tokens[1], NULL, 10);
 		g_strfreev(kv_tokens);
 		parser->current_state = next_state;
 	}
@@ -200,7 +200,7 @@ massifg_parse_snapshot_time(MassifgParser *parser, const gchar *line) {
 /* Parses the snapshot element "mem_stacks_B", and maintains a maximum value of the sum of memory */
 void
 massifg_parse_snapshot_mem_stacks(MassifgParser *parser, const gchar *line) {
-	gint total_mem_allocation = 0;
+	gint64 total_mem_allocation = 0;
 
 	massifg_parse_snapshot_element(parser, line, "mem_stacks_B=",
 			&parser->current_snapshot->mem_stacks_B, STATE_SNAPSHOT_HEAP_TREE);

@@ -63,10 +63,10 @@ typedef struct _MassifgHeapTreeNode {
 struct _MassifgSnapshot {
 	gint snapshot_no;
 
-	glong time;
-	glong mem_heap_B;
-	glong mem_heap_extra_B;
-	glong mem_stacks_B;
+	gint64 time;
+	gint64 mem_heap_B;
+	gint64 mem_heap_extra_B;
+	gint64 mem_stacks_B;
 
 	GString *heap_tree_desc;
 	GNode *heap_tree;
@@ -96,8 +96,8 @@ struct _MassifgOutputData {
 	GString *cmd;
 	GString *time_unit;
 
-	glong max_time;
-	glong max_mem_allocation;
+	gint64 max_time;
+	gint64 max_mem_allocation;
 };
 typedef struct _MassifgOutputData MassifgOutputData;
 
