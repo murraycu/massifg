@@ -1,0 +1,15 @@
+Source: massifg
+Section: Development
+Priority: extra
+Maintainer: Jon Nordby <jonn@openismus.com>
+Build-Depends: debhelper (>= 7), autotools-dev, libgtk2.0-dev, libgoffice-0.8-dev
+Standards-Version: 3.8.3
+Homepage: http://gitorious.org/massifg
+
+Package: massifg
+Architecture: any
+Recommends: valgrind
+Suggests: kcachegrind
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Visualizer for valgrinds massif tool
+ GTK+ based visualizer for valgrinds massif tool.

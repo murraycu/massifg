@@ -1,0 +1,25 @@
+This work was packaged for Debian by:
+
+    Jon Nordby <jonn@openismus.com> on Mon, 06 Sep 2010 13:26:41 +0000
+
+It was downloaded from http://jonnor.com/files
+
+Upstream Author(s):
+
+    Jon Nordby
+    David King
+    Murray Cumming
+
+Copyright:
+    Copyright (C) 2010 Openismus 
+
+License:
+
+    GPL-3, /usr/share/common-licenses/GPL-3
+
+The Debian packaging is:
+
+    Copyright (C) 2010 Openismus GmbH <jonn@openismus.com>
+
+and is licensed under the GPL version 3, 
+see `/usr/share/common-licenses/GPL-3'.

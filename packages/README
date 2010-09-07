@@ -1,0 +1,8 @@
+Package metadata for distribution packages of MassifG 0.2.1
+Contents:
+
+debian/ Files to build a DEB package for Debian/Ubuntu. Tested on Ubuntu 10.04.
+fedora/ Files to build a RPM package for Fedora. Tested on Fedora 13.
+meego/  Files to build a RPM package for Meego. Untested.
+
+For how to use, please refer to the documentation for the individual distribution/package formats.
