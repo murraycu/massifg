@@ -1,28 +1,60 @@
+MassifG is a GTK+ based visualizer for the output of valgrind's massif tool
+
+MassifG uses the GNU autotools build system.
+
 
 == INSTALLING ==
-MassifG uses GNU autotools to build and install.
+From tarball release:
+./configure
+make
+make install
+massifg [FILE]
 
-Thus, do the following to build, install and run:
+
+== HACKING ==
+Build from the git tree:
 ./autogen.sh --prefix=/wanted/prefix
 make
 make install
 massifg [FILE]
 
-To compile and run the program from the source tree (useful when hacking), do:
-./autogen.sh
-make
+Or, you can skip installing and run from the source tree:
 ./bin/massifg [FILE]
 
-To compile and run the unit tests, do:
+To compile and run the unit tests:
 make check
 
-== BUGS ==
-- Some massif output can break the graph, see for instance
-tests/massif-output-broken-800.txt
+To compile and run the functional test for the application:
+make app-test
+
+
+== ROADMAP ==
+ - API and widget for running massif
+ - Support i18n
+ - Shared library with appropriate public API
+ - Support Gobject introspection for public API
+ - Widget for visualizing a single snapshots heap tree in detail
 
 == TODO ==
-- Add description to graph
-- Implement detailed graph
-- Let users run massif directly from MassifG
-- Let users export the graph to PDF/PNG from a saving dialog, or from the cli
-- Create a custom widget that other applications can embed
+ - Add a icon
+
+Graph
+ - Add description, cmdline as titles
+ - Add time unit to graph as axis label
+ - Use a better time format for the axes
+ - Rename MassifgGraph to MassifgOverviewGraph
+ - Convert to a GObject, use properties
+ - Support showing function label when hovering over
+  - Requires GOffice support: https://bugzilla.gnome.org/show_bug.cgi?id=627277
+
+Parser
+ - Separate out the data structures into a new file
+ - Rename MassifgOutputData to MassifgData
+
+Also check the various TODO and FIXME comments in the source code
+
+
+== BUGS ==
+For now, send an email to jonn@openismus.com when you find them
+
+
