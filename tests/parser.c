@@ -84,6 +84,8 @@ parser_maxvalues(void) {
 	data = massifg_parse_file(path, NULL);
 	g_free(path);
 
+	/* For the given input file, the max values should corresponds to the parameters of snapshot 67
+	 * Note that max_mem_allocation is the sum of heap, heap extra and stack mem usage */
 	g_assert_cmpint(data->max_time, ==, 2318524449);
 	g_assert_cmpint(data->max_mem_allocation, ==, 8843592);
 }
