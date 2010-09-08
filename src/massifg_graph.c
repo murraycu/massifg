@@ -343,6 +343,52 @@ massifg_graph_update_detailed(MassifgGraph *graph) {
 	g_hash_table_destroy(function_labels);
 }
 
+void massifg_graph_add_axis_labels(MassifgGraph *graph) {
+	GogAxis *axis;
+	GOData *label_data;
+	GogObject *label;
+
+	gchar *x_axis_str;
+	gchar *time_unit = graph->data->time_unit->str;
+
+	/* Get X axis label string */
+	if (g_ascii_strcasecmp(time_unit, "ms") == 0) {
+		x_axis_str = "Execution time (in milliseconds)";
+	}
+	else if (g_ascii_strcasecmp(time_unit,"i") == 0) {
+		x_axis_str = "Instructions executed";
+	}
+	else if (g_ascii_strcasecmp(time_unit,"b") == 0) {
+		x_axis_str = "Memory allocated (in bytes)";
+	}
+	else {
+		x_axis_str = "Time (unknown unit)";
+	}
+
+	/* Add X axis label */
+	axis = gog_plot_get_axis(graph->plot, GOG_AXIS_X);
+	g_assert(axis);
+
+	label = gog_object_get_child_by_name(GOG_OBJECT(axis), "Label");
+	if (!label) {
+		label_data = go_data_scalar_str_new(x_axis_str, FALSE);
+		label = gog_object_add_by_name(GOG_OBJECT (axis), "Label", NULL);
+		gog_dataset_set_dim (GOG_DATASET (label), 0, label_data, NULL);
+	}
+
+	/* Add Y axis label */
+	axis = gog_plot_get_axis(graph->plot, GOG_AXIS_Y);
+	g_assert(axis);
+
+	label = gog_object_get_child_by_name(GOG_OBJECT(axis), "Label");
+	if (!label) {
+		label_data = go_data_scalar_str_new("Memory usage (in bytes)", FALSE);
+		label = gog_object_add_by_name(GOG_OBJECT (axis), "Label", NULL);
+		gog_dataset_set_dim (GOG_DATASET (label), 0, label_data, NULL);
+	}
+
+}
+
 void
 massifg_graph_update(MassifgGraph *graph) {
 	/* Update the data series */
@@ -354,6 +400,7 @@ massifg_graph_update(MassifgGraph *graph) {
 	else {
 		massifg_graph_update_simple(graph);
 	}
+	massifg_graph_add_axis_labels(graph);
 }
 
 /* Public functions */

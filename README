@@ -40,7 +40,6 @@ make app-test
 
 Graph
  - Add description, cmdline as titles
- - Add time unit to graph as axis label
  - Use a better time format for the axes
  - Rename MassifgGraph to MassifgOverviewGraph
  - Convert to a GObject, use properties
