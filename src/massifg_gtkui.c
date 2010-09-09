@@ -233,9 +233,9 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	{ /* action name, stock id, label, accelerator, tooltip, action (callback) */
 	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
 	  { "QuitAction", GTK_STOCK_QUIT, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
-	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open", NULL, NULL, G_CALLBACK(open_file_action)},
-	  { "SaveFileAction", GTK_STOCK_SAVE, "_Save", NULL, NULL, G_CALLBACK(save_file_action)},
-	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
+	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open...", NULL, NULL, G_CALLBACK(open_file_action)},
+	  { "SaveFileAction", GTK_STOCK_SAVE, "_Save...", NULL, NULL, G_CALLBACK(save_file_action)},
+	  { "PrintAction", GTK_STOCK_PRINT, "_Print...", NULL, NULL, G_CALLBACK(print_action)},
 
 	  { "ViewMenuAction", NULL, "_View", NULL, NULL, NULL},
 	};
