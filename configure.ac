@@ -1,5 +1,5 @@
 
-AC_INIT([MassifG], [0.2.1], [jonn@openismus.com], [massifg], [http://openismus.com])
+AC_INIT([MassifG], [0.2.2], [jonn@openismus.com], [massifg], [http://openismus.com])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 no-define foreign subdir-objects])
 AC_CONFIG_HEADERS([src/config.h])
