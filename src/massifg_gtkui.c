@@ -110,8 +110,9 @@ open_file_action(GtkAction *action, gpointer data) {
 	 * and have gtkbuilder set it up, which would have been nicer */
 	if (!buttons_added) {
 		gtk_dialog_add_buttons(GTK_DIALOG(open_dialog),
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_OPEN, GTK_RESPONSE_OK,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+				NULL);
 		buttons_added = TRUE;
 	}
 
@@ -147,8 +148,9 @@ save_file_action(GtkAction *action, gpointer data) {
 
 	if (!buttons_added) {
 		gtk_dialog_add_buttons(GTK_DIALOG(save_dialog),
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_SAVE, GTK_RESPONSE_OK,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+				NULL);
 		buttons_added = TRUE;
 	}
 
