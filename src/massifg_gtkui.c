@@ -286,7 +286,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 gint
 massifg_gtkui_init(MassifgApplication *app) {
 	const gchar *gladefile_path = NULL;
-	GtkWidget *vbox = NULL;
+	GtkWidget *graph_container = NULL;
 	GtkWidget *graph_widget = NULL;
 	GError *error = NULL;
 
@@ -309,10 +309,10 @@ massifg_gtkui_init(MassifgApplication *app) {
 	gtk_builder_connect_signals(app->gtk_builder, NULL);
 
 	/* Add the graph widget */
-	vbox = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, MAIN_WINDOW_VBOX));
+	graph_container = GTK_WIDGET (gtk_builder_get_object (app->gtk_builder, "scrolledwindow1"));
 	app->graph = massifg_graph_new();
 	graph_widget = massifg_graph_get_widget(app->graph);
-	gtk_box_pack_start(GTK_BOX (vbox), graph_widget, TRUE, TRUE, 1);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(graph_container), graph_widget);
 
 	/* Cleanup */
 	g_free((gpointer)gladefile_path);

@@ -389,6 +389,48 @@ void massifg_graph_add_axis_labels(MassifgGraph *graph) {
 
 }
 
+/* Adjusts the size request to make the widget
+ * 1. tall enough to fit the entire legend without having to overflow
+ * 2. wide enough to make the legend take up less than 50% of the horizontal size 
+ */
+void
+massifg_graph_adjust_size_request(MassifgGraph *graph) {
+	GogChart *chart = go_graph_widget_get_chart(GO_GRAPH_WIDGET(graph->widget));
+	GogGraph *gog_graph = go_graph_widget_get_graph(GO_GRAPH_WIDGET(graph->widget));
+	GogObject *legend = gog_object_get_child_by_name(GOG_OBJECT(chart), "Legend");
+
+	GtkAllocation allocation;
+	gint width, height;
+
+	GogRenderer *rend;
+	GogView *view;
+	GogView *legend_view;
+
+	if (!legend) {
+		return;
+	}
+
+	/* */
+	gtk_widget_get_allocation(graph->widget, &allocation);
+        rend = gog_renderer_new(gog_graph);
+        gog_renderer_update(rend, allocation.width, allocation.height*4.);
+        g_object_get(G_OBJECT (rend), "view", &view, NULL);
+	legend_view = gog_view_find_child_view(view, legend);
+	g_return_if_fail(view != NULL);
+
+	/* */
+	height = (int)legend_view->residual.h/4.;
+	width = (int)legend_view->residual.w;
+
+	g_message("width=%d, height=%d", width, height);
+	width = (int)width*2;
+	height = (int)height; /* Should be ~812 */
+
+/*	gtk_widget_set_size_request(graph->widget, width, height);*/
+/*	gtk_widget_set_size_request(graph->widget, 1000, 1000);*/
+
+}
+
 void
 massifg_graph_update(MassifgGraph *graph) {
 	/* Update the data series */
@@ -401,6 +443,7 @@ massifg_graph_update(MassifgGraph *graph) {
 		massifg_graph_update_simple(graph);
 	}
 	massifg_graph_add_axis_labels(graph);
+	massifg_graph_adjust_size_request(graph);
 }
 
 /* Public functions */
