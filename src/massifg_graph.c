@@ -47,6 +47,7 @@
 #include <goffice/graph/gog-label.h>
 #include <goffice/graph/gog-object.h>
 #include <goffice/graph/gog-plot.h>
+#include <goffice/graph/gog-renderer.h>
 #include <goffice/graph/gog-series.h>
 #include <goffice/utils/go-style.h>
 #include <goffice/utils/go-styled-object.h>
@@ -400,11 +401,16 @@ massifg_graph_adjust_size_request(MassifgGraph *graph) {
 	GogObject *legend = gog_object_get_child_by_name(GOG_OBJECT(chart), "Legend");
 
 	GtkAllocation allocation;
+	GogViewRequisition avail, req;
 	gint width, height;
+	gdouble dummy_w, dummy_h;
 
 	GogRenderer *rend;
 	GogView *view;
 	GogView *legend_view;
+
+/*	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 3000, 3000);*/
+/*	cairo_t *cr = cairo_create(surface);*/
 
 	if (!legend) {
 		return;
@@ -412,15 +418,19 @@ massifg_graph_adjust_size_request(MassifgGraph *graph) {
 
 	/* */
 	gtk_widget_get_allocation(graph->widget, &allocation);
+	dummy_h = 5000.0; dummy_w = 5000.0;
         rend = gog_renderer_new(gog_graph);
-        gog_renderer_update(rend, allocation.width, allocation.height*4.);
+        gog_renderer_update(rend, dummy_w, dummy_h);
         g_object_get(G_OBJECT (rend), "view", &view, NULL);
 	legend_view = gog_view_find_child_view(view, legend);
 	g_return_if_fail(view != NULL);
 
 	/* */
-	height = (int)legend_view->residual.h/4.;
-	width = (int)legend_view->residual.w;
+	legend_view->renderer = rend;
+	avail.w = dummy_w; avail.h = dummy_h;
+	gog_view_size_request(legend_view, &avail, &req);
+	width = (int)req.w;
+	height = (int)req.h;
 
 	g_message("width=%d, height=%d", width, height);
 	width = (int)width*2;
