@@ -105,8 +105,9 @@ open_file_action(GtkAction *action, gpointer data) {
 	 * and have gtkbuilder set it up, which would have been nicer */
 	if (!buttons_added) {
 		gtk_dialog_add_buttons(GTK_DIALOG(open_dialog),
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_OPEN, GTK_RESPONSE_OK,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+				NULL);
 		buttons_added = TRUE;
 	}
 
@@ -142,8 +143,9 @@ save_file_action(GtkAction *action, gpointer data) {
 
 	if (!buttons_added) {
 		gtk_dialog_add_buttons(GTK_DIALOG(save_dialog),
+				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_SAVE, GTK_RESPONSE_OK,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+				NULL);
 		buttons_added = TRUE;
 	}
 
@@ -155,8 +157,10 @@ save_file_action(GtkAction *action, gpointer data) {
 	gtk_widget_hide(save_dialog);
 
 	/* TODO: add .png to filename if not existing */
-	if (!massifg_graph_render_to_png(app->graph, filename, width, height)) {
-		massifg_gtkui_errormsg(app, "%s", "Error: Could not save PNG file");
+	if (filename) {
+		if (!massifg_graph_render_to_png(app->graph, filename, width, height)) {
+			massifg_gtkui_errormsg(app, "%s", "Error: Could not save PNG file");
+		}
 	}
 }
 
@@ -221,9 +225,9 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	{ /* action name, stock id, label, accelerator, tooltip, action (callback) */
 	  { "FileMenuAction", NULL, "_File", NULL, NULL, NULL},
 	  { "QuitAction", GTK_STOCK_QUIT, "_Quit", NULL, NULL, G_CALLBACK(quit_action)},
-	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open", NULL, NULL, G_CALLBACK(open_file_action)},
-	  { "SaveFileAction", GTK_STOCK_SAVE, "_Save", NULL, NULL, G_CALLBACK(save_file_action)},
-	  { "PrintAction", GTK_STOCK_PRINT, "_Print", NULL, NULL, G_CALLBACK(print_action)},
+	  { "OpenFileAction", GTK_STOCK_OPEN, "_Open...", NULL, NULL, G_CALLBACK(open_file_action)},
+	  { "SaveFileAction", GTK_STOCK_SAVE, "_Save...", NULL, NULL, G_CALLBACK(save_file_action)},
+	  { "PrintAction", GTK_STOCK_PRINT, "_Print...", NULL, NULL, G_CALLBACK(print_action)},
 
 	  { "ViewMenuAction", NULL, "_View", NULL, NULL, NULL},
 	};
