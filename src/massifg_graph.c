@@ -389,6 +389,45 @@ void massifg_graph_add_axis_labels(MassifgGraph *graph) {
 
 }
 
+
+void
+massifg_graph_add_titles(MassifgGraph *graph) {
+	GogGraph *gog_graph = go_graph_widget_get_graph(GO_GRAPH_WIDGET(graph->widget));
+	GogLabel *label;
+	GOData *data;
+	GogObject *gog_object;
+
+	/* Remove existing titles, if any */
+	gog_object = gog_object_get_child_by_name(GOG_OBJECT(gog_graph), "Title");
+	while (gog_object != NULL) {
+		gog_object_clear_parent(gog_object);
+		g_object_unref(G_OBJECT(gog_object));
+
+		gog_object = gog_object_get_child_by_name(GOG_OBJECT(gog_graph), "Title");
+	}
+
+	/* Add a title for cmd */
+	data = go_data_scalar_str_new (graph->data->cmd->str, FALSE);
+	label = (GogLabel *) g_object_new (GOG_TYPE_LABEL, NULL);
+	gog_dataset_set_dim (GOG_DATASET (label), 0, data, NULL);
+
+	gog_object_add_by_name (GOG_OBJECT (gog_graph), "Title", GOG_OBJECT (label));
+
+	/* Add a title for desc */
+	data = go_data_scalar_str_new (graph->data->desc->str, FALSE);
+	label = (GogLabel *) g_object_new (GOG_TYPE_LABEL, NULL);
+	gog_dataset_set_dim (GOG_DATASET (label), 0, data, NULL);
+
+	gog_object_add_by_name (GOG_OBJECT (gog_graph), "Title", GOG_OBJECT (label));
+
+
+	/* Change the title font */
+/*	style = go_styled_object_get_style (GO_STYLED_OBJECT (label));*/
+/*	desc = pango_font_description_from_string ("Sans bold 16");*/
+/*	go_style_set_font_desc (style, desc);*/
+
+}
+
 void
 massifg_graph_update(MassifgGraph *graph) {
 	/* Update the data series */
@@ -401,6 +440,7 @@ massifg_graph_update(MassifgGraph *graph) {
 		massifg_graph_update_simple(graph);
 	}
 	massifg_graph_add_axis_labels(graph);
+	massifg_graph_add_titles(graph);
 }
 
 /* Public functions */
