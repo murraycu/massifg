@@ -38,19 +38,7 @@
  */
 
 #include <glib.h>
-
 #include <goffice/goffice.h>
-#include <goffice/app/go-plugin.h>
-#include <goffice/app/go-plugin-loader-module.h>
-#include <goffice/data/go-data-simple.h>
-#include <goffice/graph/gog-data-set.h>
-#include <goffice/graph/gog-label.h>
-#include <goffice/graph/gog-object.h>
-#include <goffice/graph/gog-plot.h>
-#include <goffice/graph/gog-series.h>
-#include <goffice/utils/go-style.h>
-#include <goffice/utils/go-styled-object.h>
-#include <goffice/gtk/go-graph-widget.h>
 
 #include "massifg_graph.h"
 #include "massifg_graph_private.h"
