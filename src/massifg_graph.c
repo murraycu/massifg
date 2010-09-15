@@ -414,11 +414,11 @@ massifg_graph_add_titles(MassifgGraph *graph) {
 	gog_object_add_by_name (GOG_OBJECT (gog_graph), "Title", GOG_OBJECT (label));
 
 	/* Add a title for desc */
-	data = go_data_scalar_str_new (graph->data->desc->str, FALSE);
-	label = (GogLabel *) g_object_new (GOG_TYPE_LABEL, NULL);
-	gog_dataset_set_dim (GOG_DATASET (label), 0, data, NULL);
+/*	data = go_data_scalar_str_new (graph->data->desc->str, FALSE);*/
+/*	label = (GogLabel *) g_object_new (GOG_TYPE_LABEL, NULL);*/
+/*	gog_dataset_set_dim (GOG_DATASET (label), 0, data, NULL);*/
 
-	gog_object_add_by_name (GOG_OBJECT (gog_graph), "Title", GOG_OBJECT (label));
+/*	gog_object_add_by_name (GOG_OBJECT (gog_graph), "Title", GOG_OBJECT (label));*/
 
 
 	/* Change the title font */
