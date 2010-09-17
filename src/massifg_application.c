@@ -186,7 +186,7 @@ massifg_application_run(MassifgApplication *app) {
 	massifg_graph_init();
 
 	/* Create the UI */
-	if (massifg_gtkui_init(app) != 0) {
+	if (!massifg_gtkui_init(app)) {
 		g_critical("Failed to create GTK+ UI");
 		return 1;
 	}

@@ -209,8 +209,14 @@ toggle_legend_action(GtkToggleAction *action, gpointer data) {
 	massifg_graph_set_show_legend(app->graph, gtk_toggle_action_get_active(action));
 }
 
-/* Set up actions and menus */
-gint
+/** 
+ * massifg_gtkui_init_menus:
+ *
+ * Set up actions and menus.
+ *
+ * Returns: %TRUE if the operation succeeded, else %FALSE.
+ */
+gboolean
 massifg_gtkui_init_menus(MassifgApplication *app) {
 	gchar *uifile_path = NULL;
 	GtkActionGroup *action_group = NULL;
@@ -256,7 +262,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	{
 		g_critical ("Building menus failed: %s", error->message);
 		g_error_free (error);
-		return 1;
+		return FALSE;
 	}
 
 	/* Add the menubar to the window */
@@ -271,7 +277,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	g_object_unref(action_group);
 	g_object_unref(uimanager);
 
-	return 0;
+	return TRUE;
 }
 
 /* Public functions */
@@ -282,8 +288,10 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
  *
  * Initialize the whole UI.
  * After calling this, the UI can be started by calling massifg_gtkui_start().
+ *
+ * Returns: %TRUE if the operation succeeded, else %FALSE.
  */
-gint
+gboolean
 massifg_gtkui_init(MassifgApplication *app) {
 	gchar *gladefile_path = NULL;
 	GtkWidget *vbox = NULL;
@@ -303,7 +311,7 @@ massifg_gtkui_init(MassifgApplication *app) {
 	{
 		g_critical ("%s", error->message);
 		g_error_free (error);
-		return 1;
+		return FALSE;
 
 	}
 	gtk_builder_connect_signals(app->gtk_builder, NULL);

@@ -31,7 +31,7 @@ static const gchar MASSIFG_GTKUI_MAIN_WINDOW[] = "mainwindow";
 
 #include "massifg_application.h"
 
-gint massifg_gtkui_init(MassifgApplication *app);
+gboolean massifg_gtkui_init(MassifgApplication *app);
 void massifg_gtkui_start(MassifgApplication *app);
 
 void massifg_gtkui_errormsg(MassifgApplication *app, const gchar *msg_format, ...);
