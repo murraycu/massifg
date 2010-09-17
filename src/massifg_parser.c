@@ -139,7 +139,7 @@ massifg_parse_snapshot_element(MassifgParser *parser, const gchar *line,
 	}
 }
 
-MassifgSnapshot *
+static MassifgSnapshot *
 massifg_snapshot_new() {
 	MassifgSnapshot *snapshot = g_new(MassifgSnapshot, 1);
 
@@ -160,7 +160,7 @@ massifg_snapshot_new() {
  * snapshot=N
  * #-----------
  */
-void
+static void
 massifg_parse_snapshot(MassifgParser *parser, const gchar *line) {
 	gchar **kv_tokens;
 	if (g_str_has_prefix(line, "snapshot=")) {
@@ -181,7 +181,7 @@ massifg_parse_snapshot(MassifgParser *parser, const gchar *line) {
 }
 
 /* Parses the snapshot element "time", and maintains a maximum value */
-void
+static void
 massifg_parse_snapshot_time(MassifgParser *parser, const gchar *line) {
 	massifg_parse_snapshot_element(parser, line, "time=",
 			&parser->current_snapshot->time, STATE_SNAPSHOT_MEM_HEAP);
@@ -194,7 +194,7 @@ massifg_parse_snapshot_time(MassifgParser *parser, const gchar *line) {
 }
 
 /* Parses the snapshot element "mem_stacks_B", and maintains a maximum value of the sum of memory */
-void
+static void
 massifg_parse_snapshot_mem_stacks(MassifgParser *parser, const gchar *line) {
 	gint64 total_mem_allocation = 0;
 
@@ -212,7 +212,7 @@ massifg_parse_snapshot_mem_stacks(MassifgParser *parser, const gchar *line) {
 
 /* Parse heap tree identifier 
  * Format: "heap_tree=value", where value can be "details", "empty" or "peak"*/
-void
+static void
 massifg_parse_heap_tree_desc(MassifgParser *parser, const gchar *line) {
 	gchar **kv_tokens;
 	if (g_str_has_prefix(line, "heap_tree=")) {
@@ -227,7 +227,7 @@ massifg_parse_heap_tree_desc(MassifgParser *parser, const gchar *line) {
 	}
 }
 
-guint
+static guint
 massifg_str_count_leading_spaces(const gchar *str) {
 	guint i = 0;
 	guint num_spaces = 0;
@@ -243,7 +243,7 @@ massifg_str_count_leading_spaces(const gchar *str) {
 /* Set simple node attributes.
  * Simple attributes are those that can be found just by parsing the line,
  * without considering context */
-void
+static void
 massifg_heap_tree_node_init_simple_attributes(MassifgHeapTreeNode *node, const gchar *line) {
 	gchar *tmp_str = NULL;
 	gchar **tokens = NULL;
@@ -290,7 +290,7 @@ massifg_heap_tree_node_free(MassifgHeapTreeNode *node) {
 
 /* Find the parent the next node should go to after the end of a subtree has been reached
  * Returns NULL if no suitable parent can be found */
-GNode *
+static GNode *
 massifg_heap_tree_get_next_parent(GNode *current_parent) {
 	GNode *next_parent = current_parent->parent;
 
@@ -315,7 +315,7 @@ massifg_heap_tree_get_next_parent(GNode *current_parent) {
  * n$num_children: $memory_cost $label
  * Number of leading spaces indicate the depth of the element in the tree
  */
-void
+static void
 massifg_parse_heap_tree_node(MassifgParser *parser, const gchar *line) {
 	MassifgSnapshot *snapshot = parser->current_snapshot;
 	GNode *next_parent = parser->ht_current_parent;
@@ -421,7 +421,8 @@ massifg_parse_line(MassifgParser *parser, gchar const *line) {
 
 /* Allocate and initialize a MassifgOutputData structure, returning a pointer to it
  * Use massifg_output_data_free() to free */
-MassifgOutputData *massifg_output_data_new() {
+static MassifgOutputData *
+massifg_output_data_new() {
 	MassifgOutputData *data;
 	data = (MassifgOutputData*) g_malloc(sizeof(MassifgOutputData));
 

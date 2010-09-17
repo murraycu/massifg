@@ -102,6 +102,9 @@ struct _MassifgOutputData {
 typedef struct _MassifgOutputData MassifgOutputData;
 
 /* Public functions */
+/* TODO: Rename to massfig_output_data_new_from_file()? and 
+ * massfig_output_data_new_from_iochannel() ?
+ */
 MassifgOutputData *massifg_parse_file(const gchar *filename, GError **error);
 MassifgOutputData *massifg_parse_iochannel(GIOChannel *io_channel, GError **error);
 void massifg_output_data_free(MassifgOutputData *data);

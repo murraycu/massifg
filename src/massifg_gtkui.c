@@ -70,11 +70,14 @@ print_op_draw_page(GtkPrintOperation *operation,
 
 /* Signal handlers */
 /* Destroy event handler for the main window, hooked up though glade/gtkbuilder */
-void mainwindow_destroy(GtkObject *object, gpointer   user_data) {
+/* This is not static, because GtkBuilder needs to find. */
+void
+mainwindow_destroy(GtkObject *object, gpointer   user_data) {
 	gtk_main_quit();
 }
 
-void mainwindow_update_title(MassifgApplication *app, gpointer user_data) {
+static void
+mainwindow_update_title(MassifgApplication *app, gpointer user_data) {
 	GtkWindow *main_window = NULL;
 	main_window = GTK_WINDOW(gtk_builder_get_object (app->gtk_builder, MASSIFG_GTKUI_MAIN_WINDOW));
 
@@ -85,12 +88,12 @@ void mainwindow_update_title(MassifgApplication *app, gpointer user_data) {
 }
 
 /* Actions */
-void
+static void
 quit_action(GtkAction *action, gpointer data) {
 	mainwindow_destroy(NULL, NULL);
 }
 
-void
+static void
 open_file_action(GtkAction *action, gpointer data) {
 	static gboolean buttons_added = FALSE;
 	GError *error = NULL;
@@ -129,7 +132,7 @@ open_file_action(GtkAction *action, gpointer data) {
 	}
 }
 
-void
+static void
 save_file_action(GtkAction *action, gpointer data) {
 	/* TODO: support a way to set the size */
 	int width = 2000;
@@ -164,7 +167,7 @@ save_file_action(GtkAction *action, gpointer data) {
 	}
 }
 
-void
+static void
 print_action(GtkAction *action, gpointer data) {
 	GtkWidget *main_window = NULL;
 	MassifgApplication *app = (MassifgApplication *)data;
@@ -195,28 +198,28 @@ print_action(GtkAction *action, gpointer data) {
 	g_object_unref (print_op);
 }
 
-void
+static void
 toggle_details_action(GtkToggleAction *action, gpointer data) {
 	MassifgApplication *app = (MassifgApplication *)data;
 
 	massifg_graph_set_show_details(app->graph, gtk_toggle_action_get_active(action));
 }
 
-void
+static void
 toggle_legend_action(GtkToggleAction *action, gpointer data) {
 	MassifgApplication *app = (MassifgApplication *)data;
 
 	massifg_graph_set_show_legend(app->graph, gtk_toggle_action_get_active(action));
 }
 
-/** 
+/**
  * massifg_gtkui_init_menus:
  *
  * Set up actions and menus.
  *
  * Returns: %TRUE if the operation succeeded, else %FALSE.
  */
-gboolean
+static gboolean
 massifg_gtkui_init_menus(MassifgApplication *app) {
 	gchar *uifile_path = NULL;
 	GtkActionGroup *action_group = NULL;

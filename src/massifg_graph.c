@@ -77,7 +77,7 @@ typedef struct {
 
 /* Private functions */
 /* Fills arg->data_array with values from the specified series */
-void
+static void
 fill_data_array_func(gpointer data, gpointer user_data) {
 	MassifgSnapshot *snapshot = (MassifgSnapshot *)data;
 	FillDataArrayFuncArg *arg = (FillDataArrayFuncArg *)user_data;
@@ -104,7 +104,7 @@ fill_data_array_func(gpointer data, gpointer user_data) {
 }
 
 /* Returns a data vector for a single MassifgDataSeries */
-GOData *
+static GOData *
 data_from_snapshots(GList *snapshots, MassifgDataSeries series) {
 	FillDataArrayFuncArg foreach_arg;
 	gint length = g_list_length(snapshots);
@@ -152,7 +152,7 @@ massifg_graph_update_simple(MassifgGraph *graph) {
  * Example: "std::string::_Rep::_S_create(unsigned int, unsigned int, std::allocator<char> const&) (in /usr/lib/libstdc++.so.6.0.13)" -> "std::string::_Rep::_S_create (in /usr/lib/libstdc++.so.6.0.13)"
  * Result should be freed with g_free */
 gchar *
-get_short_function_label(const gchar *label) {
+massifg_graph_get_short_function_label(const gchar *label) {
 	gchar *short_label = NULL;
 	guint args_start_idx;
 	guint args_end_idx;
@@ -177,7 +177,7 @@ typedef struct {
 } AddDetailsSerieArg;
 
 /* Add a single detailed data series, as specified by key */
-void
+static void
 add_details_serie_foreach(gpointer data, gpointer user_data) {
 	gchar *label = (gchar *)data;
 	AddDetailsSerieArg *arg = (AddDetailsSerieArg *)user_data;
@@ -200,7 +200,7 @@ add_details_serie_foreach(gpointer data, gpointer user_data) {
 	}
 	series_data = go_data_vector_val_new(array, length, NULL);
 	time_data = data_from_snapshots(graph->data->snapshots,	MASSIFG_DATA_SERIES_TIME);
-	series_name = go_data_scalar_str_new(get_short_function_label(label), TRUE);
+	series_name = go_data_scalar_str_new(massifg_graph_get_short_function_label(label), TRUE);
 
 	/* Add it to the graph */
 	massifg_graph_add_series(graph, series_name, time_data, series_data);
@@ -222,7 +222,7 @@ typedef struct {
 } AddDetailsArg;
 
 /* Adds function values */
-void
+static void
 add_details_foreach(GNode *node, gpointer user_data) {
 	gboolean exists = FALSE;
 	gpointer value = 0;
@@ -254,7 +254,7 @@ add_details_foreach(GNode *node, gpointer user_data) {
  *
  * A #GCompareDataFunc to sort snapshots.
  */
-gint
+static gint
 sort_func_label(gconstpointer a, gconstpointer b, gpointer user_data) {
 	GHashTable *function_labels = (GHashTable *)user_data;
 
@@ -272,7 +272,7 @@ sort_func_label(gconstpointer a, gconstpointer b, gpointer user_data) {
 /* Sort the functions according to how many snapshots they appear in
  * This allows short-lived functions to be on top of the graph, and long-lived
  * ones on the bottom, which leads to a less confusing graph */
-void
+static void
 sort_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 	AddDetailsArg *arg = (AddDetailsArg *)user_data;
 
@@ -282,7 +282,7 @@ sort_details_serie_foreach(gpointer key, gpointer value, gpointer user_data) {
 }
 
 /* Build datastructures for the functions we want to show */
-void
+static void
 build_function_tables(GList *snapshots, GList **snapshot_details, AddDetailsArg *arg) {
 	MassifgSnapshot *s = NULL;
 	GHashTable *ht = NULL;
@@ -306,7 +306,7 @@ build_function_tables(GList *snapshots, GList **snapshot_details, AddDetailsArg 
 
 /* Adds all the detailed data series to graph
  * The graph should have been cleared for data series before this is called */
-void
+static void
 massifg_graph_update_detailed(MassifgGraph *graph) {
 	/* TODO: these two helper structures should probably be joined into one */
 	AddDetailsSerieArg add_dserie_arg;
@@ -331,7 +331,8 @@ massifg_graph_update_detailed(MassifgGraph *graph) {
 	g_hash_table_destroy(function_labels);
 }
 
-void massifg_graph_add_axis_labels(MassifgGraph *graph) {
+static void
+massifg_graph_add_axis_labels(MassifgGraph *graph) {
 	GogAxis *axis;
 	GOData *label_data;
 	GogObject *label;
@@ -377,7 +378,7 @@ void massifg_graph_add_axis_labels(MassifgGraph *graph) {
 
 }
 
-void
+static void
 massifg_graph_update(MassifgGraph *graph) {
 	/* Update the data series */
 	gog_plot_clear_series(graph->plot); /* TODO: verify that we are not responsible for freeing */

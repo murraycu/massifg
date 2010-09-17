@@ -11,9 +11,9 @@
 void
 test_short_function_label(void) {
 	gchar *str;
-	str = get_short_function_label("function (type, tupe, type) (in blabla something.so)");
+	str = massifg_graph_get_short_function_label("function (type, tupe, type) (in blabla something.so)");
 
-	str = get_short_function_label("std::string::_Rep::_S_create(unsigned int, unsigned int, std::allocator<char> const&) (in /usr/lib/libstdc++.so.6.0.13)");
+	str = massifg_graph_get_short_function_label("std::string::_Rep::_S_create(unsigned int, unsigned int, std::allocator<char> const&) (in /usr/lib/libstdc++.so.6.0.13)");
 	g_assert_cmpstr(str, ==, "std::string::_Rep::_S_create (in /usr/lib/libstdc++.so.6.0.13)");
 
 }
