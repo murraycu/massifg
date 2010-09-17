@@ -212,7 +212,7 @@ toggle_legend_action(GtkToggleAction *action, gpointer data) {
 /* Set up actions and menus */
 gint
 massifg_gtkui_init_menus(MassifgApplication *app) {
-	const gchar *uifile_path = NULL;
+	gchar *uifile_path = NULL;
 	GtkActionGroup *action_group = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *menubar = NULL;
@@ -267,9 +267,9 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
 	gtk_box_reorder_child (GTK_BOX (vbox), menubar, 0);
 
 	/* Cleanup */
-	g_free((gpointer)uifile_path);
-	g_object_unref(G_OBJECT(action_group));
-	g_object_unref(G_OBJECT(uimanager));
+	g_free(uifile_path);
+	g_object_unref(action_group);
+	g_object_unref(uimanager);
 
 	return 0;
 }
@@ -285,7 +285,7 @@ massifg_gtkui_init_menus(MassifgApplication *app) {
  */
 gint
 massifg_gtkui_init(MassifgApplication *app) {
-	const gchar *gladefile_path = NULL;
+	gchar *gladefile_path = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *graph_widget = NULL;
 	GError *error = NULL;
@@ -315,12 +315,12 @@ massifg_gtkui_init(MassifgApplication *app) {
 	gtk_box_pack_start(GTK_BOX (vbox), graph_widget, TRUE, TRUE, 1);
 
 	/* Cleanup */
-	g_free((gpointer)gladefile_path);
+	g_free(gladefile_path);
 
 	return massifg_gtkui_init_menus(app);
 }
 
-/** 
+/**
  * massifg_gtkui_start:
  * @app: A #MassifgApplication
  *
@@ -335,7 +335,7 @@ massifg_gtkui_start(MassifgApplication *app) {
 	gtk_main();
 }
 
-/** 
+/**
  * massifg_gtkui_errormsg:
  * @app: A #MassifgApplication
  * @msg_format: printf() like format string
