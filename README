@@ -1,6 +1,6 @@
 MassifG is a GTK+ based visualizer for the output of valgrind's massif tool
 
-MassifG uses the GNU autotools build system.
+Project homepage: http://live.gnome.org/MassifG
 
 
 == INSTALLING ==
@@ -35,6 +35,7 @@ make app-test
  - Support Gobject introspection for public API
  - Widget for visualizing a single snapshots heap tree in detail
 
+
 == TODO ==
  - Add a icon
 
@@ -54,6 +55,7 @@ Also check the various TODO and FIXME comments in the source code
 
 
 == BUGS ==
-For now, send an email to jonn@openismus.com when you find them
+See https://bugzilla.gnome.org/browse.cgi?product=massifg
+
 
 

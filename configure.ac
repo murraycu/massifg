@@ -1,5 +1,5 @@
 
-AC_INIT([MassifG], [0.2.3], [jonn@openismus.com], [massifg], [http://openismus.com])
+AC_INIT([MassifG], [0.2.3], [https://bugzilla.gnome.org/enter_bug.cgi?product=massifg], [massifg], [http://live.gnome.org/MassifG])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.10 -Wall no-define foreign subdir-objects])
 AC_CONFIG_HEADERS([config.h])
