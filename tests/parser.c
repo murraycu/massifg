@@ -86,8 +86,8 @@ parser_maxvalues(void) {
 
 	/* For the given input file, the max values should corresponds to the parameters of snapshot 67
 	 * Note that max_mem_allocation is the sum of heap, heap extra and stack mem usage */
-	g_assert_cmpint(data->max_time, ==, 2318524449);
-	g_assert_cmpint(data->max_mem_allocation, ==, 8843592);
+	g_assert_cmpint(data->max_time, ==, 2318524449UL);
+	g_assert_cmpint(data->max_mem_allocation, ==, 8843592UL);
 }
 
 /* Detailed / Heap tree parsing tests */
@@ -193,7 +193,7 @@ parser_heaptree_subtrees(void) {
 	/* Root node */
 	g_assert_cmpint(g_node_n_children(s->heap_tree), ==, 18);
 
-	/* Test a node. 
+	/* Test a node.
 	 * Line 281 of input file */
 	gn = g_node_first_child(s->heap_tree);
 	g_assert_cmpint(g_node_n_children(gn), ==, 2);
